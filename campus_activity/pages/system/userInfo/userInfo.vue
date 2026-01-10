@@ -283,6 +283,7 @@
 			let res = await apiImproveUserInfo(userId.value, formData)
 
 			if (res.code === 200) {
+				console.log(res.data);
 				uni.setStorageSync('userInfo', res.data.user)
 				uni.setStorageSync('token', res.data.user.token)
 				uni.showToast({
@@ -292,8 +293,8 @@
 
 				// 跳转到主页
 				setTimeout(() => {
-					uni.switchTab({
-						url: '/pages/index/index'
+					uni.reLaunch({
+						url: '/pages/system/login/login'
 					})
 				}, 1500)
 			}

@@ -27,8 +27,9 @@
 			<view class="title">社团活动</view>
 			<view class="activity_list">
 				<com-activity-item v-if="activityList.length!=0" v-for="item in activityList"
-					:activiyInfo="item"></com-activity-item>
-				<view>社团暂无活动</view>
+					:activiyInfo="item">
+				</com-activity-item>
+				<view v-else>社团暂无活动</view>
 			</view>
 		</view>
 	</view>

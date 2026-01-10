@@ -192,6 +192,7 @@ const _sfc_main = {
         await form.value.validate();
         let res = await api_user_index.apiImproveUserInfo(userId.value, formData);
         if (res.code === 200) {
+          common_vendor.index.__f__("log", "at pages/system/userInfo/userInfo.vue:286", res.data);
           common_vendor.index.setStorageSync("userInfo", res.data.user);
           common_vendor.index.setStorageSync("token", res.data.user.token);
           common_vendor.index.showToast({
@@ -199,13 +200,13 @@ const _sfc_main = {
             icon: "success"
           });
           setTimeout(() => {
-            common_vendor.index.switchTab({
-              url: "/pages/index/index"
+            common_vendor.index.reLaunch({
+              url: "/pages/system/login/login"
             });
           }, 1500);
         }
       } catch (e) {
-        common_vendor.index.__f__("log", "at pages/system/userInfo/userInfo.vue:301", "表单校验失败", e);
+        common_vendor.index.__f__("log", "at pages/system/userInfo/userInfo.vue:302", "表单校验失败", e);
       }
     };
     async function getSchoolInfoTree() {
