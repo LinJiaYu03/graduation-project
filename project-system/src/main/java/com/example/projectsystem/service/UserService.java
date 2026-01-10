@@ -16,8 +16,12 @@ public interface UserService extends IService<User> {
     User login(String username, String password);
 
     /**
+    * 微信登录
+    */
+    User wxLogin(String code);
+
+    /**
     * 完善个人信息
     */
     User completeProfile(Long userId, ProfileUpdateRequest request);
 }
-

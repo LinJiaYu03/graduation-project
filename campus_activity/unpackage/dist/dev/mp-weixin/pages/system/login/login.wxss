@@ -99,3 +99,27 @@
   font-size: 26rpx;
   color: #1890ff;
 }
+.wx-login-section.data-v-858729ca {
+  margin-top: 60rpx;
+  display: flex;
+  justify-content: center;
+}
+.wx-login-section .wx-login-btn.data-v-858729ca {
+  background-color: #07c160;
+  color: #fff;
+  font-size: 30rpx;
+  border-radius: 44rpx;
+  padding: 0 60rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+.wx-login-section .wx-login-btn.data-v-858729ca::after {
+  border: none;
+}
+.wx-login-section .wx-login-btn.data-v-858729ca:active {
+  opacity: 0.9;
+}

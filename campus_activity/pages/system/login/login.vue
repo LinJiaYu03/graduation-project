@@ -23,6 +23,13 @@
 			<view class="link-section">
 				<text class="link-text" @click="goToRegister">还没有账号？立即注册</text>
 			</view>
+			
+			<!-- 微信登录按钮 -->
+			<view class="wx-login-section">
+				<button class="wx-login-btn" @click="handleWxLogin">
+					<text>微信一键登录</text>
+				</button>
+			</view>
 		</view>
 	</view>
 </template>
@@ -33,7 +40,8 @@
 		reactive
 	} from 'vue'
 	import {
-		apiUserLogin
+		apiUserLogin,
+		apiUserWxLogin
 	} from '@/api/user/index.js'
 
 	const form = ref(null)
@@ -77,32 +85,60 @@
 		let res = await apiUserLogin(formData)
 
 		if (res.code === 200) {
-			const user = res.data.user
-			const token = res.data.user.token
+			handleLoginSuccess(res.data.user)
+		}
 
-			if (user.isCompleted) {
-				uni.setStorageSync('token', token)
-				uni.setStorageSync('userInfo', user)
-				uni.showToast({
-					title: '登录成功',
-					icon: 'success'
-				})
-				uni.reLaunch({
-					url: '/pages/index/index'
-				})
-			} else {
-				uni.navigateTo({
-					url: `/pages/system/userInfo/userInfo?id=${user.id}`,
-					success() {
+	}
+	
+	const handleWxLogin = () => {
+		uni.login({
+			provider: 'weixin',
+			success: async (loginRes) => {
+				if (loginRes.code) {
+					try {
+						let res = await apiUserWxLogin({
+							code: loginRes.code
+						})
+						if (res.code === 200) {
+							handleLoginSuccess(res.data.user)
+						}
+					} catch (e) {
 						uni.showToast({
-							title: '请先完善个人信息',
+							title: '微信登录失败',
 							icon: 'none'
 						})
 					}
-				})
+				}
 			}
+		})
+	}
+	
+	const handleLoginSuccess = (user) => {
+		const token = user.token
+		
+		if (user.isCompleted) {
+			uni.setStorageSync('token', token)
+			uni.setStorageSync('userInfo', user)
+			uni.showToast({
+				title: '登录成功',
+				icon: 'success'
+			})
+			uni.reLaunch({
+				url: '/pages/index/index'
+			})
+		} else {
+			// 保存token以便后续请求使用
+			uni.setStorageSync('token', token)
+			uni.navigateTo({
+				url: `/pages/system/userInfo/userInfo?id=${user.id}`,
+				success() {
+					uni.showToast({
+						title: '请先完善个人信息',
+						icon: 'none'
+					})
+				}
+			})
 		}
-
 	}
 
 	const goToRegister = () => {
@@ -195,6 +231,34 @@
 		.link-text {
 			font-size: 26rpx;
 			color: #1890ff;
+		}
+	}
+	
+	.wx-login-section {
+		margin-top: 60rpx;
+		display: flex;
+		justify-content: center;
+		
+		.wx-login-btn {
+			background-color: #07c160;
+			color: #fff;
+			font-size: 30rpx;
+			border-radius: 44rpx;
+			padding: 0 60rpx;
+			height: 80rpx;
+			line-height: 80rpx;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border: none;
+			
+			&::after {
+				border: none;
+			}
+			
+			&:active {
+				opacity: 0.9;
+			}
 		}
 	}
 </style>

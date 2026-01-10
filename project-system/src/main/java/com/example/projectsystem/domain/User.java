@@ -23,6 +23,9 @@ public class User implements Serializable {
 
     private String username;
 
+    @TableField("wx_openid")
+    private String wxOpenid;
+
     private String password;
 
     @TableField("is_completed")
@@ -64,4 +67,3 @@ public class User implements Serializable {
 
     private LocalDateTime updateTime;
 }
-

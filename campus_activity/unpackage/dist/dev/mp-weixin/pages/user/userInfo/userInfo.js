@@ -184,21 +184,20 @@ const _sfc_main = {
         title: "保存中..."
       });
       try {
-        if (filesName.value) {
-          await new Promise((resolve, reject) => {
-            common_vendor.tr.uploadFile({
-              filePath: userAvatar.value,
-              cloudPath: `avatar/${(/* @__PURE__ */ new Date()).getTime()}_${filesName.value}`,
-              fileType: "image",
-              success: async (e) => {
-                let filePath = utils_convertCloudPath.convertCloudPath(e.fileID);
-                userInfo.value.avatarUrl = filePath;
-                resolve();
-              },
-              fail: reject()
-            });
+        await new Promise((resolve, reject) => {
+          common_vendor.tr.uploadFile({
+            filePath: userAvatar.value,
+            cloudPath: `avatar/${(/* @__PURE__ */ new Date()).getTime()}_${filesName.value}`,
+            fileType: "image",
+            success: (e) => {
+              let filePath = utils_convertCloudPath.convertCloudPath(e.fileID);
+              userInfo.value.avatarUrl = filePath;
+              resolve();
+            },
+            fail: (err) => reject(err)
           });
-        }
+        });
+        common_vendor.index.__f__("log", "at pages/user/userInfo/userInfo.vue:306", userInfo.value.avatarUrl);
         let res = await api_user_index.apiImproveUserInfo(userInfo.value.id, userInfo.value);
         common_vendor.index.hideLoading();
         if (res.code === 200) {
@@ -220,8 +219,9 @@ const _sfc_main = {
         }
       } catch (e) {
         common_vendor.index.hideLoading();
+        const errorMsg = e.message || e.errMsg || "保存失败";
         common_vendor.index.showToast({
-          title: "保存失败",
+          title: errorMsg,
           icon: "none"
         });
         common_vendor.index.__f__("error", "at pages/user/userInfo/userInfo.vue:335", "保存失败", e);

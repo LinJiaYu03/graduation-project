@@ -5,6 +5,11 @@ const apiUserLogin = (data) => utils_request.request({
   data,
   method: "POST"
 });
+const apiUserWxLogin = (data) => utils_request.request({
+  url: "/users/wx-login",
+  data,
+  method: "POST"
+});
 const apiUserRegistration = (data) => utils_request.request({
   url: "/users/register",
   data,
@@ -18,4 +23,5 @@ const apiImproveUserInfo = (id, data) => utils_request.request({
 exports.apiImproveUserInfo = apiImproveUserInfo;
 exports.apiUserLogin = apiUserLogin;
 exports.apiUserRegistration = apiUserRegistration;
+exports.apiUserWxLogin = apiUserWxLogin;
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/api/user/index.js.map

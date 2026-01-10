@@ -7,6 +7,7 @@ import com.example.projectsystem.commons.PageResult;
 import com.example.projectsystem.commons.Results;
 import com.example.projectsystem.domain.User;
 import com.example.projectsystem.dto.LoginRequest;
+import com.example.projectsystem.dto.WxLoginRequest;
 import com.example.projectsystem.dto.ProfileUpdateRequest;
 import com.example.projectsystem.dto.RegisterRequest;
 import com.example.projectsystem.service.UserService;
@@ -33,6 +34,19 @@ public class UserController {
             return Results.success()
                     .message("注册成功")
                     .data("userId", user.getId());
+        } catch (IllegalArgumentException e) {
+            return Results.fail().message(e.getMessage());
+        }
+    }
+
+    @PostMapping("/wx-login")
+    public Results wxLogin(@RequestBody WxLoginRequest request) {
+        try {
+            User user = userService.wxLogin(request.getCode());
+            return Results.success()
+                    .message("登录成功")
+                    .data("token", user.getToken())
+                    .data("user", user);
         } catch (IllegalArgumentException e) {
             return Results.fail().message(e.getMessage());
         }
@@ -146,4 +160,3 @@ public class UserController {
         }
     }
 }
-

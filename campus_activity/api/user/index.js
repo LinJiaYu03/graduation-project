@@ -7,6 +7,13 @@ export const apiUserLogin=(data)=>request({
 	method:'POST'
 })
 
+// 微信授权登录
+export const apiUserWxLogin=(data)=>request({
+	url:'/users/wx-login',
+	data,
+	method:'POST'
+})
+
 // 用户注册
 export const apiUserRegistration=(data)=>request({
 	url:'/users/register',

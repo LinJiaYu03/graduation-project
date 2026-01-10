@@ -288,25 +288,24 @@
 		})
 
 		try {
-			// 如果有新头像，先上传头像
-			if (filesName.value) {
 				await new Promise((resolve, reject) => {
 					uniCloud.uploadFile({
 						filePath: userAvatar.value,
 						cloudPath: `avatar/${new Date().getTime()}_${filesName.value}`,
 						fileType: 'image',
-						success: async (e) => {
+						success: (e) => {
 							let filePath = convertCloudPath(e.fileID)
 							userInfo.value.avatarUrl = filePath
 							resolve()
 						},
-						fail: reject()
+						fail: (err) => reject(err)
 					})
 				})
-			}
 
 			// 保存用户信息
+			console.log(userInfo.value.avatarUrl);
 			let res = await apiImproveUserInfo(userInfo.value.id, userInfo.value)
+			
 			uni.hideLoading()
 			
 			if (res.code === 200) {
@@ -328,8 +327,9 @@
 			}
 		} catch (e) {
 			uni.hideLoading()
+			const errorMsg = e.message || e.errMsg || '保存失败'
 			uni.showToast({
-				title: '保存失败',
+				title: errorMsg,
 				icon: 'none'
 			})
 			console.error('保存失败', e)

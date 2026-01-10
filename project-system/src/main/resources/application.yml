@@ -1,4 +1,4 @@
-server:
+Secretserver:
   port: 8080
 
 # 数据源配置

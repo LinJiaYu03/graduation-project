@@ -9,6 +9,9 @@ import com.example.projectsystem.service.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
@@ -55,6 +58,60 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         user.setToken(UUID.randomUUID().toString());
         updateById(user);
+        return user;
+    }
+
+    @Override
+    public User wxLogin(String code) {
+        if (!StringUtils.hasText(code)) {
+            throw new IllegalArgumentException("code不能为空");
+        }
+
+        // 微信小程序配置 (请替换为真实的AppID和Secret)
+        String appId = "wx2caaaf47aead807a";
+        String secret = "1e6dcbf6a9ccfc823a5447aa262adcc2";
+        String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" + appId + "&secret=" + secret + "&js_code=" + code + "&grant_type=authorization_code";
+
+        RestTemplate restTemplate = new RestTemplate();
+        String response = restTemplate.getForObject(url, String.class);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String openid = null;
+        try {
+            JsonNode root = mapper.readTree(response);
+            if (root.has("errcode") && root.get("errcode").asInt() != 0) {
+                throw new IllegalArgumentException("微信登录失败: " + (root.has("errmsg") ? root.get("errmsg").asText() : "未知错误"));
+            }
+            if (root.has("openid")) {
+                openid = root.get("openid").asText();
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("微信登录失败: " + e.getMessage());
+        }
+
+        if (!StringUtils.hasText(openid)) {
+            throw new IllegalArgumentException("无法获取OpenID");
+        }
+
+        User user = lambdaQuery().eq(User::getWxOpenid, openid).one();
+        if (user == null) {
+            // 新用户自动注册
+            user = new User();
+            user.setWxOpenid(openid);
+            // 生成随机用户名
+            user.setUsername("wx_" + UUID.randomUUID().toString().substring(0, 8));
+            user.setPassword(UUID.randomUUID().toString()); // 随机密码
+            user.setIsCompleted(false);
+            user.setIsManager(false);
+            user.setIsBoss(false);
+            user.setAvatarUrl("https://env-00jxuc2o76k9.normal.cloudstatic.cn/avatar/admin.jpg");
+            save(user);
+        }
+
+        // 生成Token
+        user.setToken(UUID.randomUUID().toString());
+        updateById(user);
+        
         return user;
     }
 
@@ -122,4 +179,3 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return user;
     }
 }
-

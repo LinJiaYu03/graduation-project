@@ -50,29 +50,54 @@ const _sfc_main = {
       await form.value.validate();
       let res = await api_user_index.apiUserLogin(formData);
       if (res.code === 200) {
-        const user = res.data.user;
-        const token = res.data.user.token;
-        if (user.isCompleted) {
-          common_vendor.index.setStorageSync("token", token);
-          common_vendor.index.setStorageSync("userInfo", user);
-          common_vendor.index.showToast({
-            title: "登录成功",
-            icon: "success"
-          });
-          common_vendor.index.reLaunch({
-            url: "/pages/index/index"
-          });
-        } else {
-          common_vendor.index.navigateTo({
-            url: `/pages/system/userInfo/userInfo?id=${user.id}`,
-            success() {
+        handleLoginSuccess(res.data.user);
+      }
+    };
+    const handleWxLogin = () => {
+      common_vendor.index.login({
+        provider: "weixin",
+        success: async (loginRes) => {
+          if (loginRes.code) {
+            try {
+              let res = await api_user_index.apiUserWxLogin({
+                code: loginRes.code
+              });
+              if (res.code === 200) {
+                handleLoginSuccess(res.data.user);
+              }
+            } catch (e) {
               common_vendor.index.showToast({
-                title: "请先完善个人信息",
+                title: "微信登录失败",
                 icon: "none"
               });
             }
-          });
+          }
         }
+      });
+    };
+    const handleLoginSuccess = (user) => {
+      const token = user.token;
+      if (user.isCompleted) {
+        common_vendor.index.setStorageSync("token", token);
+        common_vendor.index.setStorageSync("userInfo", user);
+        common_vendor.index.showToast({
+          title: "登录成功",
+          icon: "success"
+        });
+        common_vendor.index.reLaunch({
+          url: "/pages/index/index"
+        });
+      } else {
+        common_vendor.index.setStorageSync("token", token);
+        common_vendor.index.navigateTo({
+          url: `/pages/system/userInfo/userInfo?id=${user.id}`,
+          success() {
+            common_vendor.index.showToast({
+              title: "请先完善个人信息",
+              icon: "none"
+            });
+          }
+        });
       }
     };
     const goToRegister = () => {
@@ -105,7 +130,8 @@ const _sfc_main = {
           ["label-position"]: "top"
         }),
         i: common_vendor.o(handleLogin),
-        j: common_vendor.o(goToRegister)
+        j: common_vendor.o(goToRegister),
+        k: common_vendor.o(handleWxLogin)
       };
     };
   }
