@@ -15,9 +15,12 @@ Campus Activity Management System - a dual-platform application for managing cam
 
 ```bash
 cd project-system
-./mvnw spring-boot:run        # Development
+./mvnw spring-boot:run        # Development (runs on port 8080)
 ./mvnw clean package           # Build JAR
+./mvnw test                    # Run tests
 ```
+
+**Database**: MySQL `ljy` schema (configured in `application.yml`)
 
 ### Frontend (campus_activity)
 
@@ -31,14 +34,15 @@ HBuilderX IDE is required for development. Key configurations in `manifest.json`
 
 ```
 project-system/src/main/java/com/example/projectsystem/
-├── controller/          # REST endpoints (/api/*)
-├── service/Impl/        # Business logic implementations
+├── commons/            # Results, PageResult (统一响应封装)
+├── config/             # CrossOriginConfig, MybatisPlusConfig
+├── controller/         # REST endpoints (/api/*)
+├── service/Impl/       # Business logic implementations
 ├── mapper/             # MyBatis-Plus mappers
 ├── domain/             # Entity classes
 ├── dto/                # Request/Response objects
-├── config/             # CrossOriginConfig, MybatisPlusConfig
 ├── exception/          # GlobalExceptionHandler
-└── util/               # QrCodeUtil (ZXing)
+└── util/               # QrCodeUtil (ZXing QR码生成)
 ```
 
 **Key domains**: `User`, `Club`, `ClubMember`, `Activity`, `ActivityRegistration`, `ActivityCheckin`
