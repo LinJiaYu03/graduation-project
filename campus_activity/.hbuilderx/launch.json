@@ -13,6 +13,10 @@
             },
             "provider" : "alipay",
             "type" : "uniCloud"
+        },
+        {
+            "playground" : "standard",
+            "type" : "uni-app:app-android"
         }
     ]
 }
