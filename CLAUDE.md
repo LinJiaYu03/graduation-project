@@ -22,6 +22,8 @@ cd project-system
 
 **Database**: MySQL `ljy` schema (configured in `application.yml`)
 
+**Response format**: All APIs return `Results` object with `{code, message, success, data}`. Paginated results wrap in `PageResult` with `{total, currentPage, pageSize, totalPage, records[]}`. Time fields (registrationStartTime, startTime, endTime, etc.) are Unix timestamps in milliseconds.
+
 ### Frontend (campus_activity)
 
 HBuilderX IDE is required for development. Key configurations in `manifest.json`:

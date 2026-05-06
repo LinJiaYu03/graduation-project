@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python create_defense_ppt.py)"
+    ]
+  }
+}
