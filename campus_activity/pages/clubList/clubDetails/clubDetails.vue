@@ -47,7 +47,7 @@
 					<uni-list-item :clickable="isBoss" style="height: 170rpx;" v-for="item in userList" :key="item.userId"
 						:title="item.user.realName"
 						:note="item.user.schoolName+item.user.collegeName+item.user.className"
-						:thumb="item.user.avatarUrl" thumb-size="lg" @click="onShowSettingManagerDialog(item.userId)">
+						:thumb="item.user.avatarUrl" thumb-size="lg" @click="onShowSettingManagerDialog(item)">
 						<!-- 自定义 footer-->
 						<template v-slot:footer>
 							<uni-tag class="tag" v-if="item.isManager" text="管理" type="error" />
@@ -138,9 +138,18 @@
 		}
 	}
 
-	function onShowSettingManagerDialog(id) {
-		settingManagerUserid.value = id
+	function onShowSettingManagerDialog(item) {
+		// 超级管理员不能被设置为管理员
+		if (item.user && item.user.isBoss) {
+			uni.showToast({
+				title: '无法操作超级管理员',
+				icon: 'none'
+			})
+			return
+		}
+		settingManagerUserid.value = item.userId
 		showRight.value?.close()
+		settingManagerDialog.value?.open()
 	}
 
 	async function settingManager() {

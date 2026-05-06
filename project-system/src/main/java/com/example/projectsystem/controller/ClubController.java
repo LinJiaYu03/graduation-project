@@ -7,6 +7,7 @@ import com.example.projectsystem.commons.PageResult;
 import com.example.projectsystem.commons.Results;
 import com.example.projectsystem.domain.Club;
 import com.example.projectsystem.domain.ClubMember;
+import com.example.projectsystem.domain.User;
 import com.example.projectsystem.dto.ClubOptionDTO;
 import com.example.projectsystem.dto.ClubMemberWithUserDTO;
 import com.example.projectsystem.dto.ClubRequest;
@@ -15,9 +16,11 @@ import com.example.projectsystem.dto.JoinClubRequest;
 import com.example.projectsystem.dto.JoinedClubSearchRequest;
 import com.example.projectsystem.service.ClubMemberService;
 import com.example.projectsystem.service.ClubService;
+import com.example.projectsystem.service.UserService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,10 +30,12 @@ public class ClubController {
 
     private final ClubService clubService;
     private final ClubMemberService clubMemberService;
+    private final UserService userService;
 
-    public ClubController(ClubService clubService, ClubMemberService clubMemberService) {
+    public ClubController(ClubService clubService, ClubMemberService clubMemberService, UserService userService) {
         this.clubService = clubService;
         this.clubMemberService = clubMemberService;
+        this.userService = userService;
     }
 
     /**
@@ -53,6 +58,22 @@ public class ClubController {
             club.setStatus(1); // 默认启用
 
             Club createdClub = clubService.createClub(club);
+
+            // 如果提供了创建者用户ID，则自动添加创建者为社团管理员
+            if (request.getUserId() != null) {
+                User creator = userService.getById(request.getUserId());
+                if (creator != null) {
+                    String userName = StringUtils.hasText(creator.getRealName()) ? creator.getRealName() : creator.getUsername();
+                    ClubMember adminMember = new ClubMember();
+                    adminMember.setClubId(createdClub.getId());
+                    adminMember.setUserId(request.getUserId());
+                    adminMember.setUserName(userName);
+                    adminMember.setIsManager(true);
+                    adminMember.setJoinTime(LocalDateTime.now());
+                    clubMemberService.save(adminMember);
+                }
+            }
+
             return Results.success()
                     .message("创建社团成功")
                     .data("club", createdClub)

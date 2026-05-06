@@ -169,12 +169,16 @@
 						})
 					}
 
+					// 获取当前登录用户ID
+					const userInfo = uni.getStorageSync('userInfo')
+
 					// 构建提交数据
 					const formData = {
 						name: form.name,
 						description: form.description || undefined,
 						levelTag:form.levelTag,
-						tags: form.tags.length > 0 ? form.tags.join(',') : undefined
+						tags: form.tags.length > 0 ? form.tags.join(',') : undefined,
+						userId: userInfo?.id
 					}
 
 					// 如果有上传的图片，添加 iconUrl

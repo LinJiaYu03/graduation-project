@@ -112,11 +112,13 @@ const _sfc_main = {
               });
             });
           }
+          const userInfo = common_vendor.index.getStorageSync("userInfo");
           const formData = {
             name: form.name,
             description: form.description || void 0,
             levelTag: form.levelTag,
-            tags: form.tags.length > 0 ? form.tags.join(",") : void 0
+            tags: form.tags.length > 0 ? form.tags.join(",") : void 0,
+            userId: userInfo == null ? void 0 : userInfo.id
           };
           if (filePath.value) {
             formData.iconUrl = filePath.value;
@@ -145,10 +147,10 @@ const _sfc_main = {
             title: "创建失败",
             icon: "none"
           });
-          common_vendor.index.__f__("error", "at pages/user/createClub/createClub.vue:213", "创建社团失败", e);
+          common_vendor.index.__f__("error", "at pages/user/createClub/createClub.vue:217", "创建社团失败", e);
         }
       }).catch((err) => {
-        common_vendor.index.__f__("warn", "at pages/user/createClub/createClub.vue:217", "表单校验未通过", err);
+        common_vendor.index.__f__("warn", "at pages/user/createClub/createClub.vue:221", "表单校验未通过", err);
       });
     }
     return (_ctx, _cache) => {

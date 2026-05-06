@@ -9,6 +9,10 @@ public class ClubRequest {
      * 社团类型，对应表字段 level_tag
      */
     private String levelTag;
+    /**
+     * 创建者用户ID
+     */
+    private Long userId;
 
     public String getIconUrl() {
         return iconUrl;
@@ -48,6 +52,14 @@ public class ClubRequest {
 
     public void setLevelTag(String levelTag) {
         this.levelTag = levelTag;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }
 

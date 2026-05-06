@@ -70,10 +70,18 @@ const _sfc_main = {
         userList.value = res.data.items;
       }
     }
-    function onShowSettingManagerDialog(id) {
-      var _a;
-      settingManagerUserid.value = id;
+    function onShowSettingManagerDialog(item) {
+      var _a, _b;
+      if (item.user && item.user.isBoss) {
+        common_vendor.index.showToast({
+          title: "无法操作超级管理员",
+          icon: "none"
+        });
+        return;
+      }
+      settingManagerUserid.value = item.userId;
       (_a = showRight.value) == null ? void 0 : _a.close();
+      (_b = settingManagerDialog.value) == null ? void 0 : _b.open();
     }
     async function settingManager() {
       let res = await api_club_index.apiSettingClubManager({
@@ -157,7 +165,7 @@ const _sfc_main = {
             })
           }, {
             f: item.userId,
-            g: common_vendor.o(($event) => onShowSettingManagerDialog(item.userId), item.userId),
+            g: common_vendor.o(($event) => onShowSettingManagerDialog(item), item.userId),
             h: "e409fb66-5-" + i0 + ",e409fb66-4",
             i: common_vendor.p({
               clickable: common_vendor.unref(isBoss),
