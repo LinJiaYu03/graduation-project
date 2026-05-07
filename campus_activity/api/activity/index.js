@@ -137,12 +137,12 @@ const exportFile = (url, fileName, callback) => {
 		// 小程序环境
 		uni.request({
 			url,
-			responseType: 'blob',
+			responseType: 'arraybuffer',
 			success: (res) => {
 				uni.hideLoading()
 				if (res.statusCode === 200) {
 					const fs = uni.getFileSystemManager()
-					const filePath = uni.env.USER_DATA_PATH + '/' + fileName
+					const filePath = wx.env.USER_DATA_PATH + '/' + fileName
 					fs.writeFile({
 						filePath,
 						data: res.data,
@@ -150,18 +150,26 @@ const exportFile = (url, fileName, callback) => {
 						success: () => {
 							uni.openDocument({
 								filePath,
+								fileType: 'xlsx',
 								success: () => uni.showToast({ title: '导出成功', icon: 'success' }),
-								fail: () => uni.showToast({ title: '文件已保存', icon: 'none' })
+								fail: (err) => {
+									console.error('打开文件失败', err)
+									uni.showToast({ title: '文件已保存到: ' + filePath, icon: 'none' })
+								}
 							})
 						},
-						fail: () => uni.showToast({ title: '导出失败', icon: 'none' })
+						fail: (err) => {
+							console.error('写入文件失败', err)
+							uni.showToast({ title: '导出失败', icon: 'none' })
+						}
 					})
 				} else {
-					uni.showToast({ title: '导出失败', icon: 'none' })
+					uni.showToast({ title: '导出失败: ' + res.statusCode, icon: 'none' })
 				}
 			},
-			fail: () => {
+			fail: (err) => {
 				uni.hideLoading()
+				console.error('请求失败', err)
 				uni.showToast({ title: '导出失败', icon: 'none' })
 			}
 		})

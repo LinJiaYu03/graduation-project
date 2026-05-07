@@ -87,12 +87,12 @@ const exportFile = (url, fileName, callback) => {
   if (isMiniProgram()) {
     common_vendor.index.request({
       url,
-      responseType: "blob",
+      responseType: "arraybuffer",
       success: (res) => {
         common_vendor.index.hideLoading();
         if (res.statusCode === 200) {
           const fs = common_vendor.index.getFileSystemManager();
-          const filePath = common_vendor.index.env.USER_DATA_PATH + "/" + fileName;
+          const filePath = common_vendor.wx$1.env.USER_DATA_PATH + "/" + fileName;
           fs.writeFile({
             filePath,
             data: res.data,
@@ -100,18 +100,26 @@ const exportFile = (url, fileName, callback) => {
             success: () => {
               common_vendor.index.openDocument({
                 filePath,
+                fileType: "xlsx",
                 success: () => common_vendor.index.showToast({ title: "导出成功", icon: "success" }),
-                fail: () => common_vendor.index.showToast({ title: "文件已保存", icon: "none" })
+                fail: (err) => {
+                  common_vendor.index.__f__("error", "at api/activity/index.js:156", "打开文件失败", err);
+                  common_vendor.index.showToast({ title: "文件已保存到: " + filePath, icon: "none" });
+                }
               });
             },
-            fail: () => common_vendor.index.showToast({ title: "导出失败", icon: "none" })
+            fail: (err) => {
+              common_vendor.index.__f__("error", "at api/activity/index.js:162", "写入文件失败", err);
+              common_vendor.index.showToast({ title: "导出失败", icon: "none" });
+            }
           });
         } else {
-          common_vendor.index.showToast({ title: "导出失败", icon: "none" });
+          common_vendor.index.showToast({ title: "导出失败: " + res.statusCode, icon: "none" });
         }
       },
-      fail: () => {
+      fail: (err) => {
         common_vendor.index.hideLoading();
+        common_vendor.index.__f__("error", "at api/activity/index.js:172", "请求失败", err);
         common_vendor.index.showToast({ title: "导出失败", icon: "none" });
       }
     });
