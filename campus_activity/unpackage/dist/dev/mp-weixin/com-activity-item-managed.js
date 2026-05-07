@@ -43,7 +43,7 @@ const _sfc_main = {
     }
     function onChangeActivityStatus(value) {
       common_vendor.index.showModal({
-        content: value ? "确认活动下架活动？" : "确认活动上架活动？",
+        content: value ? "确认下架该活动？" : "确认上架该活动？",
         async success(e) {
           if (e.confirm) {
             let res = await api_activity_index.apiUpdateActivityStatus(props.activeInfo.id, {
@@ -55,6 +55,28 @@ const _sfc_main = {
               common_vendor.index.showToast({
                 title: res.message,
                 icon: "success"
+              });
+            }
+          }
+        }
+      });
+    }
+    function deleteActivity() {
+      common_vendor.index.showModal({
+        content: "确认删除该活动？删除后不可恢复！",
+        async success(e) {
+          if (e.confirm) {
+            let res = await api_activity_index.apiDeleteActivity(props.activeInfo.id, userId);
+            if (res.code === 200) {
+              common_vendor.index.showToast({
+                title: "删除成功",
+                icon: "success"
+              });
+              emits("updataActivityList");
+            } else {
+              common_vendor.index.showToast({
+                title: res.message || "删除失败",
+                icon: "none"
               });
             }
           }
@@ -80,7 +102,7 @@ const _sfc_main = {
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed.vue:169", "获取二维码失败:", error);
+        common_vendor.index.__f__("error", "at pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed.vue:198", "获取二维码失败:", error);
         common_vendor.index.showToast({
           title: "获取二维码失败",
           icon: "none"
@@ -143,7 +165,7 @@ const _sfc_main = {
           });
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed.vue:241", "保存二维码失败:", error);
+        common_vendor.index.__f__("error", "at pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed.vue:270", "保存二维码失败:", error);
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: "保存失败",
@@ -191,43 +213,49 @@ const _sfc_main = {
         n: common_vendor.o(($event) => onChangeActivityStatus(__props.activeInfo.isPublished)),
         o: common_vendor.t(__props.activeInfo.status),
         p: common_vendor.p({
+          type: "trash",
+          size: "18",
+          color: "#fff"
+        }),
+        q: common_vendor.o(deleteActivity),
+        r: common_vendor.p({
           type: "closeempty",
           size: "24",
           color: "#666"
         }),
-        q: common_vendor.o(closeQrcode),
-        r: loading.value
+        s: common_vendor.o(closeQrcode),
+        t: loading.value
       }, loading.value ? {
-        s: common_vendor.p({
+        v: common_vendor.p({
           type: "spinner-cycle",
           size: "40",
           color: "#FCB857"
         })
       } : qrcodeData.value ? {
-        v: qrcodeData.value.qrCode,
-        w: common_vendor.t(qrcodeData.value.activityName),
-        x: common_vendor.t(qrcodeData.value.activityId)
+        x: qrcodeData.value.qrCode,
+        y: common_vendor.t(qrcodeData.value.activityName),
+        z: common_vendor.t(qrcodeData.value.activityId)
       } : {
-        y: common_vendor.p({
+        A: common_vendor.p({
           type: "info",
           size: "40",
           color: "#ff3b30"
         })
       }, {
-        t: qrcodeData.value,
-        z: qrcodeData.value
+        w: qrcodeData.value,
+        B: qrcodeData.value
       }, qrcodeData.value ? {
-        A: common_vendor.p({
+        C: common_vendor.p({
           type: "download",
           size: "18",
           color: "#fff"
         }),
-        B: common_vendor.o(saveQrcode)
+        D: common_vendor.o(saveQrcode)
       } : {}, {
-        C: common_vendor.sr(qrcodePopup, "76fc133d-0", {
+        E: common_vendor.sr(qrcodePopup, "76fc133d-1", {
           "k": "qrcodePopup"
         }),
-        D: common_vendor.p({
+        F: common_vendor.p({
           type: "center",
           ["background-color"]: "rgba(0,0,0,0.5)"
         })

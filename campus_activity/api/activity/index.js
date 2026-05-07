@@ -119,6 +119,12 @@ export const apiUpdateActivityStatus = (id, data) => request({
 	data
 })
 
+// 删除活动
+export const apiDeleteActivity = (activityId, managerUserId) => request({
+	url: `/activities/${activityId}?managerUserId=${managerUserId}`,
+	method: 'DELETE'
+})
+
 // 获取基地址
 const getBaseUrl = () => {
 	return 'http://localhost:8080/api'

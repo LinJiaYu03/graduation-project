@@ -2045,6 +2045,50 @@ public class ActivityController {
             return Results.fail().message("操作失败: " + e.getMessage());
         }
     }
+
+    /**
+     * 删除活动
+     * 只有社团管理员或超级管理员可以删除
+     *
+     * @param activityId 活动ID
+     * @param managerUserId 管理员用户ID
+     */
+    @DeleteMapping("/{activityId}")
+    public Results deleteActivity(@PathVariable Long activityId,
+                                  @RequestParam("managerUserId") Long managerUserId) {
+        try {
+            if (activityId == null) {
+                return Results.fail().message("活动ID不能为空");
+            }
+
+            Activity activity = activityService.getById(activityId);
+            if (activity == null) {
+                return Results.fail().message("活动不存在");
+            }
+
+            // 验证权限：超级管理员或该社团管理员
+            User user = userService.getById(managerUserId);
+            boolean isBoss = user != null && Boolean.TRUE.equals(user.getIsBoss());
+
+            if (!isBoss) {
+                // 如果不是超级管理员，验证是否为该社团管理员
+                ClubMember member = clubMemberService.lambdaQuery()
+                        .eq(ClubMember::getClubId, activity.getClubId())
+                        .eq(ClubMember::getUserId, managerUserId)
+                        .one();
+                if (member == null || member.getIsManager() == null || !member.getIsManager()) {
+                    return Results.fail().message("无权限删除该活动");
+                }
+            }
+
+            // 删除活动
+            activityService.removeById(activityId);
+
+            return Results.success().message("删除成功");
+        } catch (Exception e) {
+            return Results.fail().message("删除失败: " + e.getMessage());
+        }
+    }
 }
 
 

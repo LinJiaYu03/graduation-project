@@ -177,6 +177,24 @@
   border-radius: 14rpx;
   z-index: -1;
 }
+.com-activity-item .delete-btn.data-v-76fc133d {
+  position: absolute;
+  top: 32rpx;
+  right: 32rpx;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ff4d4f, #ff7875);
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 4rpx 12rpx rgba(255, 77, 79, 0.3);
+  transition: all 0.3s ease;
+}
+.com-activity-item .delete-btn.data-v-76fc133d:active {
+  transform: scale(0.9);
+}
 .com-activity-item .popup_container.data-v-76fc133d {
   display: flex;
   flex-direction: column;

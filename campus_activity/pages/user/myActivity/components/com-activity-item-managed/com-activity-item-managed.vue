@@ -46,6 +46,11 @@
 			{{ activeInfo.status }}
 		</view>
 
+		<!-- 删除按钮 -->
+		<view class="delete-btn" @click.stop="deleteActivity">
+			<uni-icons type="trash" size="18" color="#fff"></uni-icons>
+		</view>
+
 	</view>
 
 	<!-- 二维码弹窗 -->
@@ -89,7 +94,8 @@
 		ref
 	} from 'vue'
 	import {
-		apiUpdateActivityStatus
+		apiUpdateActivityStatus,
+		apiDeleteActivity
 	} from '@/api/activity/index.js'
 	import formatTime from '@/utils/dateUtil.js'
 	import request from '@/utils/request.js'
@@ -123,7 +129,7 @@
 
 	function onChangeActivityStatus(value) {
 		uni.showModal({
-			content: value ? '确认活动下架活动？' : '确认活动上架活动？',
+			content: value ? '确认下架该活动？' : '确认上架该活动？',
 			async success(e) {
 				if (e.confirm) {
 					let res = await apiUpdateActivityStatus(props.activeInfo.id, {
@@ -132,11 +138,34 @@
 					})
 
 					if (res.code == 200) {
-						
 						emits('updataActivityList')
 						uni.showToast({
 							title: res.message,
 							icon: 'success'
+						})
+					}
+				}
+			}
+		})
+	}
+
+	// 删除活动
+	function deleteActivity() {
+		uni.showModal({
+			content: '确认删除该活动？删除后不可恢复！',
+			async success(e) {
+				if (e.confirm) {
+					let res = await apiDeleteActivity(props.activeInfo.id, userId)
+					if (res.code === 200) {
+						uni.showToast({
+							title: '删除成功',
+							icon: 'success'
+						})
+						emits('updataActivityList')
+					} else {
+						uni.showToast({
+							title: res.message || '删除失败',
+							icon: 'none'
 						})
 					}
 				}
@@ -468,6 +497,26 @@
 						rgba(255, 139, 94, 0.4));
 				border-radius: 14rpx;
 				z-index: -1;
+			}
+		}
+
+		.delete-btn {
+			position: absolute;
+			top: 32rpx;
+			right: 32rpx;
+			width: 56rpx;
+			height: 56rpx;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: linear-gradient(135deg, #ff4d4f, #ff7875);
+			border-radius: 50%;
+			z-index: 2;
+			box-shadow: 0 4rpx 12rpx rgba(255, 77, 79, 0.3);
+			transition: all 0.3s ease;
+
+			&:active {
+				transform: scale(0.9);
 			}
 		}
 

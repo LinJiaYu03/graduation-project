@@ -76,6 +76,10 @@ const apiUpdateActivityStatus = (id, data) => utils_request.request({
   method: "PUT",
   data
 });
+const apiDeleteActivity = (activityId, managerUserId) => utils_request.request({
+  url: `/activities/${activityId}?managerUserId=${managerUserId}`,
+  method: "DELETE"
+});
 const getBaseUrl = () => {
   return "http://localhost:8080/api";
 };
@@ -103,13 +107,13 @@ const exportFile = (url, fileName, callback) => {
                 fileType: "xlsx",
                 success: () => common_vendor.index.showToast({ title: "导出成功", icon: "success" }),
                 fail: (err) => {
-                  common_vendor.index.__f__("error", "at api/activity/index.js:156", "打开文件失败", err);
+                  common_vendor.index.__f__("error", "at api/activity/index.js:162", "打开文件失败", err);
                   common_vendor.index.showToast({ title: "文件已保存到: " + filePath, icon: "none" });
                 }
               });
             },
             fail: (err) => {
-              common_vendor.index.__f__("error", "at api/activity/index.js:162", "写入文件失败", err);
+              common_vendor.index.__f__("error", "at api/activity/index.js:168", "写入文件失败", err);
               common_vendor.index.showToast({ title: "导出失败", icon: "none" });
             }
           });
@@ -119,7 +123,7 @@ const exportFile = (url, fileName, callback) => {
       },
       fail: (err) => {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at api/activity/index.js:172", "请求失败", err);
+        common_vendor.index.__f__("error", "at api/activity/index.js:178", "请求失败", err);
         common_vendor.index.showToast({ title: "导出失败", icon: "none" });
       }
     });
@@ -149,6 +153,7 @@ exports.apiActivityReview = apiActivityReview;
 exports.apiActivityReviewList = apiActivityReviewList;
 exports.apiCheckinActivity = apiCheckinActivity;
 exports.apiCreateActivity = apiCreateActivity;
+exports.apiDeleteActivity = apiDeleteActivity;
 exports.apiExportCheckin = apiExportCheckin;
 exports.apiExportRegistration = apiExportRegistration;
 exports.apiExportScore = apiExportScore;
