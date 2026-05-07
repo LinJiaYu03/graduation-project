@@ -108,6 +108,7 @@
 	const qrcodePopup = ref(null)
 	const qrcodeData = ref(null)
 	const loading = ref(false)
+	let qrcodeTimer = null
 
 	function activityDetail() {
 		uni.navigateTo({
@@ -188,6 +189,7 @@
 
 			if (res.code === 200 && res.data?.qrcode) {
 				qrcodeData.value = res.data.qrcode
+				startQrcodeTimer()
 			} else {
 				uni.showToast({
 					title: res.message || '获取二维码失败',
@@ -205,8 +207,56 @@
 		}
 	}
 
+	// 启动二维码刷新定时器
+	function startQrcodeTimer() {
+		stopQrcodeTimer()
+		qrcodeTimer = setTimeout(() => {
+			refreshQrcode()
+		}, 60000) // 1分钟后自动刷新
+	}
+
+	// 停止二维码刷新定时器
+	function stopQrcodeTimer() {
+		if (qrcodeTimer) {
+			clearTimeout(qrcodeTimer)
+			qrcodeTimer = null
+		}
+	}
+
+	// 刷新二维码
+	async function refreshQrcode() {
+		stopQrcodeTimer()
+		loading.value = true
+
+		try {
+			const res = await request({
+				url: `/activities/${props.activeInfo.id}/qrcode`,
+				method: 'GET'
+			})
+
+			if (res.code === 200 && res.data?.qrcode) {
+				qrcodeData.value = res.data.qrcode
+				startQrcodeTimer()
+			} else {
+				uni.showToast({
+					title: res.message || '刷新二维码失败',
+					icon: 'none'
+				})
+			}
+		} catch (error) {
+			console.error('刷新二维码失败:', error)
+			uni.showToast({
+				title: '刷新二维码失败',
+				icon: 'none'
+			})
+		} finally {
+			loading.value = false
+		}
+	}
+
 	// 关闭二维码弹窗
 	function closeQrcode() {
+		stopQrcodeTimer()
 		qrcodePopup.value?.close()
 	}
 

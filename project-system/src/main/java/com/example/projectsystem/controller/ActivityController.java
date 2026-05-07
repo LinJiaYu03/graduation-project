@@ -1787,9 +1787,11 @@ public class ActivityController {
                 return Results.fail().message("活动不存在");
             }
 
-            // 构建二维码内容（JSON格式）
+            // 构建二维码内容（JSON格式，包含活动ID和过期时间）
             Map<String, Object> qrContent = new HashMap<>();
             qrContent.put("activityId", activityId);
+            qrContent.put("timestamp", System.currentTimeMillis());
+            qrContent.put("expiresIn", 60000); // 1分钟有效期
             String qrContentJson = objectMapper.writeValueAsString(qrContent);
 
             // 生成二维码Base64图片（300x300像素）
@@ -1799,6 +1801,8 @@ public class ActivityController {
             result.put("qrCode", qrCodeBase64);
             result.put("activityId", activityId);
             result.put("activityName", activity.getName());
+            result.put("expiresIn", 60000);
+            result.put("generateTime", System.currentTimeMillis());
 
             return Results.success()
                     .message("生成二维码成功")
@@ -1830,6 +1834,15 @@ public class ActivityController {
                 // 解析二维码内容
                 Map<String, Object> qrData = objectMapper.readValue(qrContent, new TypeReference<Map<String, Object>>() {});
                 activityId = Long.valueOf(qrData.get("activityId").toString());
+
+                // 验证二维码时效性（1分钟）
+                if (qrData.containsKey("timestamp")) {
+                    long timestamp = ((Number) qrData.get("timestamp")).longValue();
+                    long expiresIn = qrData.containsKey("expiresIn") ? ((Number) qrData.get("expiresIn")).longValue() : 60000;
+                    if (System.currentTimeMillis() - timestamp > expiresIn) {
+                        return Results.fail().message("二维码已过期，请刷新后重试");
+                    }
+                }
             } else {
                 return Results.fail().message("参数不完整，需要提供activityId和userId，或者qrContent和userId");
             }

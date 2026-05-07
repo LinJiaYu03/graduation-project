@@ -26,6 +26,7 @@ const _sfc_main = {
     const qrcodePopup = common_vendor.ref(null);
     const qrcodeData = common_vendor.ref(null);
     const loading = common_vendor.ref(false);
+    let qrcodeTimer = null;
     function activityDetail() {
       common_vendor.index.navigateTo({
         url: `/pages/activity/activityDetail/activityDetail?id=${props.activeInfo.id}`
@@ -95,6 +96,7 @@ const _sfc_main = {
         });
         if (res.code === 200 && ((_b = res.data) == null ? void 0 : _b.qrcode)) {
           qrcodeData.value = res.data.qrcode;
+          startQrcodeTimer();
         } else {
           common_vendor.index.showToast({
             title: res.message || "获取二维码失败",
@@ -102,7 +104,7 @@ const _sfc_main = {
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed.vue:198", "获取二维码失败:", error);
+        common_vendor.index.__f__("error", "at pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed.vue:200", "获取二维码失败:", error);
         common_vendor.index.showToast({
           title: "获取二维码失败",
           icon: "none"
@@ -111,8 +113,49 @@ const _sfc_main = {
         loading.value = false;
       }
     }
+    function startQrcodeTimer() {
+      stopQrcodeTimer();
+      qrcodeTimer = setTimeout(() => {
+        refreshQrcode();
+      }, 6e4);
+    }
+    function stopQrcodeTimer() {
+      if (qrcodeTimer) {
+        clearTimeout(qrcodeTimer);
+        qrcodeTimer = null;
+      }
+    }
+    async function refreshQrcode() {
+      var _a;
+      stopQrcodeTimer();
+      loading.value = true;
+      try {
+        const res = await utils_request.request({
+          url: `/activities/${props.activeInfo.id}/qrcode`,
+          method: "GET"
+        });
+        if (res.code === 200 && ((_a = res.data) == null ? void 0 : _a.qrcode)) {
+          qrcodeData.value = res.data.qrcode;
+          startQrcodeTimer();
+        } else {
+          common_vendor.index.showToast({
+            title: res.message || "刷新二维码失败",
+            icon: "none"
+          });
+        }
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed.vue:247", "刷新二维码失败:", error);
+        common_vendor.index.showToast({
+          title: "刷新二维码失败",
+          icon: "none"
+        });
+      } finally {
+        loading.value = false;
+      }
+    }
     function closeQrcode() {
       var _a;
+      stopQrcodeTimer();
       (_a = qrcodePopup.value) == null ? void 0 : _a.close();
     }
     async function saveQrcode() {
@@ -165,7 +208,7 @@ const _sfc_main = {
           });
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed.vue:270", "保存二维码失败:", error);
+        common_vendor.index.__f__("error", "at pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed.vue:320", "保存二维码失败:", error);
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: "保存失败",
