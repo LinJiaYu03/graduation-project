@@ -475,8 +475,8 @@ public class ActivityController {
     }
 
     /**
-     * 获取热门活动列表（根据报名人数排序，返回前4个）
-     * 只返回报名中的活动
+     * 获取热门活动列表（根据报名人数排序，返回前6个）
+     * 优先返回报名中 > 进行中 > 已结束状态的活动
      */
     @GetMapping("/hot")
     public Results getHotActivities() {
@@ -499,15 +499,22 @@ public class ActivityController {
                 refreshActivityStatusByTime(activity);
             }
             
-            // 过滤出状态为"报名中"的活动，按报名人数降序排序，取前4个
+            // 按状态优先级和报名人数降序排序：报名中 > 进行中 > 已结束，取前6个
             List<Activity> hotActivities = activities.stream()
-                    .filter(activity -> "报名中".equals(activity.getStatus()))
+                    .filter(activity -> "报名中".equals(activity.getStatus()) || "进行中".equals(activity.getStatus()) || "已结束".equals(activity.getStatus()))
                     .sorted((a1, a2) -> {
                         int count1 = a1.getCurrentParticipants() != null ? a1.getCurrentParticipants() : 0;
                         int count2 = a2.getCurrentParticipants() != null ? a2.getCurrentParticipants() : 0;
-                        return Integer.compare(count2, count1); // 降序
+                        // 优先按状态排序：报名中(1) > 进行中(2) > 已结束(3)
+                        int statusPriority1 = getStatusPriority(a1.getStatus());
+                        int statusPriority2 = getStatusPriority(a2.getStatus());
+                        if (statusPriority1 != statusPriority2) {
+                            return Integer.compare(statusPriority1, statusPriority2);
+                        }
+                        // 同状态按报名人数降序
+                        return Integer.compare(count2, count1);
                     })
-                    .limit(4)
+                    .limit(6)
                     .collect(Collectors.toList());
             
             // 转换为 DTO，将 imageUrls 字符串转换为数组
@@ -1625,6 +1632,21 @@ public class ActivityController {
             // 即便状态未变化，也保证其他字段更新（例如审核时间等）
             activityService.updateById(activity);
         }
+    }
+
+    /**
+     * 获取活动状态的优先级（用于排序）
+     * 报名中(1) > 进行中(2) > 已结束(3)
+     */
+    private int getStatusPriority(String status) {
+        if ("报名中".equals(status)) {
+            return 1;
+        } else if ("进行中".equals(status)) {
+            return 2;
+        } else if ("已结束".equals(status)) {
+            return 3;
+        }
+        return 4; // 其他状态排在最后
     }
 
     /**
