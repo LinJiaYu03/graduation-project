@@ -1,4 +1,5 @@
 "use strict";
+const common_vendor = require("../../common/vendor.js");
 const utils_request = require("../../utils/request.js");
 const apiCreateActivity = (data) => utils_request.request({
   url: "/activities",
@@ -75,11 +76,74 @@ const apiUpdateActivityStatus = (id, data) => utils_request.request({
   method: "PUT",
   data
 });
+const getBaseUrl = () => {
+  return "http://localhost:8080/api";
+};
+const isMiniProgram = () => {
+  return typeof common_vendor.index.getFileSystemManager === "function";
+};
+const exportFile = (url, fileName, callback) => {
+  common_vendor.index.showLoading({ title: "正在导出..." });
+  if (isMiniProgram()) {
+    common_vendor.index.request({
+      url,
+      responseType: "blob",
+      success: (res) => {
+        common_vendor.index.hideLoading();
+        if (res.statusCode === 200) {
+          const fs = common_vendor.index.getFileSystemManager();
+          const filePath = common_vendor.index.env.USER_DATA_PATH + "/" + fileName;
+          fs.writeFile({
+            filePath,
+            data: res.data,
+            encoding: "binary",
+            success: () => {
+              common_vendor.index.openDocument({
+                filePath,
+                success: () => common_vendor.index.showToast({ title: "导出成功", icon: "success" }),
+                fail: () => common_vendor.index.showToast({ title: "文件已保存", icon: "none" })
+              });
+            },
+            fail: () => common_vendor.index.showToast({ title: "导出失败", icon: "none" })
+          });
+        } else {
+          common_vendor.index.showToast({ title: "导出失败", icon: "none" });
+        }
+      },
+      fail: () => {
+        common_vendor.index.hideLoading();
+        common_vendor.index.showToast({ title: "导出失败", icon: "none" });
+      }
+    });
+  } else {
+    common_vendor.index.hideLoading();
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    common_vendor.index.showToast({ title: "导出成功", icon: "success" });
+  }
+};
+const apiExportRegistration = (activityId, managerUserId) => {
+  const url = `${getBaseUrl()}/activities/${activityId}/export/registration?managerUserId=${managerUserId}`;
+  exportFile(url, "报名情况表.xlsx");
+};
+const apiExportCheckin = (activityId, managerUserId) => {
+  const url = `${getBaseUrl()}/activities/${activityId}/export/checkin?managerUserId=${managerUserId}`;
+  exportFile(url, "签到情况表.xlsx");
+};
+const apiExportScore = (activityId, managerUserId) => {
+  const url = `${getBaseUrl()}/activities/${activityId}/export/score?managerUserId=${managerUserId}`;
+  exportFile(url, "评分情况表.xlsx");
+};
 exports.apiActivityRate = apiActivityRate;
 exports.apiActivityReview = apiActivityReview;
 exports.apiActivityReviewList = apiActivityReviewList;
 exports.apiCheckinActivity = apiCheckinActivity;
 exports.apiCreateActivity = apiCreateActivity;
+exports.apiExportCheckin = apiExportCheckin;
+exports.apiExportRegistration = apiExportRegistration;
+exports.apiExportScore = apiExportScore;
 exports.apiGetActivityList = apiGetActivityList;
 exports.apiGetActiviyStatus = apiGetActiviyStatus;
 exports.apiGetCheckinStatistics = apiGetCheckinStatistics;

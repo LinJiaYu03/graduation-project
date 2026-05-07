@@ -30,6 +30,22 @@
   flex-direction: column;
   gap: 30rpx;
 }
+.export-bar.data-v-cee11be1 {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 15rpx;
+  padding: 20rpx 0;
+}
+.export-bar .export-btn.data-v-cee11be1 {
+  flex: 1;
+  margin: 0;
+  font-size: 24rpx;
+  padding: 15rpx 0;
+}
+.export-bar .export-btn.data-v-cee11be1::after {
+  border: none;
+}
 .chart-container.data-v-cee11be1 {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 20rpx;

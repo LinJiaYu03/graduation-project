@@ -1,5 +1,12 @@
 <template>
 	<view class="registration-statistics">
+		<!-- 导出按钮区域 -->
+		<view class="export-bar">
+			<button class="export-btn" @click="handleExportRegistration">导出报名情况表</button>
+			<button class="export-btn" @click="handleExportCheckin">导出签到情况表</button>
+			<button class="export-btn" @click="handleExportScore">导出评分情况表</button>
+		</view>
+
 		<!-- 报名统计 -->
 		<view class="chart-container">
 			<view class="chart-title">报名状态</view>
@@ -50,7 +57,10 @@
 	import {
 		apiGetRegistrationStatistics,
 		apiGetCheckinStatistics,
-		apiGetScoreStatistics
+		apiGetScoreStatistics,
+		apiExportRegistration,
+		apiExportCheckin,
+		apiExportScore
 	} from '@/api/activity/index.js'
 
 	const props = defineProps(['id'])
@@ -350,6 +360,21 @@
 		}
 	}
 
+	// 导出报名情况表
+	const handleExportRegistration = () => {
+		apiExportRegistration(props.id, managerUserId)
+	}
+
+	// 导出签到情况表
+	const handleExportCheckin = () => {
+		apiExportCheckin(props.id, managerUserId)
+	}
+
+	// 导出评分情况表
+	const handleExportScore = () => {
+		apiExportScore(props.id, managerUserId)
+	}
+
 	// 页面加载时获取数据
 	onMounted(() => {
 		getActivityStatistics()
@@ -363,6 +388,25 @@
 		display: flex;
 		flex-direction: column;
 		gap: 30rpx;
+	}
+
+	.export-bar {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		gap: 15rpx;
+		padding: 20rpx 0;
+	}
+
+	.export-bar .export-btn {
+		flex: 1;
+		margin: 0;
+		font-size: 24rpx;
+		padding: 15rpx 0;
+
+		&::after {
+			border: none;
+		}
 	}
 
 	.chart-container {

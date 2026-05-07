@@ -11,11 +11,16 @@ import com.example.projectsystem.service.*;
 import com.example.projectsystem.util.QrCodeUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.math.RoundingMode;
@@ -1247,6 +1252,330 @@ public class ActivityController {
                     .data("statistics", statistics);
         } catch (Exception e) {
             return Results.fail().message("查询失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 导出报名情况表（xxx活动报名情况表）
+     * 显示：姓名、性别、学号、学校、学院、班级
+     */
+    @GetMapping("/{activityId}/export/registration")
+    public void exportRegistrationList(@PathVariable Long activityId,
+                                        @RequestParam("managerUserId") Long managerUserId,
+                                        HttpServletResponse response) {
+        try {
+            Activity activity = activityService.getById(activityId);
+            if (activity == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("活动不存在");
+                return;
+            }
+
+            // 校验权限
+            ClubMember member = clubMemberService.lambdaQuery()
+                    .eq(ClubMember::getClubId, activity.getClubId())
+                    .eq(ClubMember::getUserId, managerUserId)
+                    .one();
+            if (member == null || member.getIsManager() == null || !member.getIsManager()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("无权限导出");
+                return;
+            }
+
+            // 查询所有已通过审核的报名记录
+            List<ActivityRegistration> approvedRegs = activityRegistrationService.lambdaQuery()
+                    .eq(ActivityRegistration::getActivityId, activityId)
+                    .eq(ActivityRegistration::getStatus, "已通过")
+                    .list();
+
+            // 创建Excel工作簿
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("报名情况表");
+
+            // 创建表头样式
+            CellStyle headerStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // 创建表头
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"序号", "姓名", "性别", "学号", "学校", "学院", "班级"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // 填充数据
+            int rowNum = 1;
+            for (int i = 0; i < approvedRegs.size(); i++) {
+                ActivityRegistration reg = approvedRegs.get(i);
+                User user = userService.getById(reg.getUserId());
+                if (user == null) continue;
+
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(i + 1);
+                Cell cell1 = row.createCell(1);
+                cell1.setCellValue(user.getRealName() != null ? user.getRealName() : "");
+                Cell cell2 = row.createCell(2);
+                cell2.setCellValue(genderToString(user.getGender()));
+                Cell cell3 = row.createCell(3);
+                cell3.setCellValue(user.getStudentNo() != null ? user.getStudentNo() : "");
+                Cell cell4 = row.createCell(4);
+                cell4.setCellValue(user.getSchoolName() != null ? user.getSchoolName() : "");
+                Cell cell5 = row.createCell(5);
+                cell5.setCellValue(user.getCollegeName() != null ? user.getCollegeName() : "");
+                Cell cell6 = row.createCell(6);
+                cell6.setCellValue(user.getClassName() != null ? user.getClassName() : "");
+            }
+
+            // 设置列宽
+            for (int i = 0; i < headers.length; i++) {
+                sheet.setColumnWidth(i, 4000);
+            }
+
+            // 设置响应头
+            String fileName = activity.getName() + "_报名情况表.xlsx";
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+
+            workbook.write(response.getOutputStream());
+            workbook.close();
+        } catch (Exception e) {
+            try {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("导出失败: " + e.getMessage());
+            } catch (Exception ignored) {}
+        }
+    }
+
+    /**
+     * 性别数字转换为字符串
+     */
+    private String genderToString(Integer gender) {
+        if (gender == null) return "";
+        return gender == 0 ? "女" : "男";
+    }
+
+    /**
+     * 导出签到情况表（xxx活动签到表）
+     * 在报名情况表基础上添加：报名状态、签到状态
+     */
+    @GetMapping("/{activityId}/export/checkin")
+    public void exportCheckinList(@PathVariable Long activityId,
+                                  @RequestParam("managerUserId") Long managerUserId,
+                                  HttpServletResponse response) {
+        try {
+            Activity activity = activityService.getById(activityId);
+            if (activity == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("活动不存在");
+                return;
+            }
+
+            // 校验权限
+            ClubMember member = clubMemberService.lambdaQuery()
+                    .eq(ClubMember::getClubId, activity.getClubId())
+                    .eq(ClubMember::getUserId, managerUserId)
+                    .one();
+            if (member == null || member.getIsManager() == null || !member.getIsManager()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("无权限导出");
+                return;
+            }
+
+            // 查询所有已通过审核的报名记录
+            List<ActivityRegistration> approvedRegs = activityRegistrationService.lambdaQuery()
+                    .eq(ActivityRegistration::getActivityId, activityId)
+                    .eq(ActivityRegistration::getStatus, "已通过")
+                    .list();
+
+            // 创建Excel工作簿
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("签到情况表");
+
+            // 创建表头样式
+            CellStyle headerStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // 创建表头
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"序号", "姓名", "性别", "学号", "学校", "学院", "班级", "报名状态", "签到状态"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // 填充数据
+            int rowNum = 1;
+            for (int i = 0; i < approvedRegs.size(); i++) {
+                ActivityRegistration reg = approvedRegs.get(i);
+                User user = userService.getById(reg.getUserId());
+                if (user == null) continue;
+
+                // 查询签到状态
+                ActivityCheckin checkin = activityCheckinService.lambdaQuery()
+                        .eq(ActivityCheckin::getActivityId, activityId)
+                        .eq(ActivityCheckin::getUserId, reg.getUserId())
+                        .one();
+
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(i + 1);
+                Cell cell1 = row.createCell(1);
+                cell1.setCellValue(user.getRealName() != null ? user.getRealName() : "");
+                Cell cell2 = row.createCell(2);
+                cell2.setCellValue(genderToString(user.getGender()));
+                Cell cell3 = row.createCell(3);
+                cell3.setCellValue(user.getStudentNo() != null ? user.getStudentNo() : "");
+                Cell cell4 = row.createCell(4);
+                cell4.setCellValue(user.getSchoolName() != null ? user.getSchoolName() : "");
+                Cell cell5 = row.createCell(5);
+                cell5.setCellValue(user.getCollegeName() != null ? user.getCollegeName() : "");
+                Cell cell6 = row.createCell(6);
+                cell6.setCellValue(user.getClassName() != null ? user.getClassName() : "");
+                row.createCell(7).setCellValue(reg.getStatus() != null ? reg.getStatus() : "");
+                row.createCell(8).setCellValue(checkin != null ? "已签到" : "未签到");
+            }
+
+            // 设置列宽
+            for (int i = 0; i < headers.length; i++) {
+                sheet.setColumnWidth(i, 4000);
+            }
+
+            // 设置响应头
+            String fileName = activity.getName() + "_签到情况表.xlsx";
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+
+            workbook.write(response.getOutputStream());
+            workbook.close();
+        } catch (Exception e) {
+            try {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("导出失败: " + e.getMessage());
+            } catch (Exception ignored) {}
+        }
+    }
+
+    /**
+     * 导出评分情况表（xxx活动评分情况表）
+     * 在报名情况表基础上添加：报名状态、评分
+     */
+    @GetMapping("/{activityId}/export/score")
+    public void exportScoreList(@PathVariable Long activityId,
+                                @RequestParam("managerUserId") Long managerUserId,
+                                HttpServletResponse response) {
+        try {
+            Activity activity = activityService.getById(activityId);
+            if (activity == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("活动不存在");
+                return;
+            }
+
+            // 校验权限
+            ClubMember member = clubMemberService.lambdaQuery()
+                    .eq(ClubMember::getClubId, activity.getClubId())
+                    .eq(ClubMember::getUserId, managerUserId)
+                    .one();
+            if (member == null || member.getIsManager() == null || !member.getIsManager()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("无权限导出");
+                return;
+            }
+
+            // 查询所有已通过审核的报名记录
+            List<ActivityRegistration> approvedRegs = activityRegistrationService.lambdaQuery()
+                    .eq(ActivityRegistration::getActivityId, activityId)
+                    .eq(ActivityRegistration::getStatus, "已通过")
+                    .list();
+
+            // 创建Excel工作簿
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("评分情况表");
+
+            // 创建表头样式
+            CellStyle headerStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // 创建表头
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"序号", "姓名", "性别", "学号", "学校", "学院", "班级", "报名状态", "评分"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // 填充数据
+            int rowNum = 1;
+            for (int i = 0; i < approvedRegs.size(); i++) {
+                ActivityRegistration reg = approvedRegs.get(i);
+                User user = userService.getById(reg.getUserId());
+                if (user == null) continue;
+
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(i + 1);
+                Cell cell1 = row.createCell(1);
+                cell1.setCellValue(user.getRealName() != null ? user.getRealName() : "");
+                Cell cell2 = row.createCell(2);
+                cell2.setCellValue(genderToString(user.getGender()));
+                Cell cell3 = row.createCell(3);
+                cell3.setCellValue(user.getStudentNo() != null ? user.getStudentNo() : "");
+                Cell cell4 = row.createCell(4);
+                cell4.setCellValue(user.getSchoolName() != null ? user.getSchoolName() : "");
+                Cell cell5 = row.createCell(5);
+                cell5.setCellValue(user.getCollegeName() != null ? user.getCollegeName() : "");
+                Cell cell6 = row.createCell(6);
+                cell6.setCellValue(user.getClassName() != null ? user.getClassName() : "");
+                row.createCell(7).setCellValue(reg.getStatus() != null ? reg.getStatus() : "");
+                row.createCell(8).setCellValue(reg.getScore() != null ? reg.getScore().toString() : "未评分");
+            }
+
+            // 设置列宽
+            for (int i = 0; i < headers.length; i++) {
+                sheet.setColumnWidth(i, 4000);
+            }
+
+            // 设置响应头
+            String fileName = activity.getName() + "_评分情况表.xlsx";
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+
+            workbook.write(response.getOutputStream());
+            workbook.close();
+        } catch (Exception e) {
+            try {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("导出失败: " + e.getMessage());
+            } catch (Exception ignored) {}
         }
     }
 

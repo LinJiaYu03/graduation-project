@@ -244,7 +244,7 @@ const _sfc_main = {
         const option = createRegistrationPieChartOption();
         chart.setOption(option);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/user/myActivity/registrationStatistics/registrationStatistics.vue:323", "报名图表初始化失败:", error);
+        common_vendor.index.__f__("error", "at pages/user/myActivity/registrationStatistics/registrationStatistics.vue:333", "报名图表初始化失败:", error);
       }
     };
     const initCheckinChart = async () => {
@@ -255,7 +255,7 @@ const _sfc_main = {
         const option = createCheckinPieChartOption();
         chart.setOption(option);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/user/myActivity/registrationStatistics/registrationStatistics.vue:336", "签到图表初始化失败:", error);
+        common_vendor.index.__f__("error", "at pages/user/myActivity/registrationStatistics/registrationStatistics.vue:346", "签到图表初始化失败:", error);
       }
     };
     const initScoreChart = async () => {
@@ -266,36 +266,48 @@ const _sfc_main = {
         const option = createScoreBarChartOption();
         chart.setOption(option);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/user/myActivity/registrationStatistics/registrationStatistics.vue:349", "评分图表初始化失败:", error);
+        common_vendor.index.__f__("error", "at pages/user/myActivity/registrationStatistics/registrationStatistics.vue:359", "评分图表初始化失败:", error);
       }
+    };
+    const handleExportRegistration = () => {
+      api_activity_index.apiExportRegistration(props.id, managerUserId);
+    };
+    const handleExportCheckin = () => {
+      api_activity_index.apiExportCheckin(props.id, managerUserId);
+    };
+    const handleExportScore = () => {
+      api_activity_index.apiExportScore(props.id, managerUserId);
     };
     common_vendor.onMounted(() => {
       getActivityStatistics();
     });
     return (_ctx, _cache) => {
       return {
-        a: common_vendor.sr(registrationChartRef, "cee11be1-0", {
+        a: common_vendor.o(handleExportRegistration),
+        b: common_vendor.o(handleExportCheckin),
+        c: common_vendor.o(handleExportScore),
+        d: common_vendor.sr(registrationChartRef, "cee11be1-0", {
           "k": "registrationChartRef"
         }),
-        b: common_vendor.o(initRegistrationChart),
-        c: common_vendor.t(registrationData.value.total || 0),
-        d: common_vendor.t(registrationData.value.currentParticipants || 0),
-        e: common_vendor.t(registrationData.value.maxParticipants || 0),
-        f: common_vendor.sr(checkinChartRef, "cee11be1-1", {
+        e: common_vendor.o(initRegistrationChart),
+        f: common_vendor.t(registrationData.value.total || 0),
+        g: common_vendor.t(registrationData.value.currentParticipants || 0),
+        h: common_vendor.t(registrationData.value.maxParticipants || 0),
+        i: common_vendor.sr(checkinChartRef, "cee11be1-1", {
           "k": "checkinChartRef"
         }),
-        g: common_vendor.o(initCheckinChart),
-        h: common_vendor.t(checkinData.value.checkedIn || 0),
-        i: common_vendor.t(checkinData.value.notCheckedIn || 0),
-        j: common_vendor.t(checkinData.value.checkinRate || 0),
-        k: common_vendor.sr(scoreChartRef, "cee11be1-2", {
+        j: common_vendor.o(initCheckinChart),
+        k: common_vendor.t(checkinData.value.checkedIn || 0),
+        l: common_vendor.t(checkinData.value.notCheckedIn || 0),
+        m: common_vendor.t(checkinData.value.checkinRate || 0),
+        n: common_vendor.sr(scoreChartRef, "cee11be1-2", {
           "k": "scoreChartRef"
         }),
-        l: common_vendor.o(initScoreChart),
-        m: common_vendor.t(scoreData.value.averageScore || 0),
-        n: common_vendor.t(scoreData.value.scoredCount || 0),
-        o: common_vendor.t(scoreData.value.notScoredCount || 0),
-        p: common_vendor.t(scoreData.value.scoreRate || 0)
+        o: common_vendor.o(initScoreChart),
+        p: common_vendor.t(scoreData.value.averageScore || 0),
+        q: common_vendor.t(scoreData.value.scoredCount || 0),
+        r: common_vendor.t(scoreData.value.notScoredCount || 0),
+        s: common_vendor.t(scoreData.value.scoreRate || 0)
       };
     };
   }

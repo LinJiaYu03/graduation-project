@@ -118,3 +118,78 @@ export const apiUpdateActivityStatus = (id, data) => request({
 	method: 'PUT',
 	data
 })
+
+// 获取基地址
+const getBaseUrl = () => {
+	return 'http://localhost:8080/api'
+}
+
+// 判断是否为小程序环境
+const isMiniProgram = () => {
+	return typeof uni.getFileSystemManager === 'function'
+}
+
+// 导出文件通用方法
+const exportFile = (url, fileName, callback) => {
+	uni.showLoading({ title: '正在导出...' })
+
+	if (isMiniProgram()) {
+		// 小程序环境
+		uni.request({
+			url,
+			responseType: 'blob',
+			success: (res) => {
+				uni.hideLoading()
+				if (res.statusCode === 200) {
+					const fs = uni.getFileSystemManager()
+					const filePath = uni.env.USER_DATA_PATH + '/' + fileName
+					fs.writeFile({
+						filePath,
+						data: res.data,
+						encoding: 'binary',
+						success: () => {
+							uni.openDocument({
+								filePath,
+								success: () => uni.showToast({ title: '导出成功', icon: 'success' }),
+								fail: () => uni.showToast({ title: '文件已保存', icon: 'none' })
+							})
+						},
+						fail: () => uni.showToast({ title: '导出失败', icon: 'none' })
+					})
+				} else {
+					uni.showToast({ title: '导出失败', icon: 'none' })
+				}
+			},
+			fail: () => {
+				uni.hideLoading()
+				uni.showToast({ title: '导出失败', icon: 'none' })
+			}
+		})
+	} else {
+		// H5环境 - 直接下载
+		uni.hideLoading()
+		const link = document.createElement('a')
+		link.href = url
+		link.download = fileName
+		link.click()
+		uni.showToast({ title: '导出成功', icon: 'success' })
+	}
+}
+
+// 导出报名情况表
+export const apiExportRegistration = (activityId, managerUserId) => {
+	const url = `${getBaseUrl()}/activities/${activityId}/export/registration?managerUserId=${managerUserId}`
+	exportFile(url, '报名情况表.xlsx')
+}
+
+// 导出签到情况表
+export const apiExportCheckin = (activityId, managerUserId) => {
+	const url = `${getBaseUrl()}/activities/${activityId}/export/checkin?managerUserId=${managerUserId}`
+	exportFile(url, '签到情况表.xlsx')
+}
+
+// 导出评分情况表
+export const apiExportScore = (activityId, managerUserId) => {
+	const url = `${getBaseUrl()}/activities/${activityId}/export/score?managerUserId=${managerUserId}`
+	exportFile(url, '评分情况表.xlsx')
+}
