@@ -16,17 +16,9 @@ if (!Math) {
 const _sfc_main = {
   __name: "myClub",
   setup(__props) {
-    const btnList = [
-      {
-        name: "加入的",
-        value: "join"
-      },
-      {
-        name: "管理的",
-        value: "management"
-      }
-    ];
     const userId = common_vendor.ref("");
+    const userInfo = common_vendor.index.getStorageSync("userInfo");
+    const isManager = userInfo.isBoss || userInfo.isManager;
     const clubList = common_vendor.ref([]);
     const searchData = common_vendor.ref({
       keyword: "",
@@ -34,7 +26,18 @@ const _sfc_main = {
       currentPage: "1",
       pageSize: "10"
     });
+    const btnList = common_vendor.computed(() => {
+      if (isManager) {
+        return [
+          { name: "加入的", value: "join" },
+          { name: "管理的", value: "management" }
+        ];
+      }
+      return [{ name: "加入的", value: "join" }];
+    });
     function onChangeActive(item) {
+      if (!isManager && item.value === "management")
+        return;
       searchData.value.type = item.value;
       getClubList();
     }
@@ -65,7 +68,7 @@ const _sfc_main = {
         c: common_vendor.p({
           value: searchData.value.keyword
         }),
-        d: common_vendor.f(btnList, (item, k0, i0) => {
+        d: common_vendor.f(btnList.value, (item, k0, i0) => {
           return {
             a: common_vendor.t(item.name),
             b: item.value === searchData.value.type ? 1 : "",

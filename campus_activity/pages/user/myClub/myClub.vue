@@ -24,7 +24,8 @@
 
 <script setup>
 	import {
-		ref
+		ref,
+		computed
 	} from 'vue';
 	import {
 		onLoad
@@ -35,16 +36,9 @@
 	} from '@/api/club/index.js'
 	
 
-	const btnList = [{
-			name: '加入的',
-			value: 'join'
-		},
-		{
-			name: '管理的',
-			value: 'management'
-		}
-	]
 	const userId = ref('')
+	const userInfo = uni.getStorageSync('userInfo')
+	const isManager = userInfo.isBoss || userInfo.isManager // 判断是否为管理员
 	const clubList = ref([])
 	const searchData = ref({
 		keyword: '',
@@ -53,7 +47,18 @@
 		pageSize: '10'
 	})
 
+	const btnList = computed(() => {
+		if (isManager) {
+			return [
+				{ name: '加入的', value: 'join' },
+				{ name: '管理的', value: 'management' }
+			]
+		}
+		return [{ name: '加入的', value: 'join' }]
+	})
+
 	function onChangeActive(item) {
+		if (!isManager && item.value === 'management') return // 非管理员不能切换到管理 tab
 		searchData.value.type = item.value
 		getClubList()
 	}

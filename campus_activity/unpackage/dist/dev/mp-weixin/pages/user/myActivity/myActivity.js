@@ -12,23 +12,26 @@ const _sfc_main = {
   setup(__props) {
     const searchValue = common_vendor.ref("");
     const activeTab = common_vendor.ref("participated");
-    const userId = common_vendor.index.getStorageSync("userInfo").id;
+    const userInfo = common_vendor.index.getStorageSync("userInfo");
+    const userId = userInfo.id;
+    const isManager = userInfo.isBoss || userInfo.isManager;
     const activity_participated = common_vendor.ref([]);
     const activity_managed = common_vendor.ref([]);
-    const tabs = [
-      {
-        label: "参与",
-        value: "participated"
-      },
-      {
-        label: "管理",
-        value: "managed"
+    const tabs = common_vendor.computed(() => {
+      if (isManager) {
+        return [
+          { label: "参与", value: "participated" },
+          { label: "管理", value: "managed" }
+        ];
       }
-    ];
+      return [{ label: "参与", value: "participated" }];
+    });
     function onSearch() {
       getJoinOrManangeActivityList();
     }
     function OnChangeActiveTab(tab) {
+      if (!isManager && tab === "managed")
+        return;
       activeTab.value = tab;
       getJoinOrManangeActivityList();
     }
@@ -55,7 +58,7 @@ const _sfc_main = {
         c: common_vendor.p({
           value: searchValue.value
         }),
-        d: common_vendor.f(tabs, (tab, k0, i0) => {
+        d: common_vendor.f(tabs.value, (tab, k0, i0) => {
           return {
             a: common_vendor.t(tab.label),
             b: tab.value,

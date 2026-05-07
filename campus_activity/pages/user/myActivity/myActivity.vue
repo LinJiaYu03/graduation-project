@@ -32,7 +32,8 @@
 	import comActivityItem from './components/com-activity-item/com-activity-item.vue';
 	import comActivityItemManaged from './components/com-activity-item-managed/com-activity-item-managed.vue';
 	import {
-		ref
+		ref,
+		computed
 	} from 'vue'
 	import {
 		onShow
@@ -43,25 +44,28 @@
 
 	const searchValue = ref('')
 	const activeTab = ref('participated')
-	const userId = uni.getStorageSync('userInfo').id
+	const userInfo = uni.getStorageSync('userInfo')
+	const userId = userInfo.id
+	const isManager = userInfo.isBoss || userInfo.isManager // 判断是否为管理员
 	const activity_participated = ref([])
 	const activity_managed = ref([])
 
-	const tabs = [{
-			label: '参与',
-			value: 'participated'
-		},
-		{
-			label: '管理',
-			value: 'managed'
+	const tabs = computed(() => {
+		if (isManager) {
+			return [
+				{ label: '参与', value: 'participated' },
+				{ label: '管理', value: 'managed' }
+			]
 		}
-	]
+		return [{ label: '参与', value: 'participated' }]
+	})
 
 	function onSearch() {
 		getJoinOrManangeActivityList()
 	}
 
 	function OnChangeActiveTab(tab) {
+		if (!isManager && tab === 'managed') return // 非管理员不能切换到管理 tab
 		activeTab.value = tab
 		getJoinOrManangeActivityList()
 	}
