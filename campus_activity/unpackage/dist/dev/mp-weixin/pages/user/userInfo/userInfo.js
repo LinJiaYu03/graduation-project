@@ -65,8 +65,9 @@ const _sfc_main = {
       common_vendor.index.chooseImage({
         count: 1,
         success(e) {
+          var _a;
           userAvatar.value = e.tempFilePaths[0];
-          filesName.value = e.tempFiles[0].name;
+          filesName.value = ((_a = e.tempFiles[0]) == null ? void 0 : _a.name) || e.tempFilePaths[0].split("/").pop() || "avatar.jpg";
         }
       });
     }
@@ -184,20 +185,23 @@ const _sfc_main = {
         title: "保存中..."
       });
       try {
-        await new Promise((resolve, reject) => {
-          common_vendor.tr.uploadFile({
-            filePath: userAvatar.value,
-            cloudPath: `avatar/${(/* @__PURE__ */ new Date()).getTime()}_${filesName.value}`,
-            fileType: "image",
-            success: (e) => {
-              let filePath = utils_convertCloudPath.convertCloudPath(e.fileID);
-              userInfo.value.avatarUrl = filePath;
-              resolve();
-            },
-            fail: (err) => reject(err)
+        const isNewAvatar = userAvatar.value && (userAvatar.value.startsWith("http://tmp") || userAvatar.value.startsWith("wxfile://"));
+        if (isNewAvatar && filesName.value) {
+          await new Promise((resolve, reject) => {
+            common_vendor.tr.uploadFile({
+              filePath: userAvatar.value,
+              cloudPath: `avatar/${(/* @__PURE__ */ new Date()).getTime()}_${filesName.value}`,
+              fileType: "image",
+              success: (e) => {
+                let filePath = utils_convertCloudPath.convertCloudPath(e.fileID);
+                userInfo.value.avatarUrl = filePath;
+                resolve();
+              },
+              fail: (err) => reject(err)
+            });
           });
-        });
-        common_vendor.index.__f__("log", "at pages/user/userInfo/userInfo.vue:306", userInfo.value.avatarUrl);
+        }
+        common_vendor.index.__f__("log", "at pages/user/userInfo/userInfo.vue:312", userInfo.value.avatarUrl);
         let res = await api_user_index.apiImproveUserInfo(userInfo.value.id, userInfo.value);
         common_vendor.index.hideLoading();
         if (res.code === 200) {
@@ -224,7 +228,7 @@ const _sfc_main = {
           title: errorMsg,
           icon: "none"
         });
-        common_vendor.index.__f__("error", "at pages/user/userInfo/userInfo.vue:335", "保存失败", e);
+        common_vendor.index.__f__("error", "at pages/user/userInfo/userInfo.vue:341", "保存失败", e);
       }
     }
     return (_ctx, _cache) => {

@@ -139,7 +139,8 @@
 			count: 1,
 			success(e) {
 				userAvatar.value = e.tempFilePaths[0]
-				filesName.value = e.tempFiles[0].name
+				// 某些情况下可能没有 name 属性，使用时间戳或文件名
+				filesName.value = e.tempFiles[0]?.name || e.tempFilePaths[0].split('/').pop() || 'avatar.jpg'
 			}
 		})
 	}
@@ -288,6 +289,10 @@
 		})
 
 		try {
+			// 检查是否选择了新头像（本地临时路径 vs 远程URL）
+			const isNewAvatar = userAvatar.value && (userAvatar.value.startsWith('http://tmp') || userAvatar.value.startsWith('wxfile://'))
+
+			if (isNewAvatar && filesName.value) {
 				await new Promise((resolve, reject) => {
 					uniCloud.uploadFile({
 						filePath: userAvatar.value,
@@ -301,6 +306,7 @@
 						fail: (err) => reject(err)
 					})
 				})
+			}
 
 			// 保存用户信息
 			console.log(userInfo.value.avatarUrl);

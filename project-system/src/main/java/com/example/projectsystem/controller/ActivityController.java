@@ -1616,7 +1616,16 @@ public class ActivityController {
                 // 查询用户参与的活动（通过报名记录）
                 List<ActivityRegistration> registrations = activityRegistrationService.lambdaQuery()
                         .eq(ActivityRegistration::getUserId, userId)
+                        .orderByDesc(ActivityRegistration::getRegistrationTime)
                         .list();
+
+                // 建立 activityId -> registrationTime 的映射，用于排序
+                Map<Long, LocalDateTime> activityRegistrationTimeMap = registrations.stream()
+                        .collect(Collectors.toMap(
+                                ActivityRegistration::getActivityId,
+                                ActivityRegistration::getRegistrationTime,
+                                (existing, replacement) -> existing
+                        ));
 
                 List<Long> participatedActivityIds = registrations.stream()
                         .map(ActivityRegistration::getActivityId)
@@ -1628,7 +1637,7 @@ public class ActivityController {
                     // 构建查询条件，支持模糊搜索
                     LambdaQueryWrapper<Activity> participatedWrapper = new LambdaQueryWrapper<>();
                     participatedWrapper.in(Activity::getId, participatedActivityIds);
-                    
+
                     // 应用 keyword 过滤
                     if (StringUtils.hasText(keyword)) {
                         participatedWrapper.and(wrapper -> wrapper
@@ -1636,7 +1645,7 @@ public class ActivityController {
                             .or()
                             .like(Activity::getDescription, keyword));
                     }
-                    
+
                     participatedActivities = activityService.list(participatedWrapper);
                     // 刷新活动状态并统计报名人数
                     for (Activity activity : participatedActivities) {
@@ -1647,18 +1656,15 @@ public class ActivityController {
                                 .count();
                         activity.setCurrentParticipants((int) participantCount);
                     }
-                    
-                    // 按活动状态排序，优先显示进行中的活动
+
+                    // 按报名时间倒序排序
                     participatedActivities.sort((a1, a2) -> {
-                        // 先比较状态
-                        if ("进行中".equals(a1.getStatus()) && !"进行中".equals(a2.getStatus())) {
-                            return -1; // a1 排在前面
-                        }
-                        if (!"进行中".equals(a1.getStatus()) && "进行中".equals(a2.getStatus())) {
-                            return 1; // a2 排在前面
-                        }
-                        // 状态相同按创建时间倒序
-                        return a2.getCreateTime().compareTo(a1.getCreateTime());
+                        LocalDateTime t1 = activityRegistrationTimeMap.get(a1.getId());
+                        LocalDateTime t2 = activityRegistrationTimeMap.get(a2.getId());
+                        if (t1 == null && t2 == null) return 0;
+                        if (t1 == null) return 1;
+                        if (t2 == null) return -1;
+                        return t2.compareTo(t1);
                     });
                 }
 
