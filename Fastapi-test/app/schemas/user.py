@@ -1,27 +1,59 @@
-from pydantic import BaseModel,Field
-from datetime import datetime
+from pydantic import BaseModel
 from typing import Optional
 
-# 创建用户请求模型
-class UserCreate(BaseModel):
-    username:str=Field(..., description="用户名")
-    password:str=Field(..., description="密码")
-    age:Optional[int]=Field(None, description="年龄")
 
-# 用户响应模型
-class UserResponse(BaseModel):
-    id:int=Field(..., description="用户id")
-    username:str=Field(..., description="用户名")
-    password:str=Field(..., description="密码")
-    age:Optional[int]=Field(None, description="年龄")
-    create_time:datetime=Field(..., description="创建时间")
-    update_time:datetime=Field(..., description="更新时间")
+class RegisterRequest(BaseModel):
+    username: Optional[str] = None
+    password: Optional[str] = None
 
-    class Config:
-        from_attributes=True
 
-# 更新用户请求模型
-class UserUpdate(BaseModel):
-    username:str=Field(None, description="用户名")
-    password:str=Field(None, description="密码")
-    age:Optional[int]=Field(None, description="年龄")
+class LoginRequest(BaseModel):
+    username: Optional[str] = None
+    password: Optional[str] = None
+
+
+class WxLoginRequest(BaseModel):
+    code: Optional[str] = None
+
+
+class ProfileUpdateRequest(BaseModel):
+    realName: Optional[str] = None
+    studentNo: Optional[str] = None
+    gender: Optional[int] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    schoolName: Optional[str] = None
+    collegeName: Optional[str] = None
+    className: Optional[str] = None
+    avatarUrl: Optional[str] = None
+    isManager: Optional[bool] = None
+    isBoss: Optional[bool] = None
+    password: Optional[str] = None
+
+
+def serialize_user(u) -> dict | None:
+    """对齐 Jackson 序列化 User 实体的字段（camelCase）"""
+    if u is None:
+        return None
+    return {
+        "id": u.id,
+        "username": u.username,
+        "wxOpenid": u.wx_openid,
+        "password": u.password,
+        "isCompleted": u.is_completed,
+        "realName": u.real_name,
+        "studentNo": u.student_no,
+        "gender": u.gender,
+        "phone": u.phone,
+        "email": u.email,
+        "schoolName": u.school_name,
+        "collegeName": u.college_name,
+        "className": u.class_name,
+        "completeTime": u.complete_time,
+        "isManager": u.is_manager,
+        "isBoss": u.is_boss,
+        "avatarUrl": u.avatar_url,
+        "token": u.token,
+        "createTime": u.create_time,
+        "updateTime": u.update_time,
+    }
