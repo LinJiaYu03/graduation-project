@@ -1,8 +1,0 @@
-{
-  "navigationBarTitleText": "我的活动",
-  "usingComponents": {
-    "com-search": "../../../components/com-search/com-search",
-    "com-activity-item": "./components/com-activity-item/com-activity-item",
-    "com-activity-item-managed": "./components/com-activity-item-managed/com-activity-item-managed"
-  }
-}

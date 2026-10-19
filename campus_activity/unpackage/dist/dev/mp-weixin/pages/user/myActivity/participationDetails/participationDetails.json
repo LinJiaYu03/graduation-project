@@ -1,9 +1,0 @@
-{
-  "navigationBarTitleText": "参与详情",
-  "navigationBarBackgroundColor": "#fff",
-  "usingComponents": {
-    "uni-steps": "../../../../uni_modules/uni-steps/components/uni-steps/uni-steps",
-    "uni-list-item": "../../../../uni_modules/uni-list/components/uni-list-item/uni-list-item",
-    "uni-list": "../../../../uni_modules/uni-list/components/uni-list/uni-list"
-  }
-}

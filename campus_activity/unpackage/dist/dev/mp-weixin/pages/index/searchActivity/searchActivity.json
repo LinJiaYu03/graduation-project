@@ -1,8 +1,0 @@
-{
-  "navigationBarTitleText": "",
-  "navigationBarBackgroundColor": "#fff",
-  "usingComponents": {
-    "com-search": "../../../components/com-search/com-search",
-    "com-activity-item": "../../../components/com-activity-item/com-activity-item"
-  }
-}

@@ -1,9 +1,0 @@
-{
-  "navigationBarTitleText": "活动",
-  "usingComponents": {
-    "com-search": "../../components/com-search/com-search",
-    "com-activity-item": "../../components/com-activity-item/com-activity-item",
-    "com-filter-btn": "../../components/com-filter-btn/com-filter-btn",
-    "custom-tabbar": "../../components/custom-tabbar/custom-tabbar"
-  }
-}

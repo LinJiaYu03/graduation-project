@@ -1,1 +1,0 @@
-<view class="com-filter-list data-v-4c128c7b"><uni-list wx:if="{{b}}" class="data-v-4c128c7b" u-s="{{['d']}}" u-i="4c128c7b-0" bind:__l="__l" u-p="{{b}}"><uni-list-item wx:for="{{a}}" wx:for-item="item" wx:key="a" class="data-v-4c128c7b" bindclick="{{item.b}}" u-i="{{item.c}}" bind:__l="__l" u-p="{{item.d}}"></uni-list-item></uni-list></view>

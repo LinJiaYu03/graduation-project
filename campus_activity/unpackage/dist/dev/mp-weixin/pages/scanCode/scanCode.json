@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "扫码签到",
-  "usingComponents": {
-    "custom-tabbar": "../../components/custom-tabbar/custom-tabbar"
-  }
-}

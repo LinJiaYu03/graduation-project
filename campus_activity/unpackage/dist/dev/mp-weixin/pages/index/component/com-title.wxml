@@ -1,1 +1,0 @@
-<view class="com-title_container data-v-16502bb7"><view class="left data-v-16502bb7"><view class="box data-v-16502bb7"></view><slot name="left"></slot></view><view class="right data-v-16502bb7"><view class="data-v-16502bb7"><slot name="right"></slot></view></view></view>

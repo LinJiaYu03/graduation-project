@@ -1,1 +1,0 @@
-<view wx:if="{{a}}" class="lime-echart" style="{{i}}" ref="chartContainer" aria-label="{{'图表'}}"><block wx:if="{{r0}}"><canvas class="lime-echart__canvas" type="2d" style="{{b}}" id="{{c}}" disable-scroll="{{d}}" canvas-id="{{e}}" bindtouchstart="{{f}}" bindtouchmove="{{g}}" bindtouchend="{{h}}"></canvas></block></view>

@@ -1,7 +1,0 @@
-{
-  "component": true,
-  "usingComponents": {
-    "uni-popup": "../../uni_modules/uni-popup/components/uni-popup/uni-popup",
-    "com-filter-tag-list": "../com-filter-tag-list/com-filter-tag-list"
-  }
-}

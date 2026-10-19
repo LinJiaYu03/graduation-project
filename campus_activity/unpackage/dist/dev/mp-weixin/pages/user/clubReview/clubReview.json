@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "活动审核",
-  "navigationBarBackgroundColor": "#fff",
-  "usingComponents": {
-    "uni-icons": "../../../uni_modules/uni-icons/components/uni-icons/uni-icons"
-  }
-}

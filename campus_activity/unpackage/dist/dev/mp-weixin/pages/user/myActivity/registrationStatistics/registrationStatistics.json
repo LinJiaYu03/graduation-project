@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "报名统计",
-  "navigationBarBackgroundColor": "#fff",
-  "usingComponents": {
-    "l-echart": "../../../../uni_modules/lime-echart/components/l-echart/l-echart"
-  }
-}
