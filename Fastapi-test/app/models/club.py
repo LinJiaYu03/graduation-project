@@ -22,7 +22,6 @@ class ClubMember(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     club_id = Column(BigInteger, nullable=False)
     user_id = Column(BigInteger, nullable=False)
-    user_name = Column(String(50))
     is_manager = Column(Boolean, default=False)
     join_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     create_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))

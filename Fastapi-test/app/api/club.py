@@ -54,9 +54,9 @@ def join_club(request: JoinClubRequest, db: Session = Depends(get_db)):
             return error_response(message="社团不存在")
         if club.status is None or club.status != 1:
             return error_response(message="该社团已禁用")
-        member = club_services.join_club(db, request.clubId, request.userId)
+        member, user = club_services.join_club(db, request.clubId, request.userId)
         return success_response(
-            data={"clubMember": serialize_club_member(member)}, message="加入社团成功"
+            data={"clubMember": serialize_club_member(member, user)}, message="加入社团成功"
         )
     except ValueError as e:
         return error_response(message=str(e))

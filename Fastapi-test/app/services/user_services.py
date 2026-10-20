@@ -6,7 +6,6 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.models.user import User
-from app.models.club import ClubMember
 from app.schemas.user import (
     ProfileUpdateRequest,
     PermissionUpdateRequest,
@@ -96,7 +95,6 @@ def complete_profile(db: Session, user_id: int, request: ProfileUpdateRequest) -
     if user is None:
         raise ValueError("用户不存在")
 
-    old_real_name = user.real_name
     for attr, value in request.model_dump(exclude_none=True).items():
         if isinstance(value, str) and not value.strip():
             continue
@@ -104,12 +102,6 @@ def complete_profile(db: Session, user_id: int, request: ProfileUpdateRequest) -
 
     user.is_completed = True
     user.complete_time = datetime.now()
-
-    if _has_text(request.real_name) and old_real_name != user.real_name:
-        user_name = user.real_name if _has_text(user.real_name) else user.username
-        db.query(ClubMember).filter(ClubMember.user_id == user_id).update(
-            {ClubMember.user_name: user_name}
-        )
 
     db.commit()
     db.refresh(user)

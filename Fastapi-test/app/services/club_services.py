@@ -44,13 +44,9 @@ def create_club(db: Session, request: ClubRequest) -> Club:
     if request.userId is not None:
         creator = db.query(User).filter(User.id == request.userId).first()
         if creator is not None:
-            user_name = (
-                creator.real_name if _has_text(creator.real_name) else creator.username
-            )
             member = ClubMember(
                 club_id=club.id,
                 user_id=request.userId,
-                user_name=user_name,
                 is_manager=True,
                 join_time=datetime.now(),
             )
@@ -160,7 +156,7 @@ def get_club(db: Session, club_id: int):
     return club, counts.get(club.id, 0)
 
 
-def join_club(db: Session, club_id: int, user_id: int) -> ClubMember:
+def join_club(db: Session, club_id: int, user_id: int) -> tuple[ClubMember, User]:
     existing = (
         db.query(ClubMember)
         .filter(ClubMember.club_id == club_id, ClubMember.user_id == user_id)
@@ -173,18 +169,16 @@ def join_club(db: Session, club_id: int, user_id: int) -> ClubMember:
     if user is None:
         raise ValueError("用户不存在")
 
-    user_name = user.real_name if _has_text(user.real_name) else user.username
     member = ClubMember(
         club_id=club_id,
         user_id=user_id,
-        user_name=user_name,
         is_manager=False,
         join_time=datetime.now(),
     )
     db.add(member)
     db.commit()
     db.refresh(member)
-    return member
+    return member, user
 
 
 def set_manager(db: Session, club_id: int, user_id: int, is_manager: bool) -> None:
