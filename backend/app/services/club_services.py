@@ -3,10 +3,17 @@ from datetime import datetime
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
+from app.core.respones import error_response, page_result, success_response
 from app.models.club import Club, ClubMember
 from app.models.user import User
-from app.schemas.club import ClubRequest, ClubSearchRequest, JoinedClubSearchRequest
-from app.schemas.club import serialize_member_with_user
+from app.schemas.club import (
+    ClubRequest,
+    ClubSearchRequest,
+    JoinedClubSearchRequest,
+    serialize_club,
+    serialize_club_member,
+    serialize_member_with_user,
+)
 
 
 def _has_text(v) -> bool:
@@ -25,7 +32,7 @@ def _member_counts(db: Session, club_ids: list[int]) -> dict[int, int]:
     return {row[0]: row[1] for row in rows}
 
 
-def create_club(db: Session, request: ClubRequest) -> Club:
+def create_club(db: Session, request: ClubRequest) -> dict:
     if not _has_text(request.name):
         raise ValueError("社团名称不能为空")
 
@@ -53,10 +60,12 @@ def create_club(db: Session, request: ClubRequest) -> Club:
             db.add(member)
             db.commit()
 
-    return club
+    return success_response(
+        data={"club": serialize_club(club), "clubId": club.id}, message="创建社团成功"
+    )
 
 
-def search_clubs(db: Session, request: ClubSearchRequest):
+def search_clubs(db: Session, request: ClubSearchRequest) -> dict:
     current = request.currentPage if (request.currentPage and request.currentPage > 0) else 1
     size = request.pageSize if (request.pageSize and request.pageSize > 0) else 10
 
@@ -75,10 +84,17 @@ def search_clubs(db: Session, request: ClubSearchRequest):
     total = query.count()
     records = query.offset((current - 1) * size).limit(size).all()
     counts = _member_counts(db, [c.id for c in records])
-    return total, current, size, [(c, counts.get(c.id, 0)) for c in records]
+    return success_response(
+        data={
+            "page": page_result(
+                total, current, size, [serialize_club(c, counts.get(c.id, 0)) for c in records]
+            )
+        },
+        message="查询成功",
+    )
 
 
-def joined_clubs(db: Session, request: JoinedClubSearchRequest):
+def joined_clubs(db: Session, request: JoinedClubSearchRequest) -> dict:
     if request.userId is None:
         raise ValueError("用户ID不能为空")
 
@@ -91,7 +107,9 @@ def joined_clubs(db: Session, request: JoinedClubSearchRequest):
     members = member_query.all()
 
     if not members:
-        return 0, current, size, []
+        return success_response(
+            data={"page": page_result(0, current, size, [])}, message="查询成功"
+        )
 
     club_ids = list({m.club_id for m in members})
 
@@ -110,10 +128,17 @@ def joined_clubs(db: Session, request: JoinedClubSearchRequest):
     total = query.count()
     records = query.offset((current - 1) * size).limit(size).all()
     counts = _member_counts(db, [c.id for c in records])
-    return total, current, size, [(c, counts.get(c.id, 0)) for c in records]
+    return success_response(
+        data={
+            "page": page_result(
+                total, current, size, [serialize_club(c, counts.get(c.id, 0)) for c in records]
+            )
+        },
+        message="查询成功",
+    )
 
 
-def managed_clubs(db: Session, user_id) -> list[dict]:
+def managed_clubs(db: Session, user_id) -> dict:
     if user_id is None:
         raise ValueError("用户ID不能为空")
 
@@ -123,7 +148,7 @@ def managed_clubs(db: Session, user_id) -> list[dict]:
         .all()
     )
     if not manager_records:
-        return []
+        return success_response(data={"items": []}, message="查询成功")
 
     club_ids = list({m.club_id for m in manager_records})
     clubs = (
@@ -131,10 +156,13 @@ def managed_clubs(db: Session, user_id) -> list[dict]:
         .filter(Club.id.in_(club_ids), Club.status == 1)
         .all()
     )
-    return [{"text": c.name, "value": c.id} for c in clubs]
+    return success_response(
+        data={"items": [{"text": c.name, "value": c.id} for c in clubs]},
+        message="查询成功",
+    )
 
 
-def club_members(db: Session, club_id: int) -> list[dict]:
+def club_members(db: Session, club_id: int) -> dict:
     members = (
         db.query(ClubMember)
         .filter(ClubMember.club_id == club_id)
@@ -145,18 +173,31 @@ def club_members(db: Session, club_id: int) -> list[dict]:
     for m in members:
         user = db.query(User).filter(User.id == m.user_id).first()
         items.append(serialize_member_with_user(m, user))
-    return items
+    return success_response(data={"items": items}, message="查询成功")
 
 
-def get_club(db: Session, club_id: int):
+def get_club(db: Session, club_id: int) -> dict:
     club = db.query(Club).filter(Club.id == club_id).first()
     if club is None:
-        return None, None
+        return error_response(message="社团不存在")
     counts = _member_counts(db, [club.id])
-    return club, counts.get(club.id, 0)
+    return success_response(
+        data={"club": serialize_club(club, counts.get(club.id, 0))}, message="查询成功"
+    )
 
 
-def join_club(db: Session, club_id: int, user_id: int) -> tuple[ClubMember, User]:
+def join_club(db: Session, club_id: int, user_id: int) -> dict:
+    if club_id is None:
+        return error_response(message="社团ID不能为空")
+    if user_id is None:
+        return error_response(message="用户ID不能为空")
+
+    club = db.query(Club).filter(Club.id == club_id).first()
+    if club is None:
+        return error_response(message="社团不存在")
+    if club.status is None or club.status != 1:
+        return error_response(message="该社团已禁用")
+
     existing = (
         db.query(ClubMember)
         .filter(ClubMember.club_id == club_id, ClubMember.user_id == user_id)
@@ -178,10 +219,12 @@ def join_club(db: Session, club_id: int, user_id: int) -> tuple[ClubMember, User
     db.add(member)
     db.commit()
     db.refresh(member)
-    return member, user
+    return success_response(
+        data={"clubMember": serialize_club_member(member, user)}, message="加入社团成功"
+    )
 
 
-def set_manager(db: Session, club_id: int, user_id: int, is_manager: bool) -> None:
+def set_manager(db: Session, club_id: int, user_id: int, is_manager: bool) -> dict:
     member = (
         db.query(ClubMember)
         .filter(ClubMember.club_id == club_id, ClubMember.user_id == user_id)
@@ -209,8 +252,12 @@ def set_manager(db: Session, club_id: int, user_id: int, is_manager: bool) -> No
             user.is_manager = still_manager
         db.commit()
 
+    return success_response(
+        message="设置管理员成功" if is_manager else "取消管理员成功"
+    )
 
-def latest_clubs(db: Session, limit):
+
+def latest_clubs(db: Session, limit) -> dict:
     if limit is None or limit <= 0:
         limit = 4
     clubs = (
@@ -221,4 +268,7 @@ def latest_clubs(db: Session, limit):
         .all()
     )
     counts = _member_counts(db, [c.id for c in clubs])
-    return [(c, counts.get(c.id, 0)) for c in clubs]
+    return success_response(
+        data={"items": [serialize_club(c, counts.get(c.id, 0)) for c in clubs]},
+        message="查询成功",
+    )

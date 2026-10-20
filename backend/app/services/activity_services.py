@@ -12,6 +12,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from app.core.respones import page_result, success_response
 from app.models.activity import Activity, ActivityCheckin, ActivityRegistration
 from app.models.club import Club, ClubMember
 from app.models.user import User
@@ -169,7 +170,9 @@ def create_activity(db: Session, request: ActivityCreateRequest):
     db.add(activity)
     db.commit()
     db.refresh(activity)
-    return serialize_activity(activity)
+    return success_response(
+        data={"activity": serialize_activity(activity)}, message="创建活动成功"
+    )
 
 
 def update_activity(db: Session, request: ActivityUpdateRequest):
@@ -221,7 +224,10 @@ def update_activity(db: Session, request: ActivityUpdateRequest):
 
     db.commit()
     db.refresh(activity)
-    return serialize_activity(activity)
+    return success_response(
+        data={"activity": serialize_activity(activity)},
+        message="编辑活动成功，活动已重新进入审核状态",
+    )
 
 
 def pending_activities(db: Session, boss_user_id, current_page: int, page_size: int):
@@ -236,7 +242,17 @@ def pending_activities(db: Session, boss_user_id, current_page: int, page_size: 
     )
     total = query.count()
     records = query.offset((current_page - 1) * page_size).limit(page_size).all()
-    return total, current_page, page_size, [serialize_activity_dto(a) for a in records]
+    return success_response(
+        data={
+            "page": page_result(
+                total,
+                current_page,
+                page_size,
+                [serialize_activity_dto(a) for a in records],
+            )
+        },
+        message="查询成功",
+    )
 
 
 def review_activity(db: Session, request: ActivityReviewRequest):
@@ -267,6 +283,7 @@ def review_activity(db: Session, request: ActivityReviewRequest):
         refresh_activity_status_by_time(db, activity)
     else:
         db.commit()
+    return success_response(message="审核成功")
 
 
 # ---------------------------------------------------------------------------
@@ -335,6 +352,7 @@ def review_registration(db: Session, request: RegistrationReviewRequest):
     elif request.pass_ is not True and old_status == "已通过":
         activity.current_participants = _approved_count(db, request.activityId)
         db.commit()
+    return success_response(message="审核成功")
 
 
 # ---------------------------------------------------------------------------
@@ -372,7 +390,14 @@ def search_activities(db: Session, request: ActivitySearchRequest):
     records = query.offset((current - 1) * size).limit(size).all()
     for activity in records:
         refresh_activity_status_by_time(db, activity)
-    return total, current, size, [serialize_activity_dto(a) for a in records]
+    return success_response(
+        data={
+            "page": page_result(
+                total, current, size, [serialize_activity_dto(a) for a in records]
+            )
+        },
+        message="查询成功",
+    )
 
 
 def hot_activities(db: Session):
@@ -404,7 +429,10 @@ def hot_activities(db: Session):
         return -1 if c2 < c1 else 1
 
     hot.sort(key=cmp_to_key(_compare))
-    return [serialize_activity_dto(a) for a in hot[:6]]
+    return success_response(
+        data={"activities": [serialize_activity_dto(a) for a in hot[:6]]},
+        message="查询成功",
+    )
 
 
 def activities_by_club(db: Session, club_id, current_page: int, page_size: int):
@@ -422,7 +450,17 @@ def activities_by_club(db: Session, club_id, current_page: int, page_size: int):
     for activity in records:
         refresh_activity_status_by_time(db, activity)
         activity.current_participants = _approved_count(db, activity.id)
-    return total, current_page, page_size, [serialize_activity_dto(a) for a in records]
+    return success_response(
+        data={
+            "page": page_result(
+                total,
+                current_page,
+                page_size,
+                [serialize_activity_dto(a) for a in records],
+            )
+        },
+        message="查询成功",
+    )
 
 
 def get_activity_detail(db: Session, activity_id):
@@ -491,7 +529,7 @@ def get_activity_detail(db: Session, activity_id):
     data = {"activity": activity_map}
     if _has_text(activity.image_urls):
         data["imageUrls"] = _split_urls(activity.image_urls)
-    return data
+    return success_response(data=data, message="查询成功")
 
 
 # ---------------------------------------------------------------------------
@@ -547,7 +585,9 @@ def register_activity(db: Session, activity_id, request):
         activity.current_participants = _approved_count(db, activity_id)
         db.commit()
 
-    return serialize_registration(registration)
+    return success_response(
+        data={"registration": serialize_registration(registration)}, message="报名成功"
+    )
 
 
 def comment_activity(db: Session, request: ActivityCommentRequest):
@@ -629,6 +669,7 @@ def comment_activity(db: Session, request: ActivityCommentRequest):
     else:
         activity.score = "0"
     db.commit()
+    return success_response(message="评价成功")
 
 
 # ---------------------------------------------------------------------------
@@ -653,11 +694,13 @@ def registration_status(db: Session, activity_id, manager_user_id):
         .all()
     )
     if not registrations:
-        return []
+        return success_response(data={"items": []}, message="查询成功")
 
     user_ids = list({r.user_id for r in registrations})
     users = db.query(User).filter(User.id.in_(user_ids)).all()
-    return [serialize_user_dto(u) for u in users]
+    return success_response(
+        data={"items": [serialize_user_dto(u) for u in users]}, message="查询成功"
+    )
 
 
 def check_registration(db: Session, activity_id, user_id):
@@ -702,7 +745,7 @@ def check_registration(db: Session, activity_id, user_id):
             registration.status == "已通过" or status == "签到成功"
         )
 
-    return result
+    return success_response(data={"registration": result}, message="查询成功")
 
 
 def _activity_statistics_base(db: Session, activity_id, manager_user_id):
@@ -747,13 +790,14 @@ def activity_statistics(db: Session, activity_id, manager_user_id):
     if total > 0:
         success_rate = float(_round_half_up(approved / total * 100, 2))
 
-    return {
+    statistics = {
         "activityInfo": serialize_activity_dto(activity, image_list=False),
         "statusStats": status_stats,
         "successRate": success_rate,
         "maxParticipants": activity.max_participants,
         "currentParticipants": activity.current_participants,
     }
+    return success_response(data={"statistics": statistics}, message="查询成功")
 
 
 def checkin_statistics(db: Session, activity_id, manager_user_id):
@@ -771,13 +815,14 @@ def checkin_statistics(db: Session, activity_id, manager_user_id):
     if approved > 0:
         checkin_rate = float(_round_half_up(checked_in / approved * 100, 2))
 
-    return {
+    statistics = {
         "activityInfo": serialize_activity_dto(activity, image_list=False),
         "checkedIn": checked_in,
         "notCheckedIn": not_checked_in,
         "totalApproved": approved,
         "checkinRate": checkin_rate,
     }
+    return success_response(data={"statistics": statistics}, message="查询成功")
 
 
 def score_statistics(db: Session, activity_id, manager_user_id):
@@ -831,7 +876,7 @@ def score_statistics(db: Session, activity_id, manager_user_id):
     if total_approved > 0:
         score_rate = float(_round_half_up(scored_count / total_approved * 100, 2))
 
-    return {
+    statistics = {
         "activityInfo": serialize_activity_dto(activity, image_list=False),
         "scoreDistribution": {
             "0.5-1.0": score_05_10,
@@ -846,6 +891,7 @@ def score_statistics(db: Session, activity_id, manager_user_id):
         "totalApproved": total_approved,
         "scoreRate": score_rate,
     }
+    return success_response(data={"statistics": statistics}, message="查询成功")
 
 
 # ---------------------------------------------------------------------------
@@ -1097,10 +1143,12 @@ def user_activities(db: Session, user_id, type_, keyword):
         managed_dtos = [serialize_activity_dto(a) for a in managed_activities]
 
     if type_ == "participated":
-        return {"activities": participated_dtos}
-    if type_ == "managed":
-        return {"activities": managed_dtos}
-    return {"participated": participated_dtos, "managed": managed_dtos}
+        data = {"activities": participated_dtos}
+    elif type_ == "managed":
+        data = {"activities": managed_dtos}
+    else:
+        data = {"participated": participated_dtos, "managed": managed_dtos}
+    return success_response(data=data, message="查询成功")
 
 
 def generate_qrcode(db: Session, activity_id):
@@ -1125,13 +1173,14 @@ def generate_qrcode(db: Session, activity_id):
     image.save(buffer, format="PNG")
     qr_base64 = "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode()
 
-    return {
+    qrcode_data = {
         "qrCode": qr_base64,
         "activityId": activity_id,
         "activityName": activity.name,
         "expiresIn": 60000,
         "generateTime": int(datetime.now().timestamp() * 1000),
     }
+    return success_response(data={"qrcode": qrcode_data}, message="生成二维码成功")
 
 
 def checkin(db: Session, payload: dict):
@@ -1210,11 +1259,12 @@ def checkin(db: Session, payload: dict):
     db.commit()
     db.refresh(checkin_row)
 
-    return {
+    checkin_data = {
         "checkinId": checkin_row.id,
         "checkinTime": dt_to_millis(checkin_row.checkin_time),
         "activityName": activity.name,
     }
+    return success_response(data={"checkin": checkin_data}, message="签到成功")
 
 
 def update_publish_status(db: Session, activity_id, payload: dict):
@@ -1248,7 +1298,9 @@ def update_publish_status(db: Session, activity_id, payload: dict):
     db.refresh(activity)
 
     message = "活动上架成功" if is_published is True else "活动下架成功"
-    return message, serialize_activity(activity)
+    return success_response(
+        data={"activity": serialize_activity(activity)}, message=message
+    )
 
 
 def delete_activity(db: Session, activity_id, manager_user_id):
@@ -1265,3 +1317,4 @@ def delete_activity(db: Session, activity_id, manager_user_id):
 
     db.delete(activity)
     db.commit()
+    return success_response(message="删除成功")

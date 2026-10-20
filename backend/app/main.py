@@ -30,6 +30,22 @@ async def biz_handler(request: Request, exc: BizException):
     )
 
 
+@app.exception_handler(ValueError)
+async def value_error_handler(request: Request, exc: ValueError):
+    return JSONResponse(
+        status_code=200,
+        content=error_response(code=400, message=str(exc)),
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=200,
+        content=error_response(code=400, message="服务器内部错误: " + str(exc)),
+    )
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = []

@@ -5,11 +5,13 @@ import httpx
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from app.core.respones import error_response, page_result, success_response
 from app.models.user import User
 from app.schemas.user import (
     ProfileUpdateRequest,
     PermissionUpdateRequest,
     PasswordUpdateRequest,
+    serialize_user,
 )
 
 DEFAULT_AVATAR = "https://env-00jxuc2o76k9.normal.cloudstatic.cn/avatar/admin.jpg"
@@ -22,7 +24,7 @@ def _has_text(v) -> bool:
     return v is not None and str(v).strip() != ""
 
 
-def register(db: Session, username, password) -> User:
+def register(db: Session, username, password) -> dict:
     if not _has_text(username) or not _has_text(password):
         raise ValueError("账号和密码不能为空")
     exists = db.query(User).filter(User.username == username).first()
@@ -39,10 +41,10 @@ def register(db: Session, username, password) -> User:
     db.add(user)
     db.commit()
     db.refresh(user)
-    return user
+    return success_response(data={"userId": user.id}, message="注册成功")
 
 
-def login(db: Session, username, password) -> User:
+def login(db: Session, username, password) -> dict:
     if not _has_text(username) or not _has_text(password):
         raise ValueError("账号和密码不能为空")
     user = db.query(User).filter(User.username == username).first()
@@ -51,10 +53,12 @@ def login(db: Session, username, password) -> User:
     user.token = str(uuid.uuid4())
     db.commit()
     db.refresh(user)
-    return user
+    return success_response(
+        data={"token": user.token, "user": serialize_user(user)}, message="登录成功"
+    )
 
 
-def wx_login(db: Session, code) -> User:
+def wx_login(db: Session, code) -> dict:
     if not _has_text(code):
         raise ValueError("code不能为空")
     url = (
@@ -87,10 +91,12 @@ def wx_login(db: Session, code) -> User:
     user.token = str(uuid.uuid4())
     db.commit()
     db.refresh(user)
-    return user
+    return success_response(
+        data={"token": user.token, "user": serialize_user(user)}, message="登录成功"
+    )
 
 
-def complete_profile(db: Session, user_id: int, request: ProfileUpdateRequest) -> User:
+def complete_profile(db: Session, user_id: int, request: ProfileUpdateRequest) -> dict:
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise ValueError("用户不存在")
@@ -105,12 +111,14 @@ def complete_profile(db: Session, user_id: int, request: ProfileUpdateRequest) -
 
     db.commit()
     db.refresh(user)
-    return user
+    return success_response(
+        data={"user": serialize_user(user)}, message="信息完善成功"
+    )
 
 
 def update_permission(
     db: Session, user_id: int, request: PermissionUpdateRequest
-) -> User:
+) -> dict:
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise ValueError("用户不存在")
@@ -121,12 +129,12 @@ def update_permission(
         user.is_boss = request.is_boss
     db.commit()
     db.refresh(user)
-    return user
+    return success_response(data={"user": serialize_user(user)}, message="权限修改成功")
 
 
 def update_password(
     db: Session, user_id: int, request: PasswordUpdateRequest
-) -> User:
+) -> dict:
     if not _has_text(request.password):
         raise ValueError("密码不能为空")
     user = db.query(User).filter(User.id == user_id).first()
@@ -136,18 +144,25 @@ def update_password(
     user.password = request.password
     db.commit()
     db.refresh(user)
-    return user
+    return success_response(data={"user": serialize_user(user)}, message="密码修改成功")
 
 
-def get_users_page(db: Session, page: int, page_size: int):
+def get_users_page(db: Session, page: int, page_size: int) -> dict:
     total = db.query(User).count()
     records = (
         db.query(User).offset((page - 1) * page_size).limit(page_size).all()
     )
-    return total, records
+    return success_response(
+        data={
+            "page": page_result(
+                total, page, page_size, [serialize_user(u) for u in records]
+            )
+        },
+        message="查询成功",
+    )
 
 
-def search_users(db: Session, keyword, page: int, page_size: int):
+def search_users(db: Session, keyword, page: int, page_size: int) -> dict:
     query = db.query(User)
     if _has_text(keyword):
         query = query.filter(
@@ -159,21 +174,29 @@ def search_users(db: Session, keyword, page: int, page_size: int):
         )
     total = query.count()
     records = query.offset((page - 1) * page_size).limit(page_size).all()
-    return total, records
+    return success_response(
+        data={
+            "page": page_result(
+                total, page, page_size, [serialize_user(u) for u in records]
+            )
+        },
+        message="查询成功",
+    )
 
 
-def delete_user(db: Session, user_id: int) -> bool:
+def delete_user(db: Session, user_id: int) -> dict:
     query = db.query(User).filter(User.id == user_id)
     count = query.count()
     if count > 0:
         query.delete()
         db.commit()
-    return count > 0
+        return success_response(message="删除成功")
+    return error_response(message="用户不存在")
 
 
-def delete_users(db: Session, ids: list[int]) -> bool:
+def delete_users(db: Session, ids: list[int]) -> dict:
     if not ids:
-        return False
+        return error_response(message="请提供要删除的用户ID列表")
     db.query(User).filter(User.id.in_(ids)).delete(synchronize_session=False)
     db.commit()
-    return True
+    return success_response(message="批量删除成功")

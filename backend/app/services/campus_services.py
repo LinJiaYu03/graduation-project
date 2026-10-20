@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.core.respones import success_response
 from app.models.campus_info import CampusInfo
 from app.schemas.campus import CampusInfoRequest
 
@@ -8,7 +9,7 @@ def _has_text(v) -> bool:
     return v is not None and str(v).strip() != ""
 
 
-def build_campus_tree(db: Session) -> list[dict]:
+def build_campus_tree(db: Session) -> dict:
     infos = (
         db.query(CampusInfo)
         .filter(CampusInfo.status == 1)
@@ -36,10 +37,10 @@ def build_campus_tree(db: Session) -> list[dict]:
             if college_node is not None and _has_text(info.class_name):
                 college_node["classes"].append({"id": info.id, "name": info.class_name})
 
-    return list(school_map.values())
+    return success_response(data={"items": list(school_map.values())}, message="查询成功")
 
 
-def create_campus(db: Session, request: CampusInfoRequest) -> list[int]:
+def create_campus(db: Session, request: CampusInfoRequest) -> dict:
     """对齐 CampusInfoController.createCampusInfo：逐级创建学校/学院/班级"""
     if not _has_text(request.schoolName):
         raise ValueError("学校名称不能为空")
@@ -124,4 +125,6 @@ def create_campus(db: Session, request: CampusInfoRequest) -> list[int]:
             db.refresh(clazz)
             created_ids.append(clazz.id)
 
-    return created_ids
+    return success_response(
+        data={"createdIds": created_ids, "count": len(created_ids)}, message="创建成功"
+    )
