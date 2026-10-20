@@ -1,5 +1,18 @@
-from typing import Any
+from typing import Any, Generic, TypeVar
 import math
+
+from pydantic import BaseModel
+
+T = TypeVar("T")
+
+
+class ApiResponse(BaseModel, Generic[T]):
+    """统一响应结构"""
+
+    code: int = 200
+    message: str = "操作成功"
+    success: bool = True
+    data: T | None = None
 
 
 def success_response(data: Any | None = None, message: str = "响应成功") -> dict:

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body, Depends
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.core.respones import success_response, error_response, page_result
+from app.core.respones import success_response, error_response, page_result, ApiResponse
 from app.schemas.user import (
     RegisterRequest,
     LoginRequest,
@@ -10,6 +10,7 @@ from app.schemas.user import (
     ProfileUpdateRequest,
     PermissionUpdateRequest,
     PasswordUpdateRequest,
+    ProfileUpdateData,
     serialize_user,
 )
 from app.services import user_services
@@ -105,7 +106,9 @@ def delete_users(ids: list[int] = Body(...), db: Session = Depends(get_db)):
         return error_response(message="批量删除失败: " + str(e))
 
 
-@user_router.put("/api/users/{id}/profile")
+@user_router.put(
+    "/api/users/{id}/profile", response_model=ApiResponse[ProfileUpdateData]
+)
 def complete_profile(
     id: int, request: ProfileUpdateRequest, db: Session = Depends(get_db)
 ):

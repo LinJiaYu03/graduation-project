@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from typing import Optional
+from datetime import datetime
 
 
 class RegisterRequest(BaseModel):
@@ -42,6 +43,33 @@ class PasswordUpdateRequest(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     password: Optional[str] = None
+
+
+class UserResponse(BaseModel):
+    id: Optional[int] = None
+    username: Optional[str] = None
+    wxOpenid: Optional[str] = None
+    password: Optional[str] = None
+    isCompleted: Optional[bool] = None
+    realName: Optional[str] = None
+    studentNo: Optional[str] = None
+    gender: Optional[int] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    schoolName: Optional[str] = None
+    collegeName: Optional[str] = None
+    className: Optional[str] = None
+    completeTime: Optional[datetime] = None
+    isManager: Optional[bool] = None
+    isBoss: Optional[bool] = None
+    avatarUrl: Optional[str] = None
+    token: Optional[str] = None
+    createTime: Optional[datetime] = None
+    updateTime: Optional[datetime] = None
+
+
+class ProfileUpdateData(BaseModel):
+    user: Optional[UserResponse] = None
 
 
 def serialize_user(u) -> dict | None:
