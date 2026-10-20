@@ -2,7 +2,7 @@ import request from '@/utils/request.js'
 
 // 创建活动
 export const apiCreateActivity = (data) => request({
-	url: '/activities',
+	url: '/activities/create',
 	method: 'POST',
 	data
 })
@@ -127,7 +127,7 @@ export const apiDeleteActivity = (activityId, managerUserId) => request({
 
 // 获取基地址
 const getBaseUrl = () => {
-	return 'http://localhost:8080/api'
+	return 'http://localhost:8080/api/v1'
 }
 
 // 判断是否为小程序环境

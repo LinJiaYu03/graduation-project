@@ -15,14 +15,10 @@ from app.schemas.activity import (
 )
 from app.services import activity_services
 
-activity_router = APIRouter(tags=["activities"])
+activity_router = APIRouter()
 
 
-# ---------------------------------------------------------------------------
-# 静态路径（必须先于 /{id} 动态路径注册）
-# ---------------------------------------------------------------------------
-
-@activity_router.post("/api/activities")
+@activity_router.post("/create")
 def create_activity(request: ActivityCreateRequest, db: Session = Depends(get_db)):
     try:
         activity = activity_services.create_activity(db, request)
@@ -33,7 +29,7 @@ def create_activity(request: ActivityCreateRequest, db: Session = Depends(get_db
         return error_response(message="创建活动失败: " + str(e))
 
 
-@activity_router.put("/api/activities/update")
+@activity_router.put("/update")
 def update_activity(request: ActivityUpdateRequest, db: Session = Depends(get_db)):
     try:
         activity = activity_services.update_activity(db, request)
@@ -46,7 +42,7 @@ def update_activity(request: ActivityUpdateRequest, db: Session = Depends(get_db
         return error_response(message="编辑活动失败: " + str(e))
 
 
-@activity_router.get("/api/activities/pending")
+@activity_router.get("/pending")
 def pending_activities(
     bossUserId: int,
     currentPage: int = 1,
@@ -66,7 +62,7 @@ def pending_activities(
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.post("/api/activities/review")
+@activity_router.post("/review")
 def review_activity(request: ActivityReviewRequest, db: Session = Depends(get_db)):
     try:
         activity_services.review_activity(db, request)
@@ -77,7 +73,7 @@ def review_activity(request: ActivityReviewRequest, db: Session = Depends(get_db
         return error_response(message="审核失败: " + str(e))
 
 
-@activity_router.post("/api/activities/registrations/review")
+@activity_router.post("/registrations/review")
 def review_registration(request: RegistrationReviewRequest, db: Session = Depends(get_db)):
     try:
         activity_services.review_registration(db, request)
@@ -88,7 +84,7 @@ def review_registration(request: RegistrationReviewRequest, db: Session = Depend
         return error_response(message="审核失败: " + str(e))
 
 
-@activity_router.post("/api/activities/search")
+@activity_router.post("/search")
 def search_activities(request: ActivitySearchRequest, db: Session = Depends(get_db)):
     try:
         total, current, size, records = activity_services.search_activities(db, request)
@@ -99,7 +95,7 @@ def search_activities(request: ActivitySearchRequest, db: Session = Depends(get_
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.get("/api/activities/hot")
+@activity_router.get("/hot")
 def hot_activities(db: Session = Depends(get_db)):
     try:
         activities = activity_services.hot_activities(db)
@@ -108,7 +104,7 @@ def hot_activities(db: Session = Depends(get_db)):
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.get("/api/activities/club/{clubId}")
+@activity_router.get("/club/{clubId}")
 def activities_by_club(
     clubId: int,
     currentPage: int = 1,
@@ -128,7 +124,7 @@ def activities_by_club(
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.post("/api/activities/comment")
+@activity_router.post("/comment")
 def comment_activity(request: ActivityCommentRequest, db: Session = Depends(get_db)):
     try:
         activity_services.comment_activity(db, request)
@@ -139,7 +135,7 @@ def comment_activity(request: ActivityCommentRequest, db: Session = Depends(get_
         return error_response(message="评价失败: " + str(e))
 
 
-@activity_router.post("/api/activities/checkin")
+@activity_router.post("/checkin")
 def checkin(payload: dict = Body(...), db: Session = Depends(get_db)):
     try:
         result = activity_services.checkin(db, payload)
@@ -150,7 +146,7 @@ def checkin(payload: dict = Body(...), db: Session = Depends(get_db)):
         return error_response(message="签到失败: " + str(e))
 
 
-@activity_router.get("/api/activities/user/{userId}")
+@activity_router.get("/user/{userId}")
 def user_activities(
     userId: int,
     type: str = "all",
@@ -170,7 +166,7 @@ def user_activities(
 # 动态路径
 # ---------------------------------------------------------------------------
 
-@activity_router.get("/api/activities/{id}")
+@activity_router.get("/{id}")
 def get_activity_detail(
     id: int, managerUserId: int | None = None, db: Session = Depends(get_db)
 ):
@@ -183,7 +179,7 @@ def get_activity_detail(
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.get("/api/activities/{activityId}/registrations/pending")
+@activity_router.get("/{activityId}/registrations/pending")
 def pending_registrations(
     activityId: int, managerUserId: int, db: Session = Depends(get_db)
 ):
@@ -196,7 +192,7 @@ def pending_registrations(
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.get("/api/activities/{activityId}/registrations/status")
+@activity_router.get("/{activityId}/registrations/status")
 def registration_status(
     activityId: int, managerUserId: int, db: Session = Depends(get_db)
 ):
@@ -209,7 +205,7 @@ def registration_status(
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.get("/api/activities/{activityId}/registrations/check")
+@activity_router.get("/{activityId}/registrations/check")
 def check_registration(activityId: int, userId: int, db: Session = Depends(get_db)):
     try:
         result = activity_services.check_registration(db, activityId, userId)
@@ -220,7 +216,7 @@ def check_registration(activityId: int, userId: int, db: Session = Depends(get_d
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.get("/api/activities/{activityId}/statistics")
+@activity_router.get("/{activityId}/statistics")
 def activity_statistics(
     activityId: int, managerUserId: int, db: Session = Depends(get_db)
 ):
@@ -233,7 +229,7 @@ def activity_statistics(
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.get("/api/activities/{activityId}/checkin-statistics")
+@activity_router.get("/{activityId}/checkin-statistics")
 def checkin_statistics(
     activityId: int, managerUserId: int, db: Session = Depends(get_db)
 ):
@@ -246,7 +242,7 @@ def checkin_statistics(
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.get("/api/activities/{activityId}/score-statistics")
+@activity_router.get("/{activityId}/score-statistics")
 def score_statistics(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
     try:
         statistics = activity_services.score_statistics(db, activityId, managerUserId)
@@ -257,7 +253,7 @@ def score_statistics(activityId: int, managerUserId: int, db: Session = Depends(
         return error_response(message="查询失败: " + str(e))
 
 
-@activity_router.get("/api/activities/{activityId}/qrcode")
+@activity_router.get("/{activityId}/qrcode")
 def generate_qrcode(activityId: int, db: Session = Depends(get_db)):
     try:
         qrcode_data = activity_services.generate_qrcode(db, activityId)
@@ -268,7 +264,7 @@ def generate_qrcode(activityId: int, db: Session = Depends(get_db)):
         return error_response(message="生成二维码失败: " + str(e))
 
 
-@activity_router.post("/api/activities/{activityId}/register")
+@activity_router.post("/{activityId}/register")
 def register_activity(
     activityId: int, request: ActivityRegisterRequest, db: Session = Depends(get_db)
 ):
@@ -281,7 +277,7 @@ def register_activity(
         return error_response(message="报名失败: " + str(e))
 
 
-@activity_router.put("/api/activities/{activityId}/publish-status")
+@activity_router.put("/{activityId}/publish-status")
 def update_publish_status(
     activityId: int, payload: dict = Body(...), db: Session = Depends(get_db)
 ):
@@ -296,7 +292,7 @@ def update_publish_status(
         return error_response(message="操作失败: " + str(e))
 
 
-@activity_router.delete("/api/activities/{activityId}")
+@activity_router.delete("/{activityId}")
 def delete_activity(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
     try:
         activity_services.delete_activity(db, activityId, managerUserId)
@@ -333,7 +329,7 @@ def _export_error(e: Exception) -> Response:
     )
 
 
-@activity_router.get("/api/activities/{activityId}/export/registration")
+@activity_router.get("/{activityId}/export/registration")
 def export_registration(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
     try:
         content, filename = activity_services.export_registration(
@@ -344,7 +340,7 @@ def export_registration(activityId: int, managerUserId: int, db: Session = Depen
     return _excel_response(content, filename)
 
 
-@activity_router.get("/api/activities/{activityId}/export/checkin")
+@activity_router.get("/{activityId}/export/checkin")
 def export_checkin(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
     try:
         content, filename = activity_services.export_checkin(db, activityId, managerUserId)
@@ -353,7 +349,7 @@ def export_checkin(activityId: int, managerUserId: int, db: Session = Depends(ge
     return _excel_response(content, filename)
 
 
-@activity_router.get("/api/activities/{activityId}/export/score")
+@activity_router.get("/{activityId}/export/score")
 def export_score(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
     try:
         content, filename = activity_services.export_score(db, activityId, managerUserId)

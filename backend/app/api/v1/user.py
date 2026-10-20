@@ -15,10 +15,10 @@ from app.schemas.user import (
 )
 from app.services import user_services
 
-user_router = APIRouter(tags=["users"])
+user_router = APIRouter()
 
 
-@user_router.post("/api/users/register")
+@user_router.post("/register")
 def register(request: RegisterRequest, db: Session = Depends(get_db)):
     try:
         user = user_services.register(db, request.username, request.password)
@@ -27,7 +27,7 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
         return error_response(message=str(e))
 
 
-@user_router.post("/api/users/wx-login")
+@user_router.post("/wx-login")
 def wx_login(request: WxLoginRequest, db: Session = Depends(get_db)):
     try:
         user = user_services.wx_login(db, request.code)
@@ -38,7 +38,7 @@ def wx_login(request: WxLoginRequest, db: Session = Depends(get_db)):
         return error_response(message=str(e))
 
 
-@user_router.post("/api/users/login")
+@user_router.post("/login")
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     try:
         user = user_services.login(db, request.username, request.password)
@@ -49,7 +49,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         return error_response(message=str(e))
 
 
-@user_router.get("/api/users")
+@user_router.get("/")
 def get_user_list(
     currentPage: int = 1, pageSize: int = 10, db: Session = Depends(get_db)
 ):
@@ -64,7 +64,7 @@ def get_user_list(
     )
 
 
-@user_router.get("/api/users/search")
+@user_router.get("/search")
 def search_users(
     keyword: str | None = None,
     currentPage: int = 1,
@@ -82,7 +82,7 @@ def search_users(
     )
 
 
-@user_router.delete("/api/users/{id}")
+@user_router.delete("/{id}")
 def delete_user(id: int, db: Session = Depends(get_db)):
     try:
         result = user_services.delete_user(db, id)
@@ -93,7 +93,7 @@ def delete_user(id: int, db: Session = Depends(get_db)):
         return error_response(message="删除失败: " + str(e))
 
 
-@user_router.delete("/api/users")
+@user_router.delete("/")
 def delete_users(ids: list[int] = Body(...), db: Session = Depends(get_db)):
     try:
         if not ids:
@@ -107,7 +107,8 @@ def delete_users(ids: list[int] = Body(...), db: Session = Depends(get_db)):
 
 
 @user_router.put(
-    "/api/users/{id}/profile", response_model=ApiResponse[ProfileUpdateData]
+    "{id}/profile", response_model=ApiResponse[ProfileUpdateData],
+    summary="完善用户信息",
 )
 def complete_profile(
     id: int, request: ProfileUpdateRequest, db: Session = Depends(get_db)
@@ -121,7 +122,7 @@ def complete_profile(
         return error_response(message=str(e))
 
 
-@user_router.put("/api/users/{id}/permission")
+@user_router.put("{id}/permission")
 def update_permission(
     id: int, request: PermissionUpdateRequest, db: Session = Depends(get_db)
 ):
@@ -134,7 +135,7 @@ def update_permission(
         return error_response(message=str(e))
 
 
-@user_router.put("/api/users/{id}/password")
+@user_router.put("{id}/password")
 def update_password(
     id: int, request: PasswordUpdateRequest, db: Session = Depends(get_db)
 ):

@@ -3,10 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.user import user_router
-from app.api.campus import campus_router
-from app.api.club import club_router
-from app.api.activity import activity_router
+from app.api import api_router
 from app.core.middleware import HttpMiddleware
 from app.core.respones import error_response
 from app.core.exceptions import BizException
@@ -21,10 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(user_router)
-app.include_router(campus_router)
-app.include_router(club_router)
-app.include_router(activity_router)
+
+app.include_router(api_router, prefix="/api")
 
 
 @app.exception_handler(BizException)

@@ -13,10 +13,10 @@ from app.schemas.club import (
 )
 from app.services import club_services
 
-club_router = APIRouter(tags=["clubs"])
+club_router = APIRouter()
 
 
-@club_router.post("/api/clubs")
+@club_router.post("/create")
 def create_club(request: ClubRequest, db: Session = Depends(get_db)):
     try:
         club = club_services.create_club(db, request)
@@ -29,7 +29,7 @@ def create_club(request: ClubRequest, db: Session = Depends(get_db)):
         return error_response(message="创建社团失败: " + str(e))
 
 
-@club_router.post("/api/clubs/search")
+@club_router.post("/search")
 def search_clubs(request: ClubSearchRequest, db: Session = Depends(get_db)):
     total, current, size, records = club_services.search_clubs(db, request)
     return success_response(
@@ -42,7 +42,7 @@ def search_clubs(request: ClubSearchRequest, db: Session = Depends(get_db)):
     )
 
 
-@club_router.post("/api/clubs/join")
+@club_router.post("/join")
 def join_club(request: JoinClubRequest, db: Session = Depends(get_db)):
     if request.clubId is None:
         return error_response(message="社团ID不能为空")
@@ -64,7 +64,7 @@ def join_club(request: JoinClubRequest, db: Session = Depends(get_db)):
         return error_response(message="加入社团失败: " + str(e))
 
 
-@club_router.post("/api/clubs/joined")
+@club_router.post("/joined")
 def get_joined_clubs(request: JoinedClubSearchRequest, db: Session = Depends(get_db)):
     try:
         total, current, size, records = club_services.joined_clubs(db, request)
@@ -82,7 +82,7 @@ def get_joined_clubs(request: JoinedClubSearchRequest, db: Session = Depends(get
         return error_response(message="查询失败: " + str(e))
 
 
-@club_router.get("/api/clubs/managed")
+@club_router.get("/managed")
 def get_managed_clubs(userId: int, db: Session = Depends(get_db)):
     try:
         items = club_services.managed_clubs(db, userId)
@@ -93,7 +93,7 @@ def get_managed_clubs(userId: int, db: Session = Depends(get_db)):
         return error_response(message="查询失败: " + str(e))
 
 
-@club_router.get("/api/clubs/latest")
+@club_router.get("/latest")
 def get_latest_clubs(limit: int = 4, db: Session = Depends(get_db)):
     records = club_services.latest_clubs(db, limit)
     return success_response(
@@ -101,13 +101,13 @@ def get_latest_clubs(limit: int = 4, db: Session = Depends(get_db)):
     )
 
 
-@club_router.get("/api/clubs/{clubId}/members")
+@club_router.get("/{clubId}/members")
 def get_club_members(clubId: int, db: Session = Depends(get_db)):
     items = club_services.club_members(db, clubId)
     return success_response(data={"items": items}, message="查询成功")
 
 
-@club_router.post("/api/clubs/{clubId}/members/{userId}/manager")
+@club_router.post("/{clubId}/members/{userId}/manager")
 def set_club_member_manager(
     clubId: int, userId: int, isManager: bool = True, db: Session = Depends(get_db)
 ):
@@ -122,7 +122,7 @@ def set_club_member_manager(
         return error_response(message="操作失败: " + str(e))
 
 
-@club_router.get("/api/clubs/{id}")
+@club_router.get("/{id}")
 def get_club_by_id(id: int, db: Session = Depends(get_db)):
     try:
         club, member_count = club_services.get_club(db, id)

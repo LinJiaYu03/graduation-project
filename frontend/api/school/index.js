@@ -6,7 +6,7 @@ export const apiGetSchoolInfoTree = () => requset({
 
 // 创建学校/学院/班级
 export const apiCreateCampus = (data) => requset({
-	url: '/campus',
+	url: '/campus/create',
 	method: 'POST',
 	data
 })
