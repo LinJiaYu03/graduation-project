@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "FastAPI (app.main:app :8080)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--host", "127.0.0.1", "--port", "8080", "--reload", "--reload-dir", "app"],
+      "cwd": "${workspaceFolder}/Fastapi-test",
+      "python": "${workspaceFolder}/Fastapi-test/.venv/Scripts/python.exe",
+      "console": "integratedTerminal"
+    }
+  ]
+}

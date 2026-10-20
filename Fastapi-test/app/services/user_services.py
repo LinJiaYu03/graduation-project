@@ -1,11 +1,17 @@
 import uuid
+from datetime import datetime
+
 import httpx
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.models.club import ClubMember
-from app.schemas.user import ProfileUpdateRequest
+from app.schemas.user import (
+    ProfileUpdateRequest,
+    PermissionUpdateRequest,
+    PasswordUpdateRequest,
+)
 
 DEFAULT_AVATAR = "https://env-00jxuc2o76k9.normal.cloudstatic.cn/avatar/admin.jpg"
 WX_APPID = "wx2caaaf47aead807a"
@@ -90,49 +96,54 @@ def complete_profile(db: Session, user_id: int, request: ProfileUpdateRequest) -
     if user is None:
         raise ValueError("用户不存在")
 
-    real_name_changed = False
-    if _has_text(request.realName):
-        old_real_name = user.real_name
-        user.real_name = request.realName
-        if old_real_name != request.realName:
-            real_name_changed = True
-    if _has_text(request.studentNo):
-        user.student_no = request.studentNo
-    if request.gender is not None:
-        user.gender = request.gender
-    if _has_text(request.phone):
-        user.phone = request.phone
-    if _has_text(request.email):
-        user.email = request.email
-    if _has_text(request.schoolName):
-        user.school_name = request.schoolName
-    if _has_text(request.collegeName):
-        user.college_name = request.collegeName
-    if _has_text(request.className):
-        user.class_name = request.className
-    if _has_text(request.avatarUrl):
-        user.avatar_url = request.avatarUrl
-    if request.isManager is not None:
-        user.is_manager = request.isManager
-    if request.isBoss is not None:
-        user.is_boss = request.isBoss
-    if _has_text(request.password):
-        user.password = request.password
+    old_real_name = user.real_name
+    for attr, value in request.model_dump(exclude_none=True).items():
+        if isinstance(value, str) and not value.strip():
+            continue
+        setattr(user, attr, value)
 
     user.is_completed = True
-    from datetime import datetime
-
     user.complete_time = datetime.now()
-    db.commit()
-    db.refresh(user)
 
-    if real_name_changed:
+    if _has_text(request.real_name) and old_real_name != user.real_name:
         user_name = user.real_name if _has_text(user.real_name) else user.username
         db.query(ClubMember).filter(ClubMember.user_id == user_id).update(
             {ClubMember.user_name: user_name}
         )
-        db.commit()
 
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def update_permission(
+    db: Session, user_id: int, request: PermissionUpdateRequest
+) -> User:
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise ValueError("用户不存在")
+
+    if request.is_manager is not None:
+        user.is_manager = request.is_manager
+    if request.is_boss is not None:
+        user.is_boss = request.is_boss
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def update_password(
+    db: Session, user_id: int, request: PasswordUpdateRequest
+) -> User:
+    if not _has_text(request.password):
+        raise ValueError("密码不能为空")
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise ValueError("用户不存在")
+
+    user.password = request.password
+    db.commit()
+    db.refresh(user)
     return user
 
 

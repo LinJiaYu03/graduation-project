@@ -8,6 +8,8 @@ from app.schemas.user import (
     LoginRequest,
     WxLoginRequest,
     ProfileUpdateRequest,
+    PermissionUpdateRequest,
+    PasswordUpdateRequest,
     serialize_user,
 )
 from app.services import user_services
@@ -110,6 +112,32 @@ def complete_profile(
     try:
         user = user_services.complete_profile(db, id, request)
         return success_response(data={"user": serialize_user(user)}, message="信息完善成功")
+    except ValueError as e:
+        return error_response(message=str(e))
+    except Exception as e:
+        return error_response(message=str(e))
+
+
+@user_router.put("/api/users/{id}/permission")
+def update_permission(
+    id: int, request: PermissionUpdateRequest, db: Session = Depends(get_db)
+):
+    try:
+        user = user_services.update_permission(db, id, request)
+        return success_response(data={"user": serialize_user(user)}, message="权限修改成功")
+    except ValueError as e:
+        return error_response(message=str(e))
+    except Exception as e:
+        return error_response(message=str(e))
+
+
+@user_router.put("/api/users/{id}/password")
+def update_password(
+    id: int, request: PasswordUpdateRequest, db: Session = Depends(get_db)
+):
+    try:
+        user = user_services.update_password(db, id, request)
+        return success_response(data={"user": serialize_user(user)}, message="密码修改成功")
     except ValueError as e:
         return error_response(message=str(e))
     except Exception as e:

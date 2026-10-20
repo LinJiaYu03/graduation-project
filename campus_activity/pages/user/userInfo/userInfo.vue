@@ -53,7 +53,6 @@
 		</uni-list>
 
 		<uni-list class="info-card contact-card">
-			<uni-list-item title="密码" clickable :right-text="userInfo.password ? '******' : ''" class="info-item" @click="editField('password', '密码', '', true)" />
 			<uni-list-item title="手机号" clickable :right-text="userInfo.phone" class="info-item" @click="editField('phone', '手机号', userInfo.phone)" />
 			<uni-list-item title="邮箱" clickable :right-text="userInfo.email" class="info-item" @click="editField('email', '邮箱', userInfo.email)" />
 		</uni-list>
@@ -184,10 +183,6 @@
 					}
 					
 					userInfo.value[field] = newValue
-					uni.showToast({
-						title: '修改成功',
-						icon: 'success'
-					})
 				}
 			}
 		})
@@ -199,10 +194,6 @@
 			itemList: ['男', '女'],
 			success: (res) => {
 				userInfo.value.gender = res.tapIndex === 0 ? 1 : 0
-				uni.showToast({
-					title: '修改成功',
-					icon: 'success'
-				})
 			}
 		})
 	}
@@ -234,10 +225,6 @@
 				userInfo.value.className = ''
 			}
 		}
-		uni.showToast({
-			title: '修改成功',
-			icon: 'success'
-		})
 	}
 
 	// picker 列变化（联动处理）

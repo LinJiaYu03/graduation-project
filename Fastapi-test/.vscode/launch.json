@@ -8,6 +8,7 @@
       "module": "uvicorn",
       "args": ["app.main:app", "--host", "127.0.0.1", "--port", "8080", "--reload", "--reload-dir", "app"],
       "cwd": "${workspaceFolder}",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "console": "integratedTerminal"
     }
   ]

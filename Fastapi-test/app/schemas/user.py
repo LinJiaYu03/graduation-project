@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 from typing import Optional
 
 
@@ -17,22 +18,33 @@ class WxLoginRequest(BaseModel):
 
 
 class ProfileUpdateRequest(BaseModel):
-    realName: Optional[str] = None
-    studentNo: Optional[str] = None
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    real_name: Optional[str] = None
+    student_no: Optional[str] = None
     gender: Optional[int] = None
     phone: Optional[str] = None
     email: Optional[str] = None
-    schoolName: Optional[str] = None
-    collegeName: Optional[str] = None
-    className: Optional[str] = None
-    avatarUrl: Optional[str] = None
-    isManager: Optional[bool] = None
-    isBoss: Optional[bool] = None
+    school_name: Optional[str] = None
+    college_name: Optional[str] = None
+    class_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class PermissionUpdateRequest(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    is_manager: Optional[bool] = None
+    is_boss: Optional[bool] = None
+
+
+class PasswordUpdateRequest(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
     password: Optional[str] = None
 
 
 def serialize_user(u) -> dict | None:
-    """对齐 Jackson 序列化 User 实体的字段（camelCase）"""
     if u is None:
         return None
     return {
