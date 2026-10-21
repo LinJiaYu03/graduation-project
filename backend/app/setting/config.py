@@ -4,15 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from app.core.middleware import HttpMiddleware
 
 from app.api import api_router
-from app.core.exceptions import BizException
-from fastapi.exceptions import RequestValidationError
-
-from app.core.exceptions import (
-    biz_handler,
-    value_error_handler, 
-    unhandled_exception_handler, 
-    validation_exception_handler
-)
+from app.core.exceptions import handle_exception
 
 # 注册中间件
 def register_middleware():
@@ -34,7 +26,5 @@ def register_router(app: FastAPI):
 
 # 注册异常处理函数
 def register_exception_handler(app: FastAPI):
-    app.add_exception_handler(BizException, biz_handler)
-    app.add_exception_handler(ValueError, value_error_handler)
-    app.add_exception_handler(Exception, unhandled_exception_handler)
-    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    handle_exception(app)
+  
