@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.setting.config import (
+from app import (
     register_middleware, 
     register_router, 
     register_exception_handler
