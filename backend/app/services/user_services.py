@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 
-import httpx
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -15,8 +14,6 @@ from app.schemas.user import (
 )
 
 DEFAULT_AVATAR = "https://env-00jxuc2o76k9.normal.cloudstatic.cn/avatar/admin.jpg"
-WX_APPID = "wx2caaaf47aead807a"
-WX_SECRET = "1e6dcbf6a9ccfc823a5447aa262adcc2"
 
 
 def _has_text(v) -> bool:
@@ -50,44 +47,6 @@ def login(db: Session, username, password) -> dict:
     user = db.query(User).filter(User.username == username).first()
     if user is None or user.password != password:
         raise ValueError("账号或密码错误")
-    user.token = str(uuid.uuid4())
-    db.commit()
-    db.refresh(user)
-    return success_response(
-        data={"token": user.token, "user": serialize_user(user)}, message="登录成功"
-    )
-
-
-def wx_login(db: Session, code) -> dict:
-    if not _has_text(code):
-        raise ValueError("code不能为空")
-    url = (
-        "https://api.weixin.qq.com/sns/jscode2session"
-        f"?appid={WX_APPID}&secret={WX_SECRET}&js_code={code}&grant_type=authorization_code"
-    )
-    resp = httpx.get(url, timeout=10)
-    data = resp.json()
-    if data.get("errcode") and data.get("errcode") != 0:
-        raise ValueError("微信登录失败: " + str(data.get("errmsg", "未知错误")))
-    openid = data.get("openid")
-    if not _has_text(openid):
-        raise ValueError("无法获取OpenID")
-
-    user = db.query(User).filter(User.wx_openid == openid).first()
-    if user is None:
-        user = User(
-            wx_openid=openid,
-            username="wx_" + str(uuid.uuid4())[:8],
-            password=str(uuid.uuid4()),
-            is_completed=False,
-            is_manager=False,
-            is_boss=False,
-            avatar_url=DEFAULT_AVATAR,
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-
     user.token = str(uuid.uuid4())
     db.commit()
     db.refresh(user)

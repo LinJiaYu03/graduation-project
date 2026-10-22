@@ -23,13 +23,6 @@
 			<view class="link-section">
 				<text class="link-text" @click="goToRegister">还没有账号？立即注册</text>
 			</view>
-			
-			<!-- 微信登录按钮 -->
-			<view class="wx-login-section">
-				<button class="wx-login-btn" @click="handleWxLogin">
-					<text>微信一键登录</text>
-				</button>
-			</view>
 		</view>
 	</view>
 </template>
@@ -40,8 +33,7 @@
 		reactive
 	} from 'vue'
 	import {
-		apiUserLogin,
-		apiUserWxLogin
+		apiUserLogin
 	} from '@/api/user/index.js'
 
 	const form = ref(null)
@@ -89,30 +81,7 @@
 		}
 
 	}
-	
-	const handleWxLogin = () => {
-		uni.login({
-			provider: 'weixin',
-			success: async (loginRes) => {
-				if (loginRes.code) {
-					try {
-						let res = await apiUserWxLogin({
-							code: loginRes.code
-						})
-						if (res.code === 200) {
-							handleLoginSuccess(res.data.user)
-						}
-					} catch (e) {
-						uni.showToast({
-							title: '微信登录失败',
-							icon: 'none'
-						})
-					}
-				}
-			}
-		})
-	}
-	
+
 	const handleLoginSuccess = (user) => {
 		const token = user.token
 		
@@ -231,34 +200,6 @@
 		.link-text {
 			font-size: 26rpx;
 			color: #1890ff;
-		}
-	}
-	
-	.wx-login-section {
-		margin-top: 60rpx;
-		display: flex;
-		justify-content: center;
-		
-		.wx-login-btn {
-			background-color: #07c160;
-			color: #fff;
-			font-size: 30rpx;
-			border-radius: 44rpx;
-			padding: 0 60rpx;
-			height: 80rpx;
-			line-height: 80rpx;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			border: none;
-			
-			&::after {
-				border: none;
-			}
-			
-			&:active {
-				opacity: 0.9;
-			}
 		}
 	}
 </style>

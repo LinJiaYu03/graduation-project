@@ -6,7 +6,6 @@ from app.core.respones import ApiResponse
 from app.schemas.user import (
     RegisterRequest,
     LoginRequest,
-    WxLoginRequest,
     ProfileUpdateRequest,
     PermissionUpdateRequest,
     PasswordUpdateRequest,
@@ -20,11 +19,6 @@ user_router = APIRouter()
 @user_router.post("/register")
 def register(request: RegisterRequest, db: Session = Depends(get_db)):
     return user_services.register(db, request.username, request.password)
-
-
-@user_router.post("/wx-login")
-def wx_login(request: WxLoginRequest, db: Session = Depends(get_db)):
-    return user_services.wx_login(db, request.code)
 
 
 @user_router.post("/login")

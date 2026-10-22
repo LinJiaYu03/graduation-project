@@ -14,10 +14,6 @@ class LoginRequest(BaseModel):
     password: Optional[str] = None
 
 
-class WxLoginRequest(BaseModel):
-    code: Optional[str] = None
-
-
 class ProfileUpdateRequest(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
