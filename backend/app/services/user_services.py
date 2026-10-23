@@ -12,6 +12,7 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.core.token_blacklist import consume_refresh_jti
 from app.models.user import User
 from app.schemas.user import (
     ProfileUpdateRequest,
@@ -96,6 +97,7 @@ def refresh(db: Session, refresh_token) -> dict:
     if user is None or (payload.get("ver") or 0) != (user.token_version or 0):
         raise BizException(401, "登录状态已失效，请重新登录")
 
+    consume_refresh_jti(payload)
     return _token_response(user, message="刷新成功")
 
 

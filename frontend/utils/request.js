@@ -62,6 +62,14 @@ function refreshAccessToken() {
 	return refreshTask
 }
 
+// 响应式对象（reactive/ref）无法被小程序克隆，需转成普通对象
+function normalizeData(data) {
+	if (data && typeof data === 'object') {
+		return JSON.parse(JSON.stringify(data))
+	}
+	return data
+}
+
 function send(config, isRetry) {
 	let {
 		url,
@@ -75,7 +83,7 @@ function send(config, isRetry) {
 			url: BASE_URL + url,
 			header: buildHeader(header),
 			method,
-			data,
+			data: normalizeData(data),
 			success(res) {
 				if (res.statusCode === 200) {
 					const {
