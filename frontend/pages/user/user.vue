@@ -130,6 +130,7 @@ import {
 } from 'vue';
 import customTabbar from '@/components/custom-tabbar/custom-tabbar.vue';
 import useUserPermission from '@/hooks/useUserPermission.js'
+import { apiUserLogout } from '@/api/user/index.js'
 
 const token = uni.getStorageSync('token')
 const userInfo = uni.getStorageSync('userInfo')
@@ -141,7 +142,8 @@ function onOutLogin() {
 	logoutPopup.value?.open()
 }
 
-function confirmLogout() {
+async function confirmLogout() {
+	await apiUserLogout()
 	uni.clearStorageSync()
 	uni.reLaunch({
 		url: '/pages/index/index'

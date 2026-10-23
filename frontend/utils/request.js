@@ -93,7 +93,7 @@ function send(config, isRetry) {
 
 					if (code === 200) {
 						resolve(res.data)
-					} else if (code === 400 || code === 403) {
+					} else if (code === 400 || code === 403 || code === 429) {
 						uni.showModal({
 							title: '错误提示',
 							content: message,

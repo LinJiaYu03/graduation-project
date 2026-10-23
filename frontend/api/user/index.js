@@ -14,6 +14,12 @@ export const apiUserRegistration=(data)=>request({
 	method:'POST'
 })
 
+// 退出登录
+export const apiUserLogout=()=>request({
+	url:'/users/logout',
+	method:'POST'
+})
+
 // 完善个人信息
 export const apiImproveUserInfo=(id,data)=>request({
 	url:`/users/${id}/profile`,

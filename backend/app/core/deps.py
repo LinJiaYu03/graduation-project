@@ -9,6 +9,16 @@ from app.models.user import User
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
+def get_token_payload(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> dict:
+    if credentials is None:
+        raise BizException(401, "请先登录")
+    try:
+        return decode_token(credentials.credentials, expected_type="access")
+    except (ValueError, KeyError, TypeError):
+        raise BizException(401, "登录状态无效，请重新登录")
+
 
 def get_current_user(
     # 从请求头中获取Bearer token

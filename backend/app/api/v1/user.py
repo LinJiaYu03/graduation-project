@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body, Depends
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, require_boss
+from app.core.deps import get_current_user, get_token_payload, require_boss
 from app.db.database import get_db
 from app.core.respones import ApiResponse
 from app.models.user import User
@@ -25,14 +25,27 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
     return user_services.register(db, request.username, request.password)
 
 
-@user_router.post("/login", response_model=ApiResponse[TokenData], summary="用户登录")
+@user_router.post(
+    "/login",
+    response_model=ApiResponse[TokenData],
+    summary="用户登录",
+)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     return user_services.login(db, request.username, request.password)
 
 
-@user_router.post("/refresh", response_model=ApiResponse[TokenData], summary="刷新令牌")
+@user_router.post(
+    "/refresh",
+    response_model=ApiResponse[TokenData],
+    summary="刷新令牌",
+)
 def refresh(request: RefreshTokenRequest, db: Session = Depends(get_db)):
     return user_services.refresh(db, request.refresh_token)
+
+
+@user_router.post("/logout", summary="退出登录")
+def logout(payload: dict = Depends(get_token_payload)):
+    return user_services.logout(payload)
 
 
 @user_router.get("/", dependencies=[Depends(get_current_user)], summary="分页查询用户")

@@ -4,15 +4,19 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import BizException
+from app.core.login_guard import (
+    clear_login_failures,
+    ensure_not_locked,
+    record_login_failure,
+)
 from app.core.respones import error_response, page_result, success_response
 from app.core.security import (
-    create_access_token,
-    create_refresh_token,
+    create_token_pair,
     decode_token,
     hash_password,
     verify_password,
 )
-from app.core.token_blacklist import consume_refresh_jti
+from app.core.token_blacklist import blacklist_refresh, consume_refresh_jti
 from app.models.user import User
 from app.schemas.user import (
     ProfileUpdateRequest,
@@ -35,8 +39,7 @@ def _ensure_self_or_boss(current_user: User, user_id: int) -> None:
 
 
 def _token_response(user: User, message: str = "登录成功") -> dict:
-    access_token, expires_in = create_access_token(user)
-    refresh_token = create_refresh_token(user)
+    access_token, refresh_token, expires_in = create_token_pair(user)
     user_data = serialize_user(user)
     # 兼容旧前端：仍从 user.token 读取令牌
     user_data["token"] = access_token
@@ -76,10 +79,13 @@ def register(db: Session, username, password) -> dict:
 def login(db: Session, username, password) -> dict:
     if not _has_text(username) or not _has_text(password):
         raise ValueError("账号和密码不能为空")
+    ensure_not_locked(username)
     user = db.query(User).filter(User.username == username).first()
     if user is None or not verify_password(password, user.password):
+        record_login_failure(username)
         raise ValueError("账号或密码错误")
 
+    clear_login_failures(username)
     return _token_response(user, message="登录成功")
 
 
@@ -99,6 +105,14 @@ def refresh(db: Session, refresh_token) -> dict:
 
     consume_refresh_jti(payload)
     return _token_response(user, message="刷新成功")
+
+
+def logout(payload: dict) -> dict:
+    """退出登录：凭 access 令牌中的 sid 吊销当前会话的 refresh 令牌"""
+    sid = payload.get("sid")
+    if sid:
+        blacklist_refresh({"jti": sid, "exp": payload.get("sexp", 0)})
+    return success_response(message="退出登录成功")
 
 
 def complete_profile(

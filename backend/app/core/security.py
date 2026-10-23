@@ -22,29 +22,46 @@ def verify_password(password: str, stored: str | None) -> bool:
         return False
 
 
-def _create_token(user, token_type: str, expires_delta: timedelta) -> str:
+def _create_token(
+    user,
+    token_type: str,
+    expires_delta: timedelta,
+    token_id: str | None = None,
+    extra: dict | None = None,
+) -> str:
     now = datetime.now(timezone.utc)
     payload = {
-        "sub": str(user.id), # 用户ID
-        "type": token_type, # token类型
-        "ver": user.token_version or 0, # token版本
-        "jti": uuid.uuid4().hex, # token uuid
-        "iat": now, # 发布时间
-        "exp": now + expires_delta, # 过期时间
+        "sub": str(user.id),  # 用户ID
+        "type": token_type,  # token类型
+        "ver": user.token_version or 0,  # token版本
+        "jti": token_id or uuid.uuid4().hex,  # token uuid
+        "iat": now,  # 发布时间
+        "exp": now + expires_delta,  # 过期时间
     }
+    if extra:
+        payload.update(extra)
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
-def create_access_token(user) -> tuple[str, int]:
-    """返回 (access_token, 过期秒数)"""
+
+def create_token_pair(user) -> tuple[str, str, int]:
+    """返回 (access_token, refresh_token, expires_in)，同一会话共用 sid"""
+    now = datetime.now(timezone.utc)
+    refresh_delta = timedelta(days=settings.refresh_token_expire_days)
+    sid = uuid.uuid4().hex
+    # refresh 的 jti 即会话标识 sid，登出时可凭 access 里的 sid 吊销
+    refresh_token = _create_token(user, "refresh", refresh_delta, token_id=sid)
+
     expires_in = settings.access_token_expire_minutes * 60
-    token = _create_token(user, "access", timedelta(seconds=expires_in))
-    return token, expires_in
-
-
-def create_refresh_token(user) -> str:
-    return _create_token(
-        user, "refresh", timedelta(days=settings.refresh_token_expire_days)
+    access_token = _create_token(
+        user,
+        "access",
+        timedelta(seconds=expires_in),
+        extra={
+            "sid": sid,
+            "sexp": int((now + refresh_delta).timestamp()),
+        },
     )
+    return access_token, refresh_token, expires_in
 
 
 # 校验token
