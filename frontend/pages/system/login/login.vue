@@ -77,13 +77,14 @@
 		let res = await apiUserLogin(formData)
 
 		if (res.code === 200) {
-			handleLoginSuccess(res.data.user)
+			handleLoginSuccess(res.data.user, res.data.refreshToken)
 		}
 
 	}
 
-	const handleLoginSuccess = (user) => {
+	const handleLoginSuccess = (user, refreshToken) => {
 		const token = user.token
+		uni.setStorageSync('refreshToken', refreshToken)
 		
 		if (user.isCompleted) {
 			uni.setStorageSync('token', token)

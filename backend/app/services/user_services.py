@@ -1,10 +1,17 @@
-import uuid
 from datetime import datetime
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import BizException
 from app.core.respones import error_response, page_result, success_response
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    hash_password,
+    verify_password,
+)
 from app.models.user import User
 from app.schemas.user import (
     ProfileUpdateRequest,
@@ -21,6 +28,30 @@ def _has_text(v) -> bool:
     return v is not None and str(v).strip() != ""
 
 
+def _ensure_self_or_boss(current_user: User, user_id: int) -> None:
+    if current_user.id != user_id and not current_user.is_boss:
+        raise BizException(403, "无权限操作")
+
+
+def _token_response(user: User, message: str = "登录成功") -> dict:
+    access_token, expires_in = create_access_token(user)
+    refresh_token = create_refresh_token(user)
+    user_data = serialize_user(user)
+    # 兼容旧前端：仍从 user.token 读取令牌
+    user_data["token"] = access_token
+    return success_response(
+        data={
+            "token": access_token,
+            "accessToken": access_token,
+            "refreshToken": refresh_token,
+            "tokenType": "Bearer",
+            "expiresIn": expires_in,
+            "user": user_data,
+        },
+        message=message,
+    )
+
+
 def register(db: Session, username, password) -> dict:
     if not _has_text(username) or not _has_text(password):
         raise ValueError("账号和密码不能为空")
@@ -29,7 +60,7 @@ def register(db: Session, username, password) -> dict:
         raise ValueError("账号已存在")
     user = User(
         username=username,
-        password=password,
+        password=hash_password(password),
         is_completed=False,
         is_manager=False,
         is_boss=False,
@@ -45,17 +76,35 @@ def login(db: Session, username, password) -> dict:
     if not _has_text(username) or not _has_text(password):
         raise ValueError("账号和密码不能为空")
     user = db.query(User).filter(User.username == username).first()
-    if user is None or user.password != password:
+    if user is None or not verify_password(password, user.password):
         raise ValueError("账号或密码错误")
-    user.token = str(uuid.uuid4())
-    db.commit()
-    db.refresh(user)
-    return success_response(
-        data={"token": user.token, "user": serialize_user(user)}, message="登录成功"
-    )
+
+    return _token_response(user, message="登录成功")
 
 
-def complete_profile(db: Session, user_id: int, request: ProfileUpdateRequest) -> dict:
+def refresh(db: Session, refresh_token) -> dict:
+    if not _has_text(refresh_token):
+        raise BizException(401, "refreshToken 不能为空")
+
+    try:
+        payload = decode_token(refresh_token, expected_type="refresh")
+        user_id = int(payload["sub"])
+    except (ValueError, KeyError, TypeError):
+        raise BizException(401, "刷新凭证无效，请重新登录")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None or (payload.get("ver") or 0) != (user.token_version or 0):
+        raise BizException(401, "登录状态已失效，请重新登录")
+
+    return _token_response(user, message="刷新成功")
+
+
+def complete_profile(
+    db: Session, user_id: int, request: ProfileUpdateRequest, current_user: User
+) -> dict:
+    # 权限 本人和超级管理员才能修改用户信息
+    _ensure_self_or_boss(current_user, user_id)
+
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise ValueError("用户不存在")
@@ -92,15 +141,18 @@ def update_permission(
 
 
 def update_password(
-    db: Session, user_id: int, request: PasswordUpdateRequest
+    db: Session, user_id: int, request: PasswordUpdateRequest, current_user: User
 ) -> dict:
+    _ensure_self_or_boss(current_user, user_id)
     if not _has_text(request.password):
         raise ValueError("密码不能为空")
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise ValueError("用户不存在")
 
-    user.password = request.password
+    user.password = hash_password(request.password)
+    # 改密后使已签发的令牌全部失效
+    user.token_version = (user.token_version or 0) + 1
     db.commit()
     db.refresh(user)
     return success_response(data={"user": serialize_user(user)}, message="密码修改成功")

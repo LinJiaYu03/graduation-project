@@ -283,9 +283,7 @@
 			let res = await apiImproveUserInfo(userId.value, formData)
 
 			if (res.code === 200) {
-				console.log(res.data);
 				uni.setStorageSync('userInfo', res.data.user)
-				uni.setStorageSync('token', res.data.user.token)
 				uni.showToast({
 					title: '保存成功',
 					icon: 'success'

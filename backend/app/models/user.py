@@ -15,7 +15,7 @@ class User(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     username = Column(String(50), nullable=False)
-    password = Column(String(100), nullable=False)
+    password = Column(String(255), nullable=False)
     is_completed = Column(Boolean, default=False)
     real_name = Column(String(50))
     student_no = Column(String(30))
@@ -29,6 +29,7 @@ class User(Base):
     is_manager = Column(Boolean, default=False)
     avatar_url = Column(String(255))
     token = Column(String(255))
+    token_version = Column(Integer, nullable=False, server_default=text("0"))
     create_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     update_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     is_boss = Column(Boolean, default=False)
