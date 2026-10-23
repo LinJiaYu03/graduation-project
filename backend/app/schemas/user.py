@@ -38,6 +38,7 @@ class PermissionUpdateRequest(BaseModel):
 class PasswordUpdateRequest(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
+    old_password: Optional[str] = None
     password: Optional[str] = None
 
 

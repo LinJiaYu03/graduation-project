@@ -166,6 +166,13 @@ def update_password(
     if user is None:
         raise ValueError("用户不存在")
 
+    # 本人修改需校验旧密码；超级管理员代为重置时可直接修改
+    if current_user.id == user_id:
+        if not _has_text(request.old_password):
+            raise ValueError("旧密码不能为空")
+        if not verify_password(request.old_password, user.password):
+            raise ValueError("旧密码错误")
+
     user.password = hash_password(request.password)
     # 改密后使已签发的令牌全部失效
     user.token_version = (user.token_version or 0) + 1
