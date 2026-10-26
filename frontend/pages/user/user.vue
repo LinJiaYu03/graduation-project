@@ -143,7 +143,9 @@ function onOutLogin() {
 }
 
 async function confirmLogout() {
-	await apiUserLogout()
+	await apiUserLogout({
+		refreshToken: uni.getStorageSync('refreshToken')
+	})
 	uni.clearStorageSync()
 	uni.reLaunch({
 		url: '/pages/index/index'

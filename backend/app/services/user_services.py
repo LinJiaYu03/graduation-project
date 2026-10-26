@@ -107,11 +107,18 @@ def refresh(db: Session, refresh_token) -> dict:
     return _token_response(user, message="刷新成功")
 
 
-def logout(payload: dict) -> dict:
-    """退出登录：凭 access 令牌中的 sid 吊销当前会话的 refresh 令牌"""
-    sid = payload.get("sid")
-    if sid:
-        blacklist_refresh({"jti": sid, "exp": payload.get("sexp", 0)})
+def logout(refresh_token) -> dict:
+    """退出登录：吊销前端传入的 refresh 令牌"""
+    if not _has_text(refresh_token):
+        raise BizException(401, "refreshToken 不能为空")
+
+    try:
+        payload = decode_token(refresh_token, expected_type="refresh")
+    except (ValueError, KeyError, TypeError):
+        # 令牌已过期或非法时无需吊销，按已退出处理，保证登出幂等
+        return success_response(message="退出登录成功")
+
+    blacklist_refresh(payload)
     return success_response(message="退出登录成功")
 
 

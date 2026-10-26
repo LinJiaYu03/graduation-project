@@ -15,8 +15,9 @@ export const apiUserRegistration=(data)=>request({
 })
 
 // 退出登录
-export const apiUserLogout=()=>request({
+export const apiUserLogout=(data)=>request({
 	url:'/users/logout',
+	data,
 	method:'POST'
 })
 

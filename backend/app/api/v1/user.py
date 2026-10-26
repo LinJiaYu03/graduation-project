@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body, Depends
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, get_token_payload, require_boss
+from app.core.deps import get_current_user, require_boss
 from app.db.database import get_db
 from app.core.respones import ApiResponse
 from app.models.user import User
@@ -44,8 +44,8 @@ def refresh(request: RefreshTokenRequest, db: Session = Depends(get_db)):
 
 
 @user_router.post("/logout", summary="退出登录")
-def logout(payload: dict = Depends(get_token_payload)):
-    return user_services.logout(payload)
+def logout(request: RefreshTokenRequest):
+    return user_services.logout(request.refresh_token)
 
 
 @user_router.get("/", dependencies=[Depends(get_current_user)], summary="分页查询用户")
