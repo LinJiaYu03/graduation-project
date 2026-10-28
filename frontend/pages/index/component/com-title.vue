@@ -18,8 +18,8 @@
 
 <style lang="scss" scoped>
 	.com-title_container {
-		margin-bottom: 25rpx;
-		font-size: 40rpx;
+		margin-bottom: 24rpx;
+		font-size: 32rpx;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -27,18 +27,21 @@
 		.left {
 			display: flex;
 			align-items: center;
-			font-weight: 500;
-			
+			font-weight: 600;
+			color: $text-primary;
+
 			.box{
-				margin-right: 10rpx;
-				width: 10rpx;
-				height: 40rpx;
-				background-color: $uni-topic-color;
+				margin-right: 12rpx;
+				width: 6rpx;
+				height: 24rpx;
+				border-radius: 3rpx;
+				background-color: $brand-primary;
 			}
 		}
 		
 		.right{
-			font-size: 35rpx;
+			font-size: 24rpx;
+			color: $text-secondary;
 		}
 	}
 </style>

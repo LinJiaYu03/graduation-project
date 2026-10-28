@@ -11,7 +11,7 @@
 				<!-- 学校标题 -->
 				<view class="school-header" @click="toggleSchool(schoolIndex)">
 					<view class="school-info">
-						<uni-icons :type="school.expanded ? 'arrowdown' : 'arrowright'" size="20" color="#666"></uni-icons>
+						<uni-icons :type="school.expanded ? 'arrowdown' : 'arrowright'" size="20" color="#A39B90"></uni-icons>
 						<text class="school-name">{{ school.name }}</text>
 						<text class="school-count">({{ getSchoolCount(school) }})</text>
 					</view>
@@ -23,7 +23,7 @@
 						<!-- 学院标题 -->
 						<view class="college-header" @click="toggleCollege(schoolIndex, collegeIndex)">
 							<view class="college-info">
-								<uni-icons :type="college.expanded ? 'arrowdown' : 'arrowright'" size="18" color="#888"></uni-icons>
+								<uni-icons :type="college.expanded ? 'arrowdown' : 'arrowright'" size="18" color="#A39B90"></uni-icons>
 								<text class="college-name">{{ college.name }}</text>
 								<text class="college-count">({{ college.classes ? college.classes.length : 0 }})</text>
 							</view>
@@ -125,12 +125,9 @@
 </script>
 
 <style lang="scss" scoped>
-	$primary-color: #FCB857;
-	$bg-color: #F8F9FA;
-	$text-primary: #333333;
-	$text-secondary: #666666;
-	$text-light: #999999;
-	$border-color: #F0F0F0;
+	$primary-color: $brand-primary;
+	$bg-color: $bg-page;
+	$border-color: $border-base;
 	$white: #FFFFFF;
 
 	.page {
@@ -139,14 +136,16 @@
 	}
 
 	.page-header {
-		background: linear-gradient(135deg, #FCB857 0%, #FF9800 100%);
-		padding: 60rpx 30rpx 40rpx;
-		margin: 0 -24rpx 30rpx -24rpx;
+		background: linear-gradient(135deg, $brand-primary-soft 0%, $brand-primary-fade 100%);
+		border: 1rpx solid $border-color;
+		border-radius: $radius-md;
+		padding: 40rpx 32rpx;
+		margin: 0 0 24rpx;
 
 		.page-title {
-			font-size: 44rpx;
+			font-size: 36rpx;
 			font-weight: 600;
-			color: $white;
+			color: $text-primary;
 			letter-spacing: 1rpx;
 		}
 	}
@@ -159,26 +158,22 @@
 	}
 
 	.school-list {
-		margin-top: 10rpx;
-		padding: 40rpx 32rpx;
-		background-color: #FFFFFF;
-		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
-		border: 1rpx solid $border-color;
+		margin-top: 0;
 	}
 
 	.school-item {
 		background: $white;
-		border-radius: 20rpx;
+		border-radius: $radius-md;
 		margin-bottom: 24rpx;
 		overflow: hidden;
-		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+		box-shadow: $shadow-card;
 		border: 1rpx solid $border-color;
 	}
 
 	.school-header {
-		padding: 32rpx;
+		padding: 28rpx 32rpx;
 		border-bottom: 1rpx solid $border-color;
-		background: linear-gradient(135deg, rgba(252, 184, 87, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%);
+		background: $brand-primary-soft;
 
 		.school-info {
 			display: flex;
@@ -186,13 +181,13 @@
 			gap: 16rpx;
 
 			.school-name {
-				font-size: 36rpx;
+				font-size: 32rpx;
 				font-weight: 600;
 				color: $text-primary;
 			}
 
 			.school-count {
-				font-size: 28rpx;
+				font-size: 26rpx;
 				color: $text-secondary;
 			}
 		}
@@ -212,7 +207,7 @@
 
 	.college-header {
 		padding: 24rpx 32rpx;
-		background: rgba(248, 249, 250, 0.5);
+		background: $bg-subtle;
 
 		.college-info {
 			display: flex;
@@ -220,13 +215,13 @@
 			gap: 12rpx;
 
 			.college-name {
-				font-size: 32rpx;
+				font-size: 30rpx;
 				font-weight: 500;
 				color: $text-primary;
 			}
 
 			.college-count {
-				font-size: 26rpx;
+				font-size: 24rpx;
 				color: $text-secondary;
 			}
 		}
@@ -238,14 +233,14 @@
 
 	.class-item {
 		padding: 20rpx 0;
-		border-bottom: 1rpx solid rgba(240, 240, 240, 0.5);
+		border-bottom: 1rpx solid $border-light;
 
 		&:last-child {
 			border-bottom: none;
 		}
 
 		.class-name {
-			font-size: 30rpx;
+			font-size: 28rpx;
 			color: $text-secondary;
 		}
 	}
@@ -257,8 +252,8 @@
 		text-align: center;
 
 		.empty-text {
-			font-size: 28rpx;
-			color: $text-light;
+			font-size: 26rpx;
+			color: $text-tertiary;
 		}
 	}
 </style>

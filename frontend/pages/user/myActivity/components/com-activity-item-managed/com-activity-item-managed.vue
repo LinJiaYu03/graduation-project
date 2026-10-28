@@ -59,7 +59,7 @@
 			<view class="qrcode-header">
 				<view class="qrcode-title">活动签到二维码</view>
 				<view class="qrcode-close" @click="closeQrcode">
-					<uni-icons type="closeempty" size="24" color="#666"></uni-icons>
+					<uni-icons type="closeempty" size="24" color="#A39B90"></uni-icons>
 				</view>
 			</view>
 			<view class="qrcode-content">
@@ -75,7 +75,7 @@
 					</view>
 				</view>
 				<view v-else class="qrcode-error">
-					<uni-icons type="info" size="40" color="#ff3b30"></uni-icons>
+					<uni-icons type="info" size="40" color="#E56B62"></uni-icons>
 					<text>加载失败，请重试</text>
 				</view>
 			</view>
@@ -376,46 +376,31 @@
 <style lang="scss" scoped>
 	.com-activity-item {
 		position: relative;
-		margin-bottom: 32rpx;
-		padding: 32rpx;
-		background: #ffffff;
-		border-radius: 24rpx;
-		box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
-		border: 1px solid transparent;
-		transition: all 0.3s ease;
+		margin-bottom: 24rpx;
+		padding: 24rpx;
+		background: $bg-card;
+		border-radius: $radius-md;
+		box-shadow: $shadow-card;
+		border: 1rpx solid $border-base;
 
 		.activity_info {
 			display: flex;
 			align-items: flex-start;
-			margin-bottom: 40rpx;
+			margin-bottom: 24rpx;
 			gap: 24rpx;
 
 			.activity_info_left {
 				flex-shrink: 0;
 				width: 240rpx;
 				height: 180rpx;
-				border-radius: 16rpx;
+				border-radius: $radius-sm;
 				overflow: hidden;
 				position: relative;
-
-				&::after {
-					content: '';
-					position: absolute;
-					top: 0;
-					left: 0;
-					right: 0;
-					bottom: 0;
-					background: linear-gradient(180deg,
-							rgba(0, 0, 0, 0) 70%,
-							rgba(0, 0, 0, 0.1) 100%);
-					pointer-events: none;
-				}
 
 				image {
 					width: 100%;
 					height: 100%;
 					object-fit: cover;
-					transition: transform 0.5s ease;
 				}
 			}
 
@@ -424,11 +409,11 @@
 				min-width: 0;
 
 				.title {
-					font-size: 32rpx;
+					font-size: 30rpx;
 					font-weight: 600;
-					color: #1a1a1a;
+					color: $text-primary;
 					line-height: 1.4;
-					margin-bottom: 16rpx;
+					margin-bottom: 12rpx;
 					display: -webkit-box;
 					-webkit-line-clamp: 2;
 					-webkit-box-orient: vertical;
@@ -439,17 +424,17 @@
 				.type {
 					display: inline-block;
 					padding: 6rpx 16rpx;
-					background: rgba($uni-topic-color, 0.1);
-					color: $uni-topic-color;
+					background: $brand-primary-soft;
+					color: $brand-primary-ink;
 					font-size: 22rpx;
-					border-radius: 8rpx;
-					margin-bottom: 20rpx;
+					border-radius: $radius-pill;
+					margin-bottom: 12rpx;
 					font-weight: 500;
 				}
 
 				.timer {
-					font-size: 10px;
-					color: #666;
+					font-size: 24rpx;
+					color: $text-secondary;
 					display: flex;
 					align-items: center;
 				}
@@ -458,22 +443,20 @@
 					display: inline-flex;
 					align-items: center;
 					padding: 4rpx 16rpx;
-					border-radius: 20rpx;
+					border-radius: $radius-pill;
 					font-size: 22rpx;
 					font-weight: 500;
-					margin-bottom: 20rpx;
+					margin-bottom: 12rpx;
 					line-height: 1.4;
 
 					&.online {
-						background: rgba(76, 175, 80, 0.1);
-						color: #4CAF50;
-						border: 1rpx solid rgba(76, 175, 80, 0.3);
+						background: $color-success-soft;
+						color: $color-success;
 					}
 
 					&.offline {
-						background: rgba(244, 67, 54, 0.1);
-						color: #F44336;
-						border: 1rpx solid rgba(244, 67, 54, 0.3);
+						background: $color-danger-soft;
+						color: $color-danger;
 					}
 
 					&::before {
@@ -486,11 +469,11 @@
 					}
 
 					&.online::before {
-						background-color: #4CAF50;
+						background-color: $color-success;
 					}
 
 					&.offline::before {
-						background-color: #F44336;
+						background-color: $color-danger;
 					}
 				}
 			}
@@ -499,74 +482,57 @@
 		.activity_btn {
 			display: grid;
 			grid-template-columns: repeat(3, 1fr);
-			gap: 20rpx;
+			gap: 16rpx;
 			margin-bottom: 8rpx;
 
 			.btn_item {
-				flex: 1;
 				height: 68rpx;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				border-radius: 16rpx;
+				border-radius: $radius-pill;
 				font-size: 26rpx;
 				font-weight: 500;
-				transition: all 0.3s ease;
-				position: relative;
-				overflow: hidden;
-				border: 2rpx solid #e8e8e8;
-				color: #666;
-				background: #fafafa;
+				border: 2rpx solid $border-base;
+				color: $text-secondary;
+				background: $bg-card;
+
+				&:active {
+					background: $bg-subtle;
+				}
 			}
 		}
 
 		.activity_tag {
 			position: absolute;
-			top: 32rpx;
-			left: 32rpx;
+			top: 24rpx;
+			left: 24rpx;
 			padding: 6rpx 20rpx;
-			background: linear-gradient(135deg, #FF6B35, #FF8B5E);
-			color: #fff;
+			background: rgba(255, 251, 244, 0.92);
+			color: $brand-primary-ink;
 			font-size: 22rpx;
-			border-radius: 12rpx;
-			line-height: 1;
+			border-radius: $radius-pill;
+			line-height: 1.4;
 			font-weight: 600;
 			letter-spacing: 0.5rpx;
 			z-index: 2;
-			box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.25);
-
-			&::before {
-				content: '';
-				position: absolute;
-				top: -2rpx;
-				left: -2rpx;
-				right: -2rpx;
-				bottom: -2rpx;
-				background: linear-gradient(135deg,
-						rgba(255, 107, 53, 0.4),
-						rgba(255, 139, 94, 0.4));
-				border-radius: 14rpx;
-				z-index: -1;
-			}
 		}
 
 		.delete-btn {
 			position: absolute;
-			top: 32rpx;
-			right: 32rpx;
+			top: 24rpx;
+			right: 24rpx;
 			width: 56rpx;
 			height: 56rpx;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			background: linear-gradient(135deg, #ff4d4f, #ff7875);
+			background: $color-danger;
 			border-radius: 50%;
 			z-index: 2;
-			box-shadow: 0 4rpx 12rpx rgba(255, 77, 79, 0.3);
-			transition: all 0.3s ease;
 
 			&:active {
-				transform: scale(0.9);
+				opacity: 0.85;
 			}
 		}
 
@@ -582,7 +548,7 @@
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
-				border-bottom: 1px solid #e0e0e0;
+				border-bottom: 1rpx solid $border-light;
 			}
 
 			.rate {
@@ -593,7 +559,7 @@
 			}
 
 			.btn {
-				border-top: 1px solid #e0e0e0;
+				border-top: 1rpx solid $border-light;
 				text-align: center;
 				height: 90rpx;
 				line-height: 90rpx;
@@ -604,22 +570,22 @@
 	// 二维码弹窗样式
 	.qrcode-popup {
 		width: 600rpx;
-		background: #ffffff;
-		border-radius: 24rpx;
+		background: $bg-card;
+		border-radius: $radius-md;
 		overflow: hidden;
-		box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.2);
+		box-shadow: 0 16rpx 48rpx rgba(122, 94, 45, 0.12);
 
 		.qrcode-header {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
 			padding: 32rpx;
-			border-bottom: 1px solid #f0f0f0;
+			border-bottom: 1rpx solid $border-light;
 
 			.qrcode-title {
 				font-size: 32rpx;
 				font-weight: 600;
-				color: #1a1a1a;
+				color: $text-primary;
 			}
 
 			.qrcode-close {
@@ -629,13 +595,10 @@
 				align-items: center;
 				justify-content: center;
 				border-radius: 50%;
-				background: #f5f5f5;
-				cursor: pointer;
-				transition: all 0.3s ease;
+				background: $bg-subtle;
 
 				&:active {
-					background: #e8e8e8;
-					transform: scale(0.95);
+					background: $bg-hover;
 				}
 			}
 		}
@@ -654,7 +617,7 @@
 				align-items: center;
 				justify-content: center;
 				gap: 20rpx;
-				color: #666;
+				color: $text-secondary;
 				font-size: 28rpx;
 			}
 
@@ -668,9 +631,9 @@
 				.qrcode-image {
 					width: 400rpx;
 					height: 400rpx;
-					border-radius: 16rpx;
-					background: #fafafa;
-					border: 2rpx solid #f0f0f0;
+					border-radius: $radius-sm;
+					background: $bg-subtle;
+					border: 2rpx solid $border-light;
 				}
 
 				.qrcode-info {
@@ -683,13 +646,13 @@
 					.activity-name {
 						font-size: 28rpx;
 						font-weight: 600;
-						color: #1a1a1a;
+						color: $text-primary;
 						text-align: center;
 					}
 
 					.activity-id {
 						font-size: 24rpx;
-						color: #999;
+						color: $text-tertiary;
 						text-align: center;
 					}
 				}
@@ -701,14 +664,14 @@
 				align-items: center;
 				justify-content: center;
 				gap: 20rpx;
-				color: #ff3b30;
+				color: $color-danger;
 				font-size: 28rpx;
 			}
 		}
 
 		.qrcode-footer {
 			padding: 24rpx 32rpx 32rpx;
-			border-top: 1px solid #f0f0f0;
+			border-top: 1rpx solid $border-light;
 
 			.save-btn {
 				width: 100%;
@@ -717,17 +680,14 @@
 				align-items: center;
 				justify-content: center;
 				gap: 12rpx;
-				background: linear-gradient(135deg, #FCB857 0%, #FF9800 100%);
-				border-radius: 16rpx;
-				color: #ffffff;
+				background: $brand-primary;
+				border-radius: $radius-pill;
+				color: $text-on-primary;
 				font-size: 28rpx;
 				font-weight: 500;
-				box-shadow: 0 8rpx 24rpx rgba(252, 184, 87, 0.3);
-				transition: all 0.3s ease;
 
 				&:active {
-					transform: scale(0.98);
-					box-shadow: 0 4rpx 12rpx rgba(252, 184, 87, 0.3);
+					background: $brand-primary-deep;
 				}
 			}
 		}

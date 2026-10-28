@@ -24,7 +24,9 @@
 		</view>
 
 		<view class="search-activity_list">
-			<com-activity-item v-for="item in activityList" :activiyInfo="item"></com-activity-item>
+			<view class="activity_item_wrap" v-for="item in activityList" :key="item.id">
+				<com-activity-item :activiyInfo="item"></com-activity-item>
+			</view>
 		</view>
 
 	</view>
@@ -80,43 +82,49 @@
 
 <style lang="scss" scoped>
 	.com-search-activity_container {
-		padding: 20rpx 24rpx;
+		padding: 24rpx;
 		min-height: 100vh;
 
 		.search-activity {
-			margin-bottom: 50rpx;
+			margin-bottom: 32rpx;
 		}
 
 		.activity_history {
 
 			.title {
-				margin-bottom: 50rpx;
+				margin-bottom: 24rpx;
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
-				font-size: 16px;
+				font-size: 30rpx;
+				font-weight: 600;
+				color: $text-primary;
 
 				.left {
-					font-weight: 500;
+					font-weight: 600;
 				}
 
 				.right {
-					color: $uni-topic-color;
+					font-size: 24rpx;
+					font-weight: 400;
+					color: $brand-primary-ink;
 				}
 			}
 
 			.history_list {
 				.history_item {
 					display: inline-block;
-					margin: 0 20rpx 20rpx 0;
-					padding: 10rpx 30rpx;
-					height: 40rpx;
-					line-height: 40rpx;
+					margin: 0 16rpx 16rpx 0;
+					padding: 0 24rpx;
+					height: 56rpx;
+					line-height: 56rpx;
 					text-align: center;
-					background-color: #F0F0F0;
-					border-radius: 15rpx;
-					box-sizing: content-box;
-					font-size: 25rpx;
+					background-color: $bg-card;
+					border: 1rpx solid $border-base;
+					border-radius: $radius-pill;
+					box-sizing: border-box;
+					font-size: 26rpx;
+					color: $text-secondary;
 				}
 			}
 
@@ -125,7 +133,7 @@
 		.search-activity_list {
 			display: flex;
 			flex-wrap: wrap;
-			align-items: center;
+			align-items: flex-start;
 			justify-content: space-between;
 		}
 	}

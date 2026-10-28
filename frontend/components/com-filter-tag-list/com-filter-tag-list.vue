@@ -40,7 +40,7 @@
 
 <style lang="scss" scoped>
 	.com-filter-list {
-		background-color: #fff;
+		background-color: $bg-card;
 		padding: 20rpx 0;
 		max-height: 60vh;
 		overflow-y: auto;

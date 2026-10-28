@@ -96,24 +96,20 @@
 
 <style lang="scss" scoped>
 	.registration {
-		padding: 24rpx 32rpx;
+		padding: 24rpx;
 		padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
 		min-height: 100vh;
-		background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
 
 		.registration_search {
-			margin-bottom: 40rpx;
-			box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
-			border-radius: 16rpx;
-			overflow: hidden;
+			margin-bottom: 24rpx;
 		}
 
 		.registration_filter {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			margin-bottom: 40rpx;
-			padding: 20rpx 0;
+			margin-bottom: 32rpx;
+			padding: 0 0 20rpx;
 			position: relative;
 
 			&::after {
@@ -122,17 +118,14 @@
 				bottom: 0;
 				left: 0;
 				right: 0;
-				height: 2rpx;
-				background: linear-gradient(90deg,
-						rgba($uni-topic-color, 0.1) 0%,
-						rgba($uni-topic-color, 0.3) 50%,
-						rgba($uni-topic-color, 0.1) 100%);
+				height: 1rpx;
+				background: $border-light;
 			}
 
 			.left {
 				display: flex;
 				flex: 1;
-				gap: 20rpx;
+				gap: 16rpx;
 				overflow-x: auto;
 				padding-bottom: 8rpx;
 				scrollbar-width: none;
@@ -148,23 +141,19 @@
 					display: flex;
 					align-items: center;
 					justify-content: center;
-					border: 2rpx solid #e0e0e0;
-					border-radius: 16rpx;
-					font-size: 28rpx;
-					color: #666;
-					background: #ffffff;
-					transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+					border: 2rpx solid $border-base;
+					border-radius: $radius-pill;
+					font-size: 26rpx;
+					color: $text-secondary;
+					background: $bg-card;
 					white-space: nowrap;
 					font-weight: 500;
 				}
 
 				.active {
-					background: linear-gradient(135deg,
-							lighten($uni-topic-color, 5%) 0%,
-							$uni-topic-color 100%);
-					color: #ffffff;
-					border: none;
-					box-shadow: 0 6rpx 20rpx rgba($uni-topic-color, 0.25);
+					background: $brand-primary-soft;
+					color: $brand-primary-ink;
+					border-color: transparent;
 					font-weight: 600;
 				}
 			}

@@ -1,13 +1,13 @@
 <template>
 	<view class="com-activity-item_cotainer" @click="onToActivitDetail">
-		<view class="activity_tag">{{ activiyInfo.status }}</view>
+		<view class="activity_tag" :class="statusClass">{{ activiyInfo.status }}</view>
 		<view class="activity_image">
 			<image :src="activiyInfo.imageUrls[0]" mode="aspectFill"></image>
 		</view>
 		<view class="activity_time">
-			<text class="time_start">{{ formatTime(activiyInfo.startTime) }}</text>
+			<text class="time_start">{{ formatTime(activiyInfo.startTime, 'YYYY-MM-DD hh:mm') }}</text>
 			<text class="time_separator">至</text>
-			<text class="time_end">{{ formatTime(activiyInfo.endTime) }}</text>
+			<text class="time_end">{{ formatTime(activiyInfo.endTime, 'YYYY-MM-DD hh:mm') }}</text>
 		</view>
 		<view class="activity_title">{{ activiyInfo.name }}</view>
 		<view class="activity_category">{{ activiyInfo.activityType }}</view>
@@ -15,8 +15,16 @@
 </template>
 
 <script setup>
+	import { computed } from 'vue'
 	import formatTime from '@/utils/dateUtil.js'
 	const props=defineProps(['activiyInfo'])
+	const statusClass = computed(() => {
+		const status = props.activiyInfo.status || ''
+		if (status.includes('进行')) return 'tag--ongoing'
+		if (status.includes('结束') || status.includes('拒绝')) return 'tag--ended'
+		if (status.includes('审核') || status.includes('通过')) return 'tag--review'
+		return 'tag--pending'
+	})
 	function onToActivitDetail(){
 		uni.navigateTo({
 			url:`/pages/activity/activityDetail/activityDetail?id=${props.activiyInfo.id}`
@@ -28,36 +36,50 @@
 	.com-activity-item_cotainer {
 		margin-bottom: 20rpx;
 		position: relative;
-		width: 342rpx;
-		background: #fff;
-		border-radius: 16rpx;
-		padding: 10rpx;
-		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+		width: 100%;
+		background: $bg-card;
+		border: 1rpx solid $border-base;
+		border-radius: $radius-md;
+		padding: 12rpx;
+		box-shadow: $shadow-card;
+		overflow: hidden;
 
 		.activity_tag {
 			position: absolute;
-			top: 24rpx;
-			left: 24rpx;
+			top: 20rpx;
+			left: 20rpx;
 			z-index: 2;
-			padding: 8rpx 20rpx;
-			background: #FF6B35;
-			color: #fff;
+			padding: 6rpx 16rpx;
+			background: $brand-primary-soft;
+			color: $brand-primary-ink;
 			font-size: 20rpx;
-			border-radius: 10rpx;
-			line-height: 1;
+			font-weight: 500;
+			border-radius: $radius-pill;
+			line-height: 1.4;
 
-			&--class {
-				background: #4CAF50;
+			&.tag--ongoing {
+				background: $color-success-soft;
+				color: $color-success;
+			}
+
+			&.tag--ended {
+				background: $bg-subtle;
+				color: $text-tertiary;
+			}
+
+			&.tag--review {
+				background: $color-info-soft;
+				color: $color-info;
 			}
 		}
 
 		.activity_image {
 			width: 100%;
 			height: 200rpx;
-			border-radius: 12rpx;
+			border-radius: $radius-sm;
 			overflow: hidden;
-			margin-bottom: 20rpx;
-			background: #f0f0f0;
+			margin-bottom: 16rpx;
+			background: $bg-subtle;
 
 			image {
 				width: 100%;
@@ -67,23 +89,24 @@
 
 		.activity_time {
 			display: flex;
-			align-items: center;
+			flex-direction: column;
+			align-items: flex-start;
 			font-size: 22rpx;
-			color: $uni-topic-color;
-			margin-bottom: 16rpx;
+			color: $brand-primary-ink;
+			margin-bottom: 12rpx;
 			line-height: 1.5;
-			flex-wrap: wrap;
-			gap: 8rpx;
+			gap: 2rpx;
 
 			.time_start,
 			.time_end {
 				font-weight: 500;
 				letter-spacing: 0.5rpx;
+				white-space: nowrap;
 			}
 
 			.time_separator {
-				color: rgba(255, 107, 53, 0.6);
-				margin: 0 4rpx;
+				color: rgba($brand-primary-ink, 0.55);
+				margin: 0;
 				font-weight: 400;
 			}
 		}
@@ -91,9 +114,9 @@
 		.activity_title {
 			font-size: 26rpx;
 			font-weight: 500;
-			color: #333;
+			color: $text-primary;
 			line-height: 1.4;
-			margin-bottom: 16rpx;
+			margin-bottom: 12rpx;
 			display: -webkit-box;
 			-webkit-line-clamp: 2;
 			-webkit-box-orient: vertical;
@@ -103,9 +126,9 @@
 
 		.activity_category {
 			font-size: 22rpx;
-			color: #999;
-			padding-top: 8rpx;
-			border-top: 1rpx solid #f0f0f0;
+			color: $text-tertiary;
+			padding-top: 12rpx;
+			border-top: 1rpx solid $border-light;
 		}
 	}
 </style>

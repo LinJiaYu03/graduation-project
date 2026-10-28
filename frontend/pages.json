@@ -28,7 +28,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -36,7 +36,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -51,7 +51,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "参与详情",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -59,7 +59,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -74,7 +74,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "登录",
-				"navigationBarBackgroundColor": "#e6f4ff",
+				"navigationBarBackgroundColor": "#FFFFFF",
 				"navigationBarTextStyle": "black"
 			}
 		},
@@ -83,7 +83,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "注册",
-				"navigationBarBackgroundColor": "#e6f4ff",
+				"navigationBarBackgroundColor": "#FFFFFF",
 				"navigationBarTextStyle": "black"
 			}
 		},
@@ -92,7 +92,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "完善信息",
-				"navigationBarBackgroundColor": "#e6f4ff",
+				"navigationBarBackgroundColor": "#FFFFFF",
 				"navigationBarTextStyle": "black"
 			}
 		},
@@ -101,7 +101,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "基本信息",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -109,7 +109,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "我的社团",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -117,7 +117,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "发布活动",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -125,7 +125,7 @@
 			"style" :
 			{
 				"navigationBarTitleText" : "添加班级",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -133,7 +133,7 @@
 			"style" :
 			{
 				"navigationBarTitleText" : "班级列表",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -141,7 +141,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "新键社团",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -156,7 +156,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "审核列表",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -164,7 +164,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "活动审核",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -172,7 +172,7 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "报名统计",
-				"navigationBarBackgroundColor": "#fff"
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		}
 	],
@@ -180,8 +180,8 @@
 		"custom": true,
 		"fontSize": "16px",
 		"spacing": "5px",
-		"color": "#bfbfbf",
-		"backgroundColor": "#ffffff",
+		"color": "#A39B90",
+		"backgroundColor": "#FFFFFF",
 		"list": [{
 				"text": "主页",
 				"pagePath": "pages/index/index",
@@ -217,8 +217,8 @@
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#FAF8F4"
 	},
 	"uniIdRouter": {}
 }

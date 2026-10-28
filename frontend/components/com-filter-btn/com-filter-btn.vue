@@ -49,20 +49,23 @@
 	.com-filter-btn {
 
 		.filter_tag {
-			margin-right: 20rpx;
-			padding: 0 20rpx;
-			height: 50rpx;
+			margin-right: 16rpx;
+			padding: 0 28rpx;
+			height: 64rpx;
 			text-align: center;
-			line-height: 50rpx;
-			border: 1px solid #DEDEDE;
-			border-radius: 10rpx;
-			font-size: 28rpx;
+			line-height: 64rpx;
+			background: $bg-card;
+			border: 2rpx solid $border-base;
+			border-radius: $radius-pill;
+			font-size: 26rpx;
+			color: $text-secondary;
 		}
 
 		.active {
-			background-color: $uni-topic-color;
-			border: 1px transparent;
-			color: #fff;
+			background: $brand-primary-soft;
+			border-color: transparent;
+			color: $brand-primary-ink;
+			font-weight: 500;
 		}
 	}
 </style>

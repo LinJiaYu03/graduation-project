@@ -11,7 +11,9 @@
 		</view>
 
 		<view class="activity_list">
-			<com-activity-item v-for="item in activityList" :activiyInfo="item"></com-activity-item>
+			<view class="activity_item_wrap" v-for="item in activityList" :key="item.id">
+				<com-activity-item :activiyInfo="item"></com-activity-item>
+			</view>
 		</view>
 	</view>
 	<!-- 自定义tabBar -->
@@ -66,18 +68,20 @@
 		padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
 
 		.activity_search {
-			margin-bottom: 30rpx;
+			margin-bottom: 24rpx;
 		}
 
 		.activity_filter_tag_list {
-			margin-bottom: 30rpx;
+			margin-bottom: 24rpx;
 			display: flex;
+			flex-wrap: wrap;
+			row-gap: 16rpx;
 		}
 
 		.activity_list {
 			display: flex;
 			flex-wrap: wrap;
-			align-items: center;
+			align-items: flex-start;
 			justify-content: space-between;
 		}
 

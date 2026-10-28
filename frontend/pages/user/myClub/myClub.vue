@@ -92,15 +92,15 @@
 <style lang="scss" scoped>
 	.my-club {
 		.my-club_seach {
-			margin-bottom: 30rpx;
+			margin-bottom: 24rpx;
 		}
 
 		.my-club_btn {
 			display: flex;
 			flex: 1;
-			gap: 20rpx;
+			gap: 16rpx;
 			overflow-x: auto;
-			padding-bottom: 30rpx;
+			padding-bottom: 24rpx;
 			scrollbar-width: none;
 
 			.btn {
@@ -110,22 +110,19 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				border: 2rpx solid #e0e0e0;
-				border-radius: 16rpx;
-				font-size: 28rpx;
-				color: #666;
-				background: #ffffff;
+				border: 2rpx solid $border-base;
+				border-radius: $radius-pill;
+				font-size: 26rpx;
+				color: $text-secondary;
+				background: $bg-card;
 				white-space: nowrap;
 				font-weight: 500;
 			}
 
 			.active {
-				background: linear-gradient(135deg,
-						lighten($uni-topic-color, 5%) 0%,
-						$uni-topic-color 100%);
-				color: #ffffff;
-				border: none;
-				box-shadow: 0 6rpx 20rpx rgba($uni-topic-color, 0.25);
+				background: $brand-primary-soft;
+				color: $brand-primary-ink;
+				border-color: transparent;
 				font-weight: 600;
 			}
 		}

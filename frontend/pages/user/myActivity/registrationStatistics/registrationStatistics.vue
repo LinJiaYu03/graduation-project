@@ -213,7 +213,7 @@
 						name: '已拒绝'
 					}
 				],
-				color: ['#FFA500', '#52C41A', '#FF4D4F'],
+				color: ['#FCB857', '#5BBD8E', '#E56B62'],
 				emphasis: {
 					itemStyle: {
 						shadowBlur: 10,
@@ -256,7 +256,7 @@
 						name: '未签到'
 					}
 				],
-				color: ['#52C41A', '#FFA500'],
+				color: ['#5BBD8E', '#FCB857'],
 				emphasis: {
 					itemStyle: {
 						shadowBlur: 10,
@@ -309,7 +309,7 @@
 				],
 				itemStyle: {
 					color: function(params) {
-						const colors = ['#FF4D4F', '#FF7A45', '#FFA500', '#52C41A', '#1890FF'];
+						const colors = ['#E56B62', '#E9A23C', '#FCB857', '#5BBD8E', '#8FA8C8'];
 						return colors[params.dataIndex];
 					}
 				},
@@ -384,50 +384,60 @@
 <style lang="scss" scoped>
 	.registration-statistics {
 		min-height: 100vh;
-		padding: 30rpx;
+		padding: 24rpx;
 		display: flex;
 		flex-direction: column;
-		gap: 30rpx;
+		gap: 24rpx;
 	}
 
 	.export-bar {
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
-		gap: 15rpx;
-		padding: 20rpx 0;
+		gap: 12rpx;
+		padding: 0;
 	}
 
 	.export-bar .export-btn {
 		flex: 1;
 		margin: 0;
-		font-size: 24rpx;
-		padding: 15rpx 0;
+		height: 72rpx;
+		line-height: 72rpx;
+		font-size: 22rpx;
+		padding: 0;
+		background: $bg-card;
+		border: 2rpx solid $border-base;
+		border-radius: $radius-pill;
+		color: $text-secondary;
 
 		&::after {
 			border: none;
 		}
+
+		&:active {
+			background: $bg-subtle;
+		}
 	}
 
 	.chart-container {
-		background: rgba(255, 255, 255, 0.95);
-		border-radius: 20rpx;
-		padding: 40rpx;
-		box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.2);
-		backdrop-filter: blur(10rpx);
+		background: $bg-card;
+		border: 1rpx solid $border-base;
+		border-radius: $radius-md;
+		padding: 32rpx;
+		box-shadow: $shadow-card;
 		width: 100%;
 		max-width: 800rpx;
 		margin: 0 auto;
 	}
 
 	.chart-title {
-		font-size: 32rpx;
-		font-weight: 700;
+		font-size: 30rpx;
+		font-weight: 600;
 		text-align: center;
-		margin-bottom: 30rpx;
-		color: #2c3e50;
+		margin-bottom: 24rpx;
+		color: $text-primary;
 		position: relative;
-		padding-bottom: 15rpx;
+		padding-bottom: 12rpx;
 
 		&::after {
 			content: '';
@@ -435,9 +445,9 @@
 			bottom: 0;
 			left: 50%;
 			transform: translateX(-50%);
-			width: 100rpx;
+			width: 80rpx;
 			height: 4rpx;
-			background: linear-gradient(90deg, #667eea, #764ba2);
+			background: $brand-primary;
 			border-radius: 2rpx;
 		}
 	}
@@ -445,41 +455,41 @@
 	.chart-content {
 		width: 100%;
 		height: 550rpx;
-		margin-bottom: 30rpx;
+		margin-bottom: 24rpx;
 	}
 
 	.chart-info {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 20rpx;
-		margin-top: 30rpx;
-		padding: 25rpx;
-		background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-		border-radius: 15rpx;
+		gap: 16rpx;
+		margin-top: 24rpx;
+		padding: 24rpx;
+		background: $bg-subtle;
+		border-radius: $radius-sm;
 
 		text {
 			flex: 1;
 			min-width: 200rpx;
-			font-size: 26rpx;
-			color: #34495e;
+			font-size: 24rpx;
+			color: $text-secondary;
 			font-weight: 500;
 			text-align: center;
-			padding: 15rpx 0;
+			padding: 12rpx 0;
 
 			&:nth-child(1) {
-				color: #667eea;
+				color: $brand-primary-ink;
 			}
 
 			&:nth-child(2) {
-				color: #764ba2;
+				color: $color-success;
 			}
 
 			&:nth-child(3) {
-				color: #52C41A;
+				color: $color-danger;
 			}
 
 			&:nth-child(4) {
-				color: #FFA500;
+				color: $color-info;
 			}
 		}
 	}

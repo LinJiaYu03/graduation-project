@@ -25,12 +25,12 @@
 		<!-- 社团活动 -->
 		<view class="clubDatails_activity">
 			<view class="title">社团活动</view>
-			<view class="activity_list">
-				<com-activity-item v-if="activityList.length!=0" v-for="item in activityList"
-					:activiyInfo="item">
-				</com-activity-item>
-				<view v-else>社团暂无活动</view>
+			<view class="activity_list" v-if="activityList.length!=0">
+				<view class="activity_item_wrap" v-for="item in activityList" :key="item.id">
+					<com-activity-item :activiyInfo="item"></com-activity-item>
+				</view>
 			</view>
+			<view v-else>社团暂无活动</view>
 		</view>
 	</view>
 
@@ -189,117 +189,110 @@
 
 		// 公共样式
 		.title {
-			font-size: 40rpx;
-			font-weight: 500;
-			color: #333;
-			margin-bottom: 50rpx;
+			font-size: 32rpx;
+			font-weight: 600;
+			color: $text-primary;
+			margin-bottom: 24rpx;
 		}
 
 		.text {
 			font-size: 28rpx;
-			color: #666;
+			color: $text-secondary;
 			line-height: 1.6;
 		}
 
 		// 社团信息区块
 		.clubDetails_info {
-			margin-bottom: 60rpx;
-			padding-bottom: 50rpx;
-			border-bottom: 1rpx solid #f0f0f0;
+			margin-bottom: 24rpx;
+			padding: 32rpx;
+			background: $bg-card;
+			border: 1rpx solid $border-base;
+			border-radius: $radius-md;
+			box-shadow: $shadow-card;
 
 			.title {
-				font-size: 44rpx;
-				color: #1a1a1a;
-				margin-bottom: 30rpx;
+				font-size: 40rpx;
+				margin-bottom: 12rpx;
 			}
 
 			.id {
-				font-size: 26rpx;
-				color: #999;
-				margin-bottom: 40rpx;
+				font-size: 24rpx;
+				color: $text-tertiary;
+				margin-bottom: 28rpx;
 			}
 
 			.btn {
-				padding: 16rpx 32rpx;
+				padding: 16rpx 40rpx;
 				display: inline-block;
-				color: #fff;
-				font-size: 28rpx;
-				background: linear-gradient(135deg, #0083F4, #0066CC);
-				border-radius: 50rpx;
-				box-shadow: 0 4rpx 12rpx rgba(0, 131, 244, 0.3);
-				transition: all 0.3s ease;
+				color: $text-on-primary;
+				font-size: 26rpx;
+				font-weight: 500;
+				background: $brand-primary;
+				border-radius: $radius-pill;
 
 				&:active {
-					transform: scale(0.98);
-					box-shadow: 0 2rpx 8rpx rgba(0, 131, 244, 0.4);
+					background: $brand-primary-deep;
 				}
 			}
 		}
 
 		// 社团成员区块
 		.clubDetails_member {
-			margin-bottom: 90rpx;
-			border-bottom: 1rpx solid #f0f0f0;
+			margin-bottom: 24rpx;
+			padding: 32rpx;
+			background: $bg-card;
+			border: 1rpx solid $border-base;
+			border-radius: $radius-md;
+			box-shadow: $shadow-card;
 
 			.text {
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
-				margin-bottom: 45rpx;
-				font-size: 30rpx;
-				color: #333;
+				font-size: 28rpx;
+				color: $text-primary;
 			}
 
 			.details {
-				font-size: 28rpx;
-				color: #0083F4;
+				font-size: 24rpx;
+				color: $brand-primary-ink;
 				font-weight: 500;
 				display: inline-block;
-				padding: 8rpx 16rpx;
-				border-radius: 8rpx;
-				background-color: rgba(0, 131, 244, 0.1);
+				padding: 6rpx 18rpx;
+				border-radius: $radius-pill;
+				background-color: $brand-primary-soft;
 
 				&:active {
-					background-color: rgba(0, 131, 244, 0.2);
+					background-color: $bg-hover;
 				}
 			}
-
-
 		}
 
 		// 社团简介区块
 		.clubDatails_info {
-			margin-bottom: 90rpx;
-			padding-bottom: 50rpx;
-			border-bottom: 1rpx solid #f0f0f0;
+			margin-bottom: 24rpx;
+			padding: 32rpx;
+			background: $bg-card;
+			border: 1rpx solid $border-base;
+			border-radius: $radius-md;
+			box-shadow: $shadow-card;
 
 			.text {
-				background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-				padding: 40rpx;
-				border-radius: 20rpx;
+				background: $bg-subtle;
+				padding: 28rpx;
+				border-radius: $radius-sm;
 			}
 		}
 
 		// 社团活动区块
 		.clubDatails_activity {
+			margin-bottom: 24rpx;
+
 			.activity_list {
 				display: flex;
 				flex-wrap: wrap;
-				align-items: stretch;
+				align-items: flex-start;
 				justify-content: space-between;
-
-				// 为活动项添加统一的卡片效果
-				::v-deep .activity-item {
-					border-radius: 20rpx;
-					overflow: hidden;
-					box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
-					transition: all 0.3s ease;
-
-					&:active {
-						transform: translateY(-4rpx);
-						box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.12);
-					}
-				}
 			}
 		}
 
@@ -317,10 +310,10 @@
 					left: 0;
 					top: 50%;
 					transform: translateY(-50%);
-					width: 8rpx;
-					height: 32rpx;
-					background: linear-gradient(135deg, #0083F4, #00A3FF);
-					border-radius: 4rpx;
+					width: 6rpx;
+					height: 24rpx;
+					background: $brand-primary;
+					border-radius: 3rpx;
 				}
 			}
 		}

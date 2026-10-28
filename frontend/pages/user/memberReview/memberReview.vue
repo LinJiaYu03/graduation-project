@@ -1,17 +1,20 @@
 <template>
 	<view class="member-review container">
-		<uni-list v-if="userList.length!=0">
-			<uni-list-item style="height: 170rpx;" v-for="item in userList" :key="item.id" :title="item.realName"
-				:note="item.schoolName+item.collegeName+item.className" :thumb="item.avatarUrl" thumb-size="lg">
-				<!-- 自定义 footer-->
-				<template v-slot:footer>
-					<uni-tag v-for="tagItem in tagList" class="tag" :text="tagItem.title"
-						:type="tagItem.value?'primary':'error'" @click="handleReview(tagItem.value,item.id)" />
-				</template>
-			</uni-list-item>
-		</uni-list>
+		<view class="list-card" v-if="userList.length!=0">
+			<uni-list>
+				<uni-list-item style="height: 170rpx;" v-for="item in userList" :key="item.id" :title="item.realName"
+					:note="item.schoolName+item.collegeName+item.className" :thumb="item.avatarUrl" thumb-size="lg">
+					<!-- 自定义 footer-->
+					<template v-slot:footer>
+						<view v-for="tagItem in tagList" :key="tagItem.title" class="tag"
+							:class="tagItem.value ? 'tag--agree' : 'tag--reject'"
+							@click="handleReview(tagItem.value,item.id)">{{ tagItem.title }}</view>
+					</template>
+				</uni-list-item>
+			</uni-list>
+		</view>
 		<view v-else class="empty-container">
-			<uni-icons type="info" size="60" color="#c0c4cc"></uni-icons>
+			<uni-icons type="info" size="60" color="#A39B90"></uni-icons>
 			<text class="empty-text">暂无人员需要审核</text>
 		</view>
 
@@ -96,6 +99,14 @@
 </script>
 
 <style lang="scss" scoped>
+	.list-card {
+		background: $bg-card;
+		border: 1rpx solid $border-base;
+		border-radius: $radius-md;
+		overflow: hidden;
+		box-shadow: $shadow-card;
+	}
+
 	.empty-container {
 		display: flex;
 		flex-direction: column;
@@ -106,17 +117,31 @@
 
 		.empty-text {
 			margin-top: 30rpx;
-			font-size: 28rpx;
-			color: #909399;
+			font-size: 26rpx;
+			color: $text-tertiary;
 			text-align: center;
 		}
 	}
 
 	.tag {
-		margin-top: 30rpx;
-		margin-left: 15rpx;
-		height: 30rpx;
+		margin-top: 24rpx;
+		margin-left: 12rpx;
+		padding: 0 20rpx;
+		height: 52rpx;
+		line-height: 52rpx;
 		text-align: center;
-		line-height: 30rpx;
+		font-size: 24rpx;
+		font-weight: 500;
+		border-radius: $radius-pill;
+
+		&--agree {
+			background: $color-success-soft;
+			color: $color-success;
+		}
+
+		&--reject {
+			background: $color-danger-soft;
+			color: $color-danger;
+		}
 	}
 </style>

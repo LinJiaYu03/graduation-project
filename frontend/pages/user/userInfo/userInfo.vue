@@ -331,18 +331,15 @@
 </script>
 
 <style lang="scss" scoped>
-	// 定义主色调变量
-	$primary-color: #FCB857;
-	$primary-light: #FFE6B7;
-	$primary-dark: #E6A33D;
-	$bg-color: #F8F9FA;
-	$text-primary: #333333;
-	$text-secondary: #666666;
-	$text-light: #999999;
-	$border-color: #F0F0F0;
+	// 主色别名（引用全局设计令牌）
+	$primary-color: $brand-primary;
+	$primary-light: $brand-primary-soft;
+	$primary-dark: $brand-primary-deep;
+	$bg-color: $bg-page;
+	$border-color: $border-base;
 	$white: #FFFFFF;
-	$shadow-light: rgba(0, 0, 0, 0.08);
-	$shadow-medium: rgba(0, 0, 0, 0.12);
+	$shadow-light: rgba(122, 94, 45, 0.06);
+	$shadow-medium: rgba(122, 94, 45, 0.10);
 
 	.page {
 		background-color: $bg-color;
@@ -355,9 +352,10 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding: 60rpx 0 40rpx;
-		background: linear-gradient(135deg, #FCB857 0%, #FF9800 100%);
-		margin-bottom: 30rpx;
+		padding: 60rpx 0 48rpx;
+		background: linear-gradient(135deg, $brand-primary-soft 0%, $brand-primary-fade 100%);
+		border-bottom: 1rpx solid $border-color;
+		margin-bottom: 24rpx;
 		overflow: hidden;
 
 		.avatar-bg {
@@ -370,7 +368,7 @@
 		}
 
 		.avatar-wrapper {
-			margin-bottom: 30rpx;
+			margin-bottom: 24rpx;
 			z-index: 1;
 
 			.avatar {
@@ -378,34 +376,34 @@
 				width: 180rpx;
 				height: 180rpx;
 				border-radius: 50%;
-				box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.15);
+				background: $bg-card;
+				border: 4rpx solid $bg-card;
 			}
 		}
 
 		.user-name {
-			font-size: 40rpx;
+			font-size: 36rpx;
 			font-weight: 600;
-			color: $white;
+			color: $text-primary;
 			letter-spacing: 1rpx;
-			text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 			z-index: 1;
 		}
 	}
 
 	// 信息卡片
 	.info-card {
-		background: $white;
-		border-radius: 20rpx;
+		background: $bg-card;
+		border-radius: $radius-md;
 		overflow: hidden;
-		margin: 0 30rpx 30rpx;
-		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+		margin: 0 24rpx 24rpx;
+		box-shadow: $shadow-card;
 		border: 1rpx solid $border-color;
-		transition: all 0.25s ease;
 
 		:deep(.uni-list-item) {
-			padding: 30rpx 32rpx;
+			padding: 28rpx 32rpx;
 			border-bottom: 1rpx solid $border-color;
 			position: relative;
+			background: $bg-card;
 
 			&:last-child {
 				border-bottom: none;
@@ -424,7 +422,7 @@
 			.uni-list-item__container {
 				.uni-list-item__content {
 					.uni-list-item__content-title {
-						font-size: 32rpx;
+						font-size: 30rpx;
 						color: $text-primary;
 						font-weight: 500;
 						letter-spacing: 1rpx;
@@ -433,7 +431,7 @@
 
 				.uni-list-item__extra {
 					.uni-list-item__extra-text {
-						font-size: 30rpx;
+						font-size: 28rpx;
 						color: $text-secondary;
 						max-width: 400rpx;
 						text-align: right;
@@ -448,13 +446,13 @@
 	}
 
 	.contact-card {
-		margin-bottom: 60rpx;
+		margin-bottom: 40rpx;
 	}
 
 	// 保存按钮容器
 	.save-button-container {
-		padding: 20rpx 30rpx 60rpx;
-		background: linear-gradient(to top, $bg-color 70%, transparent);
+		padding: 20rpx 24rpx 60rpx;
+		background: linear-gradient(to top, $bg-page 70%, transparent);
 		position: sticky;
 		bottom: 0;
 		z-index: 10;
@@ -462,29 +460,24 @@
 
 	// 保存按钮样式
 	.save-btn {
-		background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+		background: $brand-primary;
 		border: none;
-		border-radius: 50rpx;
-		height: 100rpx;
-		line-height: 100rpx;
-		font-size: 34rpx;
-		font-weight: 600;
-		color: $white;
-		position: relative;
-		overflow: hidden;
-		box-shadow: 0 8rpx 30rpx rgba(252, 184, 87, 0.3);
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		border-radius: $radius-pill;
+		height: 96rpx;
+		line-height: 96rpx;
+		font-size: 32rpx;
+		font-weight: 500;
+		color: $text-on-primary;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 16rpx;
 
+		&:active {
+			background: $brand-primary-deep;
+		}
 
 		.btn-text {
-			position: relative;
-			z-index: 1;
 			letter-spacing: 2rpx;
-			transition: transform 0.3s ease;
 		}
 	}
 

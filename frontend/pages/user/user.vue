@@ -25,8 +25,8 @@
 				<view class="quick-item" @click="() => uni.navigateTo({
 					url: '/pages/user/userInfo/userInfo'
 				})">
-					<view class="quick-icon green">
-						<uni-icons type="person" size="24" color="#fff"></uni-icons>
+					<view class="quick-icon">
+						<uni-icons type="person" size="24" color="#E9A23C"></uni-icons>
 					</view>
 					<text class="quick-label">基本信息</text>
 				</view>
@@ -34,8 +34,8 @@
 				<view v-if="isManager" class="quick-item" @click="() => uni.navigateTo({
 					url: '/pages/user/publishActivity/publishActivity'
 				})">
-					<view class="quick-icon purple">
-						<uni-icons type="plusempty" size="24" color="#fff"></uni-icons>
+					<view class="quick-icon">
+						<uni-icons type="plusempty" size="24" color="#E9A23C"></uni-icons>
 					</view>
 					<text class="quick-label">发布活动</text>
 				</view>
@@ -43,8 +43,8 @@
 				<view v-if="isBoss" class="quick-item" @click="()=>uni.navigateTo({
 					url:'/pages/user/createClub/createClub'
 				})">
-					<view class="quick-icon blue">
-						<uni-icons type="plusempty" size="24" color="#fff"></uni-icons>
+					<view class="quick-icon">
+						<uni-icons type="plusempty" size="24" color="#E9A23C"></uni-icons>
 					</view>
 					<text class="quick-label">创建社团</text>
 				</view>
@@ -52,8 +52,8 @@
 				<view v-if="isBoss" class="quick-item" @click="() => uni.navigateTo({
 					url: '/pages/user/createClass/createClass'
 				})">
-					<view class="quick-icon grey">
-						<uni-icons type="plusempty" size="24" color="#fff"></uni-icons>
+					<view class="quick-icon">
+						<uni-icons type="plusempty" size="24" color="#E9A23C"></uni-icons>
 					</view>
 					<text class="quick-label">添加班级</text>
 				</view>
@@ -68,8 +68,8 @@
 				<view v-if="isBoss" class="service-item" @click="uni.navigateTo({
 					url:'/pages/user/clubReview/clubReview'
 				})">
-					<view class="service-icon blue">
-						<uni-icons type="calendar" size="24" color="#fff"></uni-icons>
+					<view class="service-icon">
+						<uni-icons type="calendar" size="24" color="#E9A23C"></uni-icons>
 					</view>
 					<text class="service-label">活动审核</text>
 				</view>
@@ -80,8 +80,8 @@
 						url: '/pages/user/myActivity/myActivity'
 					})
 				}">
-					<view class="service-icon purple">
-						<uni-icons type="star" size="24" color="#fff"></uni-icons>
+					<view class="service-icon">
+						<uni-icons type="star" size="24" color="#E9A23C"></uni-icons>
 					</view>
 					<text class="service-label">我的活动</text>
 				</view>
@@ -92,8 +92,8 @@
 						url: `/pages/user/myClub/myClub?id=${userInfo.id}`
 					})
 				}">
-					<view class="service-icon green">
-						<uni-icons type="medal" size="24" color="#fff"></uni-icons>
+					<view class="service-icon">
+						<uni-icons type="medal" size="24" color="#E9A23C"></uni-icons>
 					</view>
 					<text class="service-label">我的社团</text>
 				</view>
@@ -102,8 +102,8 @@
 				<view v-if="isBoss" class="service-item" @click="() => uni.navigateTo({
 					url: '/pages/user/classList/classList'
 				})">
-					<view class="service-icon red">
-						<uni-icons type="contact" size="24" color="#fff"></uni-icons>
+					<view class="service-icon">
+						<uni-icons type="contact" size="24" color="#E9A23C"></uni-icons>
 					</view>
 					<text class="service-label">班级列表</text>
 				</view>
@@ -159,45 +159,47 @@ async function confirmLogout() {
 	padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
 
 	.logout-container {
-		margin: 350rpx 24rpx;
+		margin: 64rpx 0 40rpx;
 		display: flex;
 		justify-content: center;
 
 		.logout-btn {
 			width: 100%;
-			max-width: 400rpx;
 			height: 88rpx;
-			background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-			border: 2rpx solid #fff;
-			border-radius: 44rpx;
+			background: $bg-card;
+			border: 1rpx solid $border-base;
+			border-radius: $radius-pill;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			gap: 12rpx;
-			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-			box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+			box-shadow: $shadow-card;
 
-			.logout-text {
-				font-size: 30rpx;
-				font-weight: 500;
-				letter-spacing: 0.5rpx;
+			&:active {
+				background: $bg-subtle;
 			}
 
+			.logout-text {
+				font-size: 28rpx;
+				font-weight: 500;
+				color: $text-secondary;
+				letter-spacing: 0.5rpx;
+			}
 		}
 	}
 }
 
 // 用户信息
 .user-info {
-	height: 280rpx;
-	background: linear-gradient(135deg, #FCB857 0%, #FF9800 100%);
-	padding: 60rpx 30rpx 40rpx;
-	margin: 0 -24rpx 30rpx -24rpx;
+	background: linear-gradient(135deg, $brand-primary-soft 0%, $brand-primary-fade 100%);
+	border: 1rpx solid $border-base;
+	border-radius: $radius-md;
+	padding: 40rpx 32rpx;
+	margin-bottom: 24rpx;
 	display: flex;
 	flex-direction: column;
 	position: relative;
 	overflow: hidden;
-	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+	box-shadow: $shadow-card;
 
 	.avatar-section {
 		display: flex;
@@ -210,9 +212,8 @@ async function confirmLogout() {
 			width: 120rpx;
 			height: 120rpx;
 			border-radius: 50%;
-			background: #fff;
-			border: 4rpx solid rgba(255, 255, 255, 0.3);
-			box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2);
+			background: $bg-card;
+			border: 4rpx solid $bg-card;
 		}
 
 		.user-detail {
@@ -225,17 +226,17 @@ async function confirmLogout() {
 				margin-bottom: 12rpx;
 
 				.name {
-					font-size: 40rpx;
+					font-size: 36rpx;
 					font-weight: 600;
-					color: #fff;
+					color: $text-primary;
 					letter-spacing: 1rpx;
 				}
 
 			}
 
 			.student-id {
-				font-size: 28rpx;
-				color: rgba(255, 255, 255, 0.9);
+				font-size: 26rpx;
+				color: $text-secondary;
 				display: block;
 			}
 		}
@@ -244,11 +245,12 @@ async function confirmLogout() {
 
 // 快捷入口
 .quick-section {
-	background: #fff;
-	border-radius: 20rpx;
+	background: $bg-card;
+	border: 1rpx solid $border-base;
+	border-radius: $radius-md;
 	padding: 32rpx 24rpx;
 	margin-bottom: 24rpx;
-	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+	box-shadow: $shadow-card;
 
 	.quick-grid {
 		display: grid;
@@ -263,33 +265,17 @@ async function confirmLogout() {
 			.quick-icon {
 				width: 88rpx;
 				height: 88rpx;
-				border-radius: 20rpx;
+				border-radius: $radius-md;
+				background: $brand-primary-soft;
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				margin-bottom: 16rpx;
-				transition: all 0.2s ease;
-
-				&.purple {
-					background: #8b5cf6;
-				}
-
-				&.blue {
-					background: #3b82f6;
-				}
-
-				&.green {
-					background: #10b981;
-				}
-
-				&.grey {
-					background: #f5e63b;
-				}
 			}
 
 			.quick-label {
 				font-size: 26rpx;
-				color: #333;
+				color: $text-secondary;
 				font-weight: 500;
 				line-height: 1.4;
 			}
@@ -299,16 +285,17 @@ async function confirmLogout() {
 
 // 我的服务
 .services-section {
-	background: #fff;
-	border-radius: 20rpx;
+	background: $bg-card;
+	border: 1rpx solid $border-base;
+	border-radius: $radius-md;
 	padding: 32rpx 24rpx;
-	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+	box-shadow: $shadow-card;
 
 	.section-title {
 		display: block;
-		font-size: 32rpx;
+		font-size: 30rpx;
 		font-weight: 600;
-		color: #1f2937;
+		color: $text-primary;
 		margin-bottom: 32rpx;
 		padding-left: 16rpx;
 		position: relative;
@@ -320,8 +307,8 @@ async function confirmLogout() {
 			top: 50%;
 			transform: translateY(-50%);
 			width: 6rpx;
-			height: 28rpx;
-			background: $uni-topic-color;
+			height: 24rpx;
+			background: $brand-primary;
 			border-radius: 3rpx;
 		}
 	}
@@ -339,50 +326,17 @@ async function confirmLogout() {
 			.service-icon {
 				width: 76rpx;
 				height: 76rpx;
-				border-radius: 16rpx;
+				border-radius: $radius-sm;
+				background: $brand-primary-soft;
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				margin-bottom: 16rpx;
-				transition: all 0.2s ease;
-
-
-				&.blue {
-					background: #3b82f6;
-				}
-
-				&.red {
-					background: #ef4444;
-				}
-
-				&.orange {
-					background: #f97316;
-				}
-
-				&.purple {
-					background: #8b5cf6;
-				}
-
-				&.green {
-					background: #10b981;
-				}
-
-				&.cyan {
-					background: #06b6d4;
-				}
-
-				&.grey {
-					background: #9ca3af;
-				}
-
-				&.dark-grey {
-					background: #6b7280;
-				}
 			}
 
 			.service-label {
 				font-size: 26rpx;
-				color: #374151;
+				color: $text-secondary;
 				text-align: center;
 				line-height: 1.4;
 				font-weight: 500;

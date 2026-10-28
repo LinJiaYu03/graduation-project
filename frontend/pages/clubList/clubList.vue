@@ -7,14 +7,22 @@
 			<view class="title">
 				全部社团
 			</view>
-			<uni-list>
-				<uni-list-item clickable @click="uni.navigateTo({
-					url:`/pages/clubList/clubDetails/clubDetails?info=${encodeURIComponent(JSON.stringify(item))}`
-				})" style="height: 170rpx;" v-for="item in clubList" :key="item.id" :title="item.name" :note="item.levelTag+'#'+item.tags"
-					:thumb="item.iconUrl" thumb-size="lg" :rightText="String(item.memberCount)">
-				</uni-list-item>
-			</uni-list>
-
+			<view class="club_list">
+				<view class="club_card" v-for="item in clubList" :key="item.id" @click="goDetail(item)">
+					<image class="club_avatar" :src="item.iconUrl" mode="aspectFill"></image>
+					<view class="club_info">
+						<view class="club_name">{{ item.name }}</view>
+						<view class="club_meta">
+							<text class="club_tag" v-if="item.levelTag">{{ item.levelTag }}</text>
+							<text class="club_tags" v-if="item.tags">{{ item.tags }}</text>
+						</view>
+					</view>
+					<view class="club_count">
+						<text class="num">{{ item.memberCount }}</text>
+						<text class="unit">人</text>
+					</view>
+				</view>
+			</view>
 		</view>
 	</view>
 	<!-- 自定义tabBar -->
@@ -55,6 +63,12 @@
 		getClubList()
 	}
 
+	function goDetail(item) {
+		uni.navigateTo({
+			url: `/pages/clubList/clubDetails/clubDetails?info=${encodeURIComponent(JSON.stringify(item))}`
+		})
+	}
+
 	onShow(() => {
 		getClubList()
 	})
@@ -62,14 +76,97 @@
 
 <style lang="scss" scoped>
 	.tribe_list {
-		.tribe_seach {}
+		.tribe_seach {
+			margin-bottom: 24rpx;
+		}
 
 		.tribe_list_container {
 			.title {
-				margin-top: 50rpx;
-				margin-bottom: 50rpx;
-				font-size: 20px;
+				margin: 24rpx 0;
+				font-size: 32rpx;
 				font-weight: 600;
+				color: $text-primary;
+			}
+
+			.club_card {
+				display: flex;
+				align-items: center;
+				background: $bg-card;
+				border: 1rpx solid $border-base;
+				border-radius: $radius-md;
+				padding: 24rpx;
+				margin-bottom: 20rpx;
+				box-shadow: $shadow-card;
+
+				&:active {
+					background: $bg-subtle;
+				}
+
+				.club_avatar {
+					width: 96rpx;
+					height: 96rpx;
+					border-radius: $radius-sm;
+					background: $bg-subtle;
+					flex-shrink: 0;
+				}
+
+				.club_info {
+					flex: 1;
+					min-width: 0;
+					margin-left: 20rpx;
+
+					.club_name {
+						font-size: 28rpx;
+						font-weight: 500;
+						color: $text-primary;
+						margin-bottom: 10rpx;
+						overflow: hidden;
+						white-space: nowrap;
+						text-overflow: ellipsis;
+					}
+
+					.club_meta {
+						display: flex;
+						align-items: center;
+						font-size: 22rpx;
+						color: $text-tertiary;
+						overflow: hidden;
+
+						.club_tag {
+							padding: 2rpx 12rpx;
+							margin-right: 12rpx;
+							background: $brand-primary-soft;
+							color: $brand-primary-ink;
+							border-radius: $radius-pill;
+							flex-shrink: 0;
+						}
+
+						.club_tags {
+							overflow: hidden;
+							white-space: nowrap;
+							text-overflow: ellipsis;
+						}
+					}
+				}
+
+				.club_count {
+					flex-shrink: 0;
+					margin-left: 20rpx;
+					display: flex;
+					align-items: baseline;
+
+					.num {
+						font-size: 30rpx;
+						font-weight: 600;
+						color: $brand-primary-ink;
+					}
+
+					.unit {
+						font-size: 20rpx;
+						color: $text-tertiary;
+						margin-left: 4rpx;
+					}
+				}
 			}
 		}
 	}

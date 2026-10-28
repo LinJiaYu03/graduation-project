@@ -235,28 +235,31 @@
 	width: 300rpx;
 	height: 88rpx;
 	line-height: 88rpx;
-	background: linear-gradient(135deg, #0bb4f0, #4ad1f9);
-	color: #fff;
+	background: $brand-primary;
+	color: $text-on-primary;
 	border: none;
-	border-radius: 16rpx;
+	border-radius: $radius-pill;
 }
 
 .scan-box {
 	width: 520rpx;
-	height: 520rpx;
+	padding: 32rpx;
+	background: $bg-card;
+	border: 1rpx solid $border-base;
+	border-radius: $radius-md;
+	box-shadow: $shadow-card;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	padding: 32rpx;
 	box-sizing: border-box;
 }
 
 .scan-frame {
 	width: 100%;
-	height: 100%;
-	border: 4rpx dashed #0bb4f0;
-	border-radius: 24rpx;
+	height: 420rpx;
+	border: 4rpx dashed $brand-primary;
+	border-radius: $radius-sm;
 	position: relative;
 	box-sizing: border-box;
 	overflow: hidden;
@@ -268,9 +271,9 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: #999;
+	color: $text-tertiary;
 	font-size: 26rpx;
-	background: #f6f6f6;
+	background: $bg-subtle;
 }
 
 .camera-view {
@@ -280,8 +283,8 @@
 
 .scan-hint {
 	margin-top: 24rpx;
-	font-size: 28rpx;
-	color: #666;
+	font-size: 26rpx;
+	color: $text-secondary;
 }
 
 .album-btn {
@@ -289,9 +292,13 @@
 	width: 240rpx;
 	height: 88rpx;
 	line-height: 88rpx;
-	background: linear-gradient(135deg, #FCB857 0%, #FF9800 100%);
-	color: #fff;
+	background: $brand-primary;
+	color: $text-on-primary;
 	border: none;
-	border-radius: 16rpx;
+	border-radius: $radius-pill;
+
+	&:active {
+		background: $brand-primary-deep;
+	}
 }
 </style>

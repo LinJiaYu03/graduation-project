@@ -124,7 +124,7 @@
 <style lang="scss" scoped>
 	.registration-container {
 		min-height: 100vh;
-		background: linear-gradient(180deg, #e6f4ff 0%, #f0f8ff 100%);
+		background: $bg-page;
 		padding: 80rpx 60rpx;
 		display: flex;
 		flex-direction: column;
@@ -132,53 +132,54 @@
 
 	.registration-header {
 		text-align: center;
-		margin: 100rpx 0;
+		margin: 80rpx 0;
 
 		.title {
 			display: block;
-			font-size: 56rpx;
-			font-weight: bold;
-			color: #1890ff;
-			margin-bottom: 20rpx;
+			font-size: 52rpx;
+			font-weight: 600;
+			color: $text-primary;
+			margin-bottom: 16rpx;
 		}
 
 		.subtitle {
 			display: block;
-			font-size: 28rpx;
-			color: #409eff;
+			font-size: 26rpx;
+			color: $text-secondary;
 		}
 	}
 
 	.registration-form {
-		background: #ffffff;
-		border-radius: 16rpx;
-		padding: 60rpx 40rpx;
-		box-shadow: 0 4rpx 20rpx rgba(24, 144, 255, 0.15);
+		background: $bg-card;
+		border: 1rpx solid $border-base;
+		border-radius: $radius-md;
+		padding: 56rpx 40rpx;
+		box-shadow: $shadow-card;
 	}
 
 	.input {
 		width: 100%;
 		height: 88rpx;
-		background: #fafafa;
-		border-radius: 8rpx;
+		background: $bg-subtle;
+		border-radius: $radius-sm;
 		padding: 0 24rpx;
 		font-size: 28rpx;
-		color: #333333;
+		color: $text-primary;
 		box-sizing: border-box;
-		border: 1rpx solid #d9ecff;
+		border: 2rpx solid transparent;
 
 		&::placeholder {
-			color: #999999;
+			color: $text-tertiary;
 		}
 	}
 
 	.register-btn {
 		width: 100%;
 		height: 88rpx;
-		background: #1890ff;
-		border-radius: 8rpx;
-		color: #ffffff;
-		font-size: 32rpx;
+		background: $brand-primary;
+		border-radius: $radius-pill;
+		color: $text-on-primary;
+		font-size: 30rpx;
 		font-weight: 500;
 		margin-top: 40rpx;
 		border: none;
@@ -191,8 +192,7 @@
 		}
 
 		&:active {
-			opacity: 0.8;
-			background: #40a9ff;
+			background: $brand-primary-deep;
 		}
 	}
 
@@ -202,7 +202,7 @@
 
 		.link-text {
 			font-size: 26rpx;
-			color: #1890ff;
+			color: $brand-primary-ink;
 		}
 	}
 </style>

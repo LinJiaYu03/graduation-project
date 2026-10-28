@@ -11,7 +11,7 @@
 								<text :class="schoolOptionIndex !== null ? 'picker-text' : 'picker-placeholder'">
 									{{ schoolOptions[schoolOptionIndex] || '请选择或新建学校' }}
 								</text>
-								<uni-icons type="arrowdown" size="16" color="#999"></uni-icons>
+								<uni-icons type="arrowdown" size="16" color="#A39B90"></uni-icons>
 							</view>
 						</picker>
 						<!-- 新建学校输入框 -->
@@ -41,7 +41,7 @@
 								<text :class="collegeOptionIndex !== null ? 'picker-text' : 'picker-placeholder'">
 									{{ collegeOptions[collegeOptionIndex] || '请选择或新建学院（可选）' }}
 								</text>
-								<uni-icons type="arrowdown" size="16" color="#999"></uni-icons>
+								<uni-icons type="arrowdown" size="16" color="#A39B90"></uni-icons>
 							</view>
 						</picker>
 						<!-- 新建学院输入框 -->
@@ -303,13 +303,10 @@
 </script>
 
 <style lang="scss" scoped>
-	$primary-color: #FCB857;
-	$primary-dark: #E6A33D;
-	$bg-color: #F8F9FA;
-	$text-primary: #333333;
-	$text-secondary: #666666;
-	$text-light: #999999;
-	$border-color: #F0F0F0;
+	$primary-color: $brand-primary;
+	$primary-dark: $brand-primary-deep;
+	$bg-color: $bg-page;
+	$border-color: $border-base;
 	$white: #FFFFFF;
 
 	.page {
@@ -319,28 +316,26 @@
 
 	.form-container {
 		background: $white;
-		border-radius: 20rpx;
-		margin: 100rpx 30rpx;
+		border-radius: $radius-md;
+		margin: 24rpx;
 		padding: 40rpx 32rpx;
-		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+		box-shadow: $shadow-card;
 		border: 1rpx solid $border-color;
 	}
 
 	.picker-input {
 		width: 100%;
 		height: 88rpx;
-		background: #fafafa;
-		border-radius: 8rpx;
+		background: $bg-subtle;
+		border-radius: $radius-sm;
 		padding: 0 24rpx;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		box-sizing: border-box;
-		border: 1rpx solid $border-color;
-		transition: all 0.3s ease;
+		border: 2rpx solid transparent;
 
 		&.picker-disabled {
-			background: #f5f5f5;
 			opacity: 0.6;
 		}
 
@@ -352,7 +347,7 @@
 
 		.picker-placeholder {
 			font-size: 28rpx;
-			color: $text-light;
+			color: $text-tertiary;
 			flex: 1;
 		}
 	}
@@ -367,35 +362,33 @@
 	.input {
 		width: 100%;
 		height: 88rpx;
-		background: #fafafa;
-		border-radius: 8rpx;
+		background: $bg-subtle;
+		border-radius: $radius-sm;
 		padding: 0 24rpx;
 		font-size: 28rpx;
 		color: $text-primary;
 		box-sizing: border-box;
-		border: 1rpx solid $border-color;
-		transition: all 0.3s ease;
+		border: 2rpx solid transparent;
 
 		&.input-new {
 			margin-top: 20rpx;
 		}
 
 		&.input-disabled {
-			background: #f5f5f5;
 			opacity: 0.6;
-			color: $text-light;
+			color: $text-tertiary;
 		}
 
 		&::placeholder {
-			color: $text-light;
+			color: $text-tertiary;
 		}
 	}
 
 	.tips-container {
-		margin-top: 40rpx;
+		margin-top: 32rpx;
 		padding: 24rpx;
-		background: rgba(252, 184, 87, 0.1);
-		border-radius: 12rpx;
+		background: $brand-primary-soft;
+		border-radius: $radius-sm;
 		border-left: 4rpx solid $primary-color;
 
 		.tips-item {
@@ -417,31 +410,32 @@
 	}
 
 	.submit-container {
-		margin-top: 60rpx;
+		margin-top: 48rpx;
 	}
 
 	.submit-btn {
 		width: 100%;
-		height: 100rpx;
-		background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+		height: 96rpx;
+		background: $brand-primary;
 		border: none;
-		border-radius: 50rpx;
-		font-size: 34rpx;
-		font-weight: 600;
-		color: $white;
-		box-shadow: 0 8rpx 30rpx rgba(252, 184, 87, 0.3);
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		border-radius: $radius-pill;
+		font-size: 32rpx;
+		font-weight: 500;
+		color: $text-on-primary;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+
+		&::after {
+			border: none;
+		}
 
 		.btn-text {
 			letter-spacing: 2rpx;
 		}
 
 		&:active {
-			transform: scale(0.98);
-			opacity: 0.9;
+			background: $brand-primary-deep;
 		}
 	}
 </style>

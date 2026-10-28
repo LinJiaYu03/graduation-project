@@ -69,7 +69,7 @@
 					<view class="info_list">
 						<view class="info_item info_item--time">
 							<view class="info_label">
-								<uni-icons type="calendar" size="16" color="#666"></uni-icons>
+								<uni-icons type="calendar" size="16" color="#A39B90"></uni-icons>
 								<text>报名时间</text>
 							</view>
 							<view class="info_value info_value--time">
@@ -80,7 +80,7 @@
 						</view>
 						<view class="info_item info_item--time">
 							<view class="info_label">
-								<uni-icons type="calendar" size="16" color="#666"></uni-icons>
+								<uni-icons type="calendar" size="16" color="#A39B90"></uni-icons>
 								<text>活动时间</text>
 							</view>
 							<view class="info_value info_value--time">
@@ -91,28 +91,28 @@
 						</view>
 						<view class="info_item">
 							<view class="info_label">
-								<uni-icons type="flag" size="16" color="#666"></uni-icons>
+								<uni-icons type="flag" size="16" color="#A39B90"></uni-icons>
 								<text>活动级别</text>
 							</view>
 							<view class="info_value">{{ activityInfo?.activityLevel }}</view>
 						</view>
 						<view class="info_item">
 							<view class="info_label">
-								<uni-icons type="bars" size="16" color="#666"></uni-icons>
+								<uni-icons type="bars" size="16" color="#A39B90"></uni-icons>
 								<text>活动类型</text>
 							</view>
 							<view class="info_value">{{ activityInfo?.activityType }}</view>
 						</view>
 						<view class="info_item">
 							<view class="info_label">
-								<uni-icons type="person" size="16" color="#666"></uni-icons>
+								<uni-icons type="person" size="16" color="#A39B90"></uni-icons>
 								<text>最大报名人数</text>
 							</view>
 							<view class="info_value">{{ activityInfo?.maxParticipants }}</view>
 						</view>
 						<view class="info_item">
 							<view class="info_label">
-								<uni-icons type="star" size="16" color="#666"></uni-icons>
+								<uni-icons type="star" size="16" color="#A39B90"></uni-icons>
 								<text>综合评分</text>
 							</view>
 							<view class="info_value rating">{{ activityInfo?.score }}</view>
@@ -281,13 +281,13 @@
 <style lang="scss" scoped>
 	.activityDetail {
 		position: relative;
-		background: #f8f8f8;
+		background: $bg-page;
 		min-height: 100vh;
 
 		.activityDetail_top {
 			position: relative;
 			overflow: hidden;
-			background: #fff;
+			background: $bg-card;
 
 			.banner {
 				width: 100vw;
@@ -314,10 +314,10 @@
 					position: absolute;
 					top: 30rpx;
 					right: 30rpx;
-					background: rgba(0, 0, 0, 0.4);
-					color: #fff;
+					background: rgba(46, 42, 36, 0.55);
+					color: $text-inverse;
 					padding: 8rpx 20rpx;
-					border-radius: 20rpx;
+					border-radius: $radius-pill;
 					font-size: 24rpx;
 					backdrop-filter: blur(10px);
 				}
@@ -328,7 +328,7 @@
 				left: 0;
 				bottom: 0;
 				width: 100%;
-				color: #fff;
+				color: $text-inverse;
 				z-index: 10;
 				padding: 40rpx 30rpx 30rpx;
 				box-sizing: border-box;
@@ -340,9 +340,9 @@
 					width: 100%;
 					height: 100%;
 					background: linear-gradient(to top,
-							rgba(60, 60, 60, 0.9) 0%,
-							rgba(90, 90, 90, 0.5) 60%,
-							rgba(120, 120, 120, 0.2) 85%,
+							rgba(46, 42, 36, 0.9) 0%,
+							rgba(70, 64, 55, 0.5) 60%,
+							rgba(95, 87, 75, 0.2) 85%,
 							transparent 100%);
 					z-index: -1;
 				}
@@ -353,19 +353,19 @@
 
 					.status-tag {
 						display: inline-block;
-						background: linear-gradient(135deg, #0083F4, #0066CC);
+						background: $brand-primary;
+						color: $text-on-primary;
 						padding: 8rpx 24rpx;
 						font-size: 24rpx;
-						border-radius: 12rpx;
+						border-radius: $radius-pill;
 						font-weight: 500;
 						letter-spacing: 1rpx;
 						margin-bottom: 24rpx;
-						box-shadow: 0 4rpx 12rpx rgba(0, 131, 244, 0.3);
 					}
 
 					.title {
 						font-size: 36rpx;
-						font-weight: 700;
+						font-weight: 600;
 						line-height: 1.4;
 						margin-bottom: 24rpx;
 						text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.5);
@@ -411,16 +411,17 @@
 				height: 100%;
 
 				.detail_container {
-					padding: 30rpx;
+					padding: 24rpx;
 				}
 			}
 
 			.organizer_card {
-				background: #fff;
-				border-radius: 16rpx;
-				padding: 30rpx;
+				background: $bg-card;
+				border: 1rpx solid $border-base;
+				border-radius: $radius-md;
+				padding: 28rpx;
 				margin-bottom: 24rpx;
-				box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+				box-shadow: $shadow-card;
 
 				.organizer_header {
 					display: flex;
@@ -429,7 +430,7 @@
 					.organizer_avatar {
 						width: 80rpx;
 						height: 80rpx;
-						border-radius: 12rpx;
+						border-radius: $radius-sm;
 						margin-right: 20rpx;
 					}
 
@@ -437,39 +438,40 @@
 						flex: 1;
 
 						.organizer_name {
-							font-size: 32rpx;
+							font-size: 30rpx;
 							font-weight: 600;
-							color: #333;
+							color: $text-primary;
 							margin-bottom: 8rpx;
 						}
 
 						.organizer_desc {
 							font-size: 24rpx;
-							color: #999;
+							color: $text-tertiary;
 						}
 					}
 
 					.follow_btn {
 						padding: 12rpx 24rpx;
-						border: 1rpx solid $uni-topic-color;
-						color: $uni-topic-color;
-						border-radius: 20rpx;
+						border: 1rpx solid $brand-primary;
+						color: $brand-primary-ink;
+						border-radius: $radius-pill;
 						font-size: 24rpx;
 					}
 				}
 			}
 
 			.detail_section {
-				background: #fff;
-				border-radius: 16rpx;
-				padding: 30rpx;
+				background: $bg-card;
+				border: 1rpx solid $border-base;
+				border-radius: $radius-md;
+				padding: 28rpx;
 				margin-bottom: 24rpx;
-				box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+				box-shadow: $shadow-card;
 
 				.section_title {
-					font-size: 32rpx;
+					font-size: 30rpx;
 					font-weight: 600;
-					color: #333;
+					color: $text-primary;
 					margin-bottom: 20rpx;
 					position: relative;
 					padding-left: 20rpx;
@@ -481,8 +483,8 @@
 						top: 50%;
 						transform: translateY(-50%);
 						width: 6rpx;
-						height: 28rpx;
-						background: $uni-topic-color;
+						height: 24rpx;
+						background: $brand-primary;
 						border-radius: 3rpx;
 					}
 				}
@@ -490,23 +492,24 @@
 				.section_content {
 					font-size: 28rpx;
 					line-height: 1.6;
-					color: #666;
+					color: $text-secondary;
 				}
 			}
 
 			.info_list {
 				margin-bottom: 24rpx;
-				background: #fff;
-				border-radius: 16rpx;
+				background: $bg-card;
+				border: 1rpx solid $border-base;
+				border-radius: $radius-md;
 				overflow: hidden;
-				box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+				box-shadow: $shadow-card;
 
 				.info_item {
 					display: flex;
 					justify-content: space-between;
 					align-items: center;
-					padding: 28rpx 30rpx;
-					border-bottom: 1rpx solid #f0f0f0;
+					padding: 28rpx;
+					border-bottom: 1rpx solid $border-light;
 
 					&:last-child {
 						border-bottom: none;
@@ -515,7 +518,7 @@
 					&--time {
 						flex-direction: column;
 						align-items: flex-start;
-						padding: 32rpx 30rpx;
+						padding: 30rpx 28rpx;
 
 						.info_label {
 							margin-bottom: 16rpx;
@@ -531,8 +534,8 @@
 					.info_label {
 						display: flex;
 						align-items: center;
-						font-size: 28rpx;
-						color: #666;
+						font-size: 26rpx;
+						color: $text-secondary;
 						flex-shrink: 0;
 						margin-right: 20rpx;
 
@@ -542,15 +545,15 @@
 					}
 
 					.info_value {
-						font-size: 28rpx;
-						color: #333;
+						font-size: 26rpx;
+						color: $text-primary;
 						font-weight: 500;
 						text-align: right;
 						flex: 1;
 						min-width: 0;
 
 						&.rating {
-							color: #FF6B35;
+							color: $brand-primary-ink;
 						}
 
 						&--time {
@@ -562,7 +565,7 @@
 							.time_start,
 							.time_end {
 								font-size: 26rpx;
-								color: #333;
+								color: $text-primary;
 								font-weight: 500;
 								line-height: 1.6;
 								word-break: break-all;
@@ -578,21 +581,21 @@
 									width: 8rpx;
 									height: 8rpx;
 									border-radius: 50%;
-									background: $uni-topic-color;
+									background: $brand-primary;
 								}
 							}
 
 							.time_start::before {
-								background: #4CAF50;
+								background: $brand-primary;
 							}
 
 							.time_end::before {
-								background: #FF6B35;
+								background: $brand-primary-deep;
 							}
 
 							.time_separator {
 								font-size: 24rpx;
-								color: #999;
+								color: $text-tertiary;
 								margin: 2rpx 0 2rpx 24rpx;
 								font-weight: 400;
 								opacity: 0.8;
@@ -611,8 +614,9 @@
 			bottom: 0;
 			width: 100vw;
 			height: 120rpx;
-			background: #fff;
-			box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
+			background: $bg-card;
+			border-top: 1rpx solid $border-light;
+			box-shadow: $shadow-bar;
 			padding: 0 30rpx;
 			box-sizing: border-box;
 			align-items: center;
@@ -626,11 +630,11 @@
 
 				.btn_text {
 					font-size: 22rpx;
-					color: #666;
+					color: $text-secondary;
 					margin-top: 8rpx;
 
 					&.collected {
-						color: #FCB857;
+						color: $brand-primary;
 					}
 				}
 			}
@@ -640,19 +644,19 @@
 				height: 80rpx;
 				line-height: 80rpx;
 				text-align: center;
-				background: linear-gradient(135deg, $uni-topic-color, darken($uni-topic-color, 10%));
-				color: #fff;
+				background: linear-gradient(135deg, $brand-primary, $brand-primary-deep);
+				color: $text-on-primary;
 				font-size: 32rpx;
 				font-weight: 600;
-				border-radius: 40rpx;
-				box-shadow: 0 8rpx 24rpx rgba($uni-topic-color, 0.3);
+				border-radius: $radius-pill;
 			}
 
 			&.activityDetail_btn--review {
 				padding: 0 40rpx;
 				height: 140rpx;
-				background: #fff;
-				box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
+				background: $bg-card;
+				border-top: 1rpx solid $border-light;
+				box-shadow: $shadow-bar;
 
 				.review_action {
 					flex: 1;
@@ -660,7 +664,7 @@
 					display: flex;
 					align-items: center;
 					justify-content: center;
-					border-radius: 40rpx;
+					border-radius: $radius-pill;
 					font-size: 0;
 
 					uni-icons {
@@ -673,23 +677,21 @@
 					}
 
 					&--reject {
-						background: linear-gradient(135deg, #FF6B6B, #FF4757);
-						color: #fff;
-						box-shadow: 0 6rpx 16rpx rgba(255, 107, 107, 0.3);
+						background: $color-danger;
+						color: $text-inverse;
 
 						&:active {
-							background: linear-gradient(135deg, #FF4757, #FF3838);
+							opacity: 0.85;
 							transform: translateY(2rpx);
 						}
 					}
 
 					&--approve {
-						background: linear-gradient(135deg, #4CAF50, #2E7D32);
-						color: #fff;
-						box-shadow: 0 6rpx 16rpx rgba(76, 175, 80, 0.3);
+						background: $color-success;
+						color: $text-inverse;
 
 						&:active {
-							background: linear-gradient(135deg, #43A047, #1B5E20);
+							opacity: 0.85;
 							transform: translateY(2rpx);
 						}
 					}

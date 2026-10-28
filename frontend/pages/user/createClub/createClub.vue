@@ -42,7 +42,7 @@
 			</uni-forms>
 
 			<!-- 提交按钮 -->
-			<button class="submit-btn" type="primary" @click="handleSubmit">提交</button>
+			<button class="submit-btn" @click="handleSubmit">提交</button>
 		</view>
 	</view>
 </template>
@@ -224,12 +224,9 @@
 </script>
 
 <style lang="scss" scoped>
-	$primary-color: #FCB857;
-	$bg-color: #F8F9FA;
-	$text-primary: #333333;
-	$text-secondary: #666666;
-	$text-light: #999999;
-	$border-color: #F0F0F0;
+	$primary-color: $brand-primary;
+	$bg-color: $bg-page;
+	$border-color: $border-base;
 	$white: #FFFFFF;
 
 	.create-club {
@@ -240,45 +237,43 @@
 
 	.form-container {
 		background: $white;
-		border-radius: 20rpx;
-		margin: 30rpx;
+		border-radius: $radius-md;
+		margin: 24rpx;
 		padding: 40rpx 32rpx;
-		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+		box-shadow: $shadow-card;
 		border: 1rpx solid $border-color;
 	}
 
 	.input {
 		width: 100%;
 		height: 88rpx;
-		background: #fafafa;
-		border-radius: 8rpx;
+		background: $bg-subtle;
+		border-radius: $radius-sm;
 		padding: 0 24rpx;
 		font-size: 28rpx;
 		color: $text-primary;
 		box-sizing: border-box;
-		border: 1rpx solid $border-color;
-		transition: all 0.3s ease;
+		border: 2rpx solid transparent;
 
 		&::placeholder {
-			color: $text-light;
+			color: $text-tertiary;
 		}
 	}
 
 	.textarea {
 		width: 100%;
 		min-height: 200rpx;
-		background: #fafafa;
-		border-radius: 8rpx;
+		background: $bg-subtle;
+		border-radius: $radius-sm;
 		padding: 20rpx 24rpx;
 		font-size: 28rpx;
 		color: $text-primary;
 		box-sizing: border-box;
-		border: 1rpx solid $border-color;
+		border: 2rpx solid transparent;
 		line-height: 1.6;
-		transition: all 0.3s ease;
 
 		&::placeholder {
-			color: $text-light;
+			color: $text-tertiary;
 		}
 	}
 
@@ -286,7 +281,7 @@
 		margin-top: 12rpx;
 		text-align: right;
 		font-size: 24rpx;
-		color: $text-light;
+		color: $text-tertiary;
 	}
 
 	.tags-container {
@@ -298,36 +293,36 @@
 		.tag-item {
 			margin: 0;
 			cursor: pointer;
-			transition: all 0.3s ease;
 		}
 	}
 
 	.tip-text {
 		margin-top: 12rpx;
 		font-size: 24rpx;
-		color: $text-light;
+		color: $text-tertiary;
 		line-height: 1.5;
 	}
 
 	.submit-btn {
 		margin-top: 60rpx;
 		width: 100%;
-		height: 100rpx;
-		background: linear-gradient(135deg, $primary-color 0%, #E6A33D 100%);
+		height: 96rpx;
+		background: $brand-primary;
 		border: none;
-		border-radius: 50rpx;
-		font-size: 34rpx;
-		font-weight: 600;
-		color: $white;
-		box-shadow: 0 8rpx 30rpx rgba(252, 184, 87, 0.3);
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		border-radius: $radius-pill;
+		font-size: 32rpx;
+		font-weight: 500;
+		color: $text-on-primary;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 
+		&::after {
+			border: none;
+		}
+
 		&:active {
-			transform: scale(0.98);
-			opacity: 0.9;
+			background: $brand-primary-deep;
 		}
 	}
 
@@ -337,7 +332,7 @@
 	}
 
 	:deep(.uni-forms-item__label) {
-		font-size: 30rpx;
+		font-size: 28rpx;
 		font-weight: 500;
 		color: $text-primary;
 		margin-bottom: 16rpx;

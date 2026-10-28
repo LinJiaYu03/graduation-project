@@ -18,7 +18,7 @@
 						:class="{ loaded: imageLoaded[index] }"
 					/>
 					<view v-if="!item.imageUrls[0]" class="image-placeholder">
-						<uni-icons type="image" size="40" color="#c0c4cc"></uni-icons>
+						<uni-icons type="image" size="40" color="#A39B90"></uni-icons>
 					</view>
 				</view>
 				
@@ -29,7 +29,7 @@
 					</view>
 					
 					<view class="activity-time">
-						<uni-icons type="calendar" size="16" color="#999"></uni-icons>
+						<uni-icons type="calendar" size="16" color="#A39B90"></uni-icons>
 						<text class="time-text">
 							{{ formatTime(item.startTime, 'YYYY.MM.DD hh:mm') }} - 
 							{{ formatTime(item.endTime, 'hh:mm') }}
@@ -37,7 +37,7 @@
 					</view>
 					
 					<view v-if="item.location" class="activity-location">
-						<uni-icons type="location" size="16" color="#999"></uni-icons>
+						<uni-icons type="location" size="16" color="#A39B90"></uni-icons>
 						<text class="location-text">{{ item.location }}</text>
 					</view>
 					
@@ -111,39 +111,20 @@
 
 <style lang="scss" scoped>
 	.club-review {
-		padding: 32rpx;
-		background: linear-gradient(180deg, #f5f7fa 0%, #f0f2f5 100%);
+		padding: 24rpx;
+		background: $bg-page;
 		min-height: 100vh;
 	}
 
 	.activity-card {
 		position: relative;
-		background: #ffffff;
-		border-radius: 24rpx;
-		padding: 40rpx;
-		margin-bottom: 32rpx;
-		box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.08);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		background: $bg-card;
+		border-radius: $radius-md;
+		padding: 28rpx;
+		margin-bottom: 24rpx;
+		box-shadow: $shadow-card;
+		border: 1rpx solid $border-base;
 		overflow: hidden;
-		animation: slideInUp 0.5s ease-out forwards;
-		opacity: 0;
-
-		&:hover {
-			transform: translateY(-4rpx);
-			box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.12);
-		}
-
-		&::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			height: 6rpx;
-			background: linear-gradient(90deg, #3498db, #2ecc71);
-			opacity: 0.8;
-		}
 	}
 
 	.activity-status {
@@ -151,42 +132,33 @@
 		top: 24rpx;
 		right: 24rpx;
 		padding: 6rpx 20rpx;
-		border-radius: 20rpx;
+		border-radius: $radius-pill;
 		font-size: 22rpx;
-		font-weight: 600;
+		font-weight: 500;
 		letter-spacing: 0.5rpx;
 		z-index: 2;
-		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
-		background: linear-gradient(135deg, #ff9500, #ffaa33);
-		color: #fff;
+		background: $brand-primary-soft;
+		color: $brand-primary-ink;
 	}
 
 	.activity-info {
 		display: flex;
-		gap: 32rpx;
-		margin-bottom: 40rpx;
+		gap: 24rpx;
+		margin-bottom: 24rpx;
 
 		.activity-image {
 			flex-shrink: 0;
-			width: 280rpx;
-			height: 200rpx;
-			border-radius: 20rpx;
+			width: 240rpx;
+			height: 180rpx;
+			border-radius: $radius-sm;
 			overflow: hidden;
 			position: relative;
-			background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-			box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+			background: $bg-subtle;
 
 			image {
 				width: 100%;
 				height: 100%;
 				object-fit: cover;
-				transition: transform 0.6s ease;
-				opacity: 0;
-
-				&.loaded {
-					opacity: 1;
-					animation: fadeIn 0.5s ease-out;
-				}
 			}
 
 			.image-placeholder {
@@ -198,7 +170,7 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+				background: $bg-subtle;
 			}
 		}
 
@@ -207,7 +179,7 @@
 			min-width: 0;
 			display: flex;
 			flex-direction: column;
-			gap: 16rpx;
+			gap: 12rpx;
 
 			.activity-header {
 				display: flex;
@@ -217,9 +189,9 @@
 
 				.activity-title {
 					flex: 1;
-					font-size: 36rpx;
-					font-weight: 700;
-					color: #1a1a1a;
+					font-size: 30rpx;
+					font-weight: 600;
+					color: $text-primary;
 					line-height: 1.4;
 					display: -webkit-box;
 					-webkit-line-clamp: 2;
@@ -231,11 +203,11 @@
 				.activity-type {
 					flex-shrink: 0;
 					padding: 6rpx 20rpx;
-					background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.2));
-					color: #3498db;
-					font-size: 24rpx;
-					border-radius: 12rpx;
-					font-weight: 600;
+					background: $brand-primary-soft;
+					color: $brand-primary-ink;
+					font-size: 22rpx;
+					border-radius: $radius-pill;
+					font-weight: 500;
 				}
 			}
 
@@ -244,8 +216,8 @@
 				display: flex;
 				align-items: center;
 				gap: 12rpx;
-				font-size: 26rpx;
-				color: #666;
+				font-size: 24rpx;
+				color: $text-secondary;
 
 				.time-text,
 				.location-text {
@@ -256,15 +228,15 @@
 
 			.activity-footer {
 				margin-top: auto;
-				padding-top: 16rpx;
-				border-top: 1px solid #eee;
+				padding-top: 12rpx;
+				border-top: 1rpx solid $border-light;
 
 				.participant-count {
 					display: flex;
 					align-items: center;
 					gap: 8rpx;
-					font-size: 26rpx;
-					color: #666;
+					font-size: 24rpx;
+					color: $text-secondary;
 				}
 			}
 		}
@@ -272,23 +244,21 @@
 
 	.activity-actions {
 		display: flex;
-		gap: 24rpx;
-		padding-top: 32rpx;
-		border-top: 1px solid #f0f0f0;
+		gap: 16rpx;
+		padding-top: 24rpx;
+		border-top: 1rpx solid $border-light;
 
 		button {
 			flex: 1;
-			height: 80rpx;
+			height: 76rpx;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			gap: 12rpx;
-			border-radius: 20rpx;
-			font-size: 28rpx;
-			font-weight: 600;
-			transition: all 0.3s ease;
+			border-radius: $radius-pill;
+			font-size: 26rpx;
+			font-weight: 500;
 			border: none;
-			position: relative;
 			overflow: hidden;
 
 			&::after {
@@ -296,33 +266,30 @@
 			}
 
 			&.btn-detail {
-				background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-				color: #666;
-				border: 2rpx solid #e0e0e0;
+				background: $bg-card;
+				color: $text-secondary;
+				border: 2rpx solid $border-base;
 
 				&:active {
-					background: linear-gradient(135deg, #e9ecef, #dee2e6);
-					transform: scale(0.98);
+					background: $bg-subtle;
 				}
 			}
 
 			&.btn-review {
-				background: linear-gradient(135deg, #3498db, #2980b9);
-				color: #fff;
-				box-shadow: 0 8rpx 24rpx rgba(52, 152, 219, 0.3);
+				background: $brand-primary;
+				color: $text-on-primary;
 
 				&:active {
-					background: linear-gradient(135deg, #2980b9, #2573a7);
-					transform: scale(0.98);
+					background: $brand-primary-deep;
 				}
 			}
 		}
 	}
 
 	.divider {
-		height: 1px;
-		background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
-		margin: 40rpx -40rpx 0;
+		height: 1rpx;
+		background: $border-light;
+		margin: 32rpx -28rpx 0;
 	}
 
 	.empty-state {
@@ -341,15 +308,15 @@
 		}
 
 		.empty-text {
-			font-size: 32rpx;
-			color: #666;
+			font-size: 30rpx;
+			color: $text-secondary;
 			font-weight: 600;
 			margin-bottom: 16rpx;
 		}
 
 		.empty-tip {
 			font-size: 26rpx;
-			color: #999;
+			color: $text-tertiary;
 		}
 	}
 

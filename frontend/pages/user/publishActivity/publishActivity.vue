@@ -37,7 +37,7 @@
 			</uni-forms-item>
 
 			<uni-forms-item label="最大报名人数" name="maxParticipants" required>
-				<uni-number-box v-model="form.maxParticipants" :min="1" :max="9999" :step="1" background="#f5f5f5" />
+				<uni-number-box v-model="form.maxParticipants" :min="1" :max="9999" :step="1" background="#F7F3EC" />
 			</uni-forms-item>
 
 			<uni-forms-item label="人员是否要审核" name="needReview" required>
@@ -50,7 +50,7 @@
 				<view class="tip-text">至少上传 1 张，最多 5 张图片</view>
 			</uni-forms-item>
 
-			<button class="submit-btn" type="primary" @click="handleSubmit">{{ isEditMode ? '保存修改' : '提交' }}</button>
+			<button class="submit-btn" @click="handleSubmit">{{ isEditMode ? '保存修改' : '提交' }}</button>
 		</uni-forms>
 	</view>
 </template>
@@ -426,15 +426,18 @@
 
 <style lang="scss" scoped>
 	.publish-activity {
-		background: #f7f8fa;
+		background: $bg-page;
 		min-height: 100vh;
+		padding: 24rpx;
+		box-sizing: border-box;
 	}
 
 	.uni-forms {
-		background: #ffffff;
-		border-radius: 16rpx;
-		padding: 24rpx;
-		box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
+		background: $bg-card;
+		border: 1rpx solid $border-base;
+		border-radius: $radius-md;
+		padding: 32rpx 24rpx;
+		box-shadow: $shadow-card;
 		display: flex;
 		flex-direction: column;
 		gap: 12rpx;
@@ -443,11 +446,27 @@
 	.tip-text {
 		margin-top: 8rpx;
 		font-size: 24rpx;
-		color: #999;
+		color: $text-tertiary;
 	}
 
 	.submit-btn {
 		margin-top: 32rpx;
 		width: 100%;
+		height: 96rpx;
+		line-height: 96rpx;
+		background: $brand-primary;
+		color: $text-on-primary;
+		font-size: 30rpx;
+		font-weight: 500;
+		border: none;
+		border-radius: $radius-pill;
+
+		&::after {
+			border: none;
+		}
+
+		&:active {
+			background: $brand-primary-deep;
+		}
 	}
 </style>

@@ -1,13 +1,15 @@
 <template>
 	<view class="participation container">
 		<view class="participation_step">
-			<uni-steps :options="list" :active="active" :active-color="list[2].title==='已拒绝'?activeColor:'#2979FF	'" />
+			<uni-steps :options="list" :active="active" :active-color="list[2].title==='已拒绝'?activeColor:'#FCB857'" />
 		</view>
 
 		<view class="participation_list">
-			<uni-list>
-				<uni-list-item title="报名时间" :rightText="formatTime(registrationTime,'YYYY.MM.DD')"></uni-list-item>
-			</uni-list>
+			<view class="list-card">
+				<uni-list>
+					<uni-list-item title="报名时间" :rightText="formatTime(registrationTime,'YYYY.MM.DD')"></uni-list-item>
+				</uni-list>
+			</view>
 		</view>
 	</view>
 </template>
@@ -26,7 +28,7 @@
 	const userId = uni.getStorageSync('userInfo').id
 	const registrationTime=ref('')
 	const active = ref(1)
-	const activeColor='#FB4A3E'
+	const activeColor='#E56B62'
 	const list = ref([{
 		title: '已报名'
 	}, {
@@ -73,11 +75,19 @@
 		flex-direction: column;
 
 		.participation_step {
-			margin-top: 20vh;
+			margin-top: 120rpx;
 		}
 
 		.participation_list {
-			margin-top: 270rpx;
+			margin-top: 48rpx;
+		}
+
+		.list-card {
+			background: $bg-card;
+			border: 1rpx solid $border-base;
+			border-radius: $radius-md;
+			overflow: hidden;
+			box-shadow: $shadow-card;
 		}
 	}
 </style>

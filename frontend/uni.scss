@@ -76,3 +76,55 @@ $uni-color-paragraph: #3F536E; // 文章段落颜色
 $uni-font-size-paragraph:15px;
 
 $uni-topic-color:#FCB857;
+
+/* ============ 设计令牌：暖白杏橙 ============ */
+
+/* 品牌色 */
+$brand-primary: #FCB857;
+$brand-primary-deep: #E9A23C;
+$brand-primary-ink: #8A5A12;
+$brand-primary-soft: #FFF4E1;
+$brand-primary-fade: #FFFBF4;
+
+/* 背景 */
+$bg-page: #FAF8F4;
+$bg-card: #FFFFFF;
+$bg-subtle: #F7F3EC;
+$bg-hover: #F2EDE4;
+
+/* 文字 */
+$text-primary: #2E2A24;
+$text-secondary: #6E675D;
+$text-tertiary: #A39B90;
+$text-inverse: #FFFFFF;
+$text-on-primary: #FFFFFF;
+
+/* 边框与分割线 */
+$border-base: #F1ECE4;
+$border-light: #F0EAE1;
+
+/* 状态色（仅语义使用） */
+$color-success: #5BBD8E;
+$color-success-soft: #EAF7F0;
+$color-danger: #E56B62;
+$color-danger-soft: #FCEEEC;
+$color-info: #8FA8C8;
+$color-info-soft: #EEF3F8;
+
+/* 圆角 */
+$radius-sm: 12rpx;
+$radius-md: 20rpx;
+$radius-pill: 999rpx;
+
+/* 阴影（仅两级） */
+$shadow-card: 0 6rpx 20rpx rgba(122, 94, 45, 0.06);
+$shadow-bar: 0 -6rpx 24rpx rgba(122, 94, 45, 0.06);
+
+/* 间距 */
+$space-xs: 8rpx;
+$space-sm: 12rpx;
+$space-md: 16rpx;
+$space-lg: 24rpx;
+$space-xl: 32rpx;
+$space-2xl: 40rpx;
+$space-3xl: 48rpx;

@@ -2,10 +2,10 @@
 	<view class="com_search_container">
 		<view class="search_input">
 			<view class="search_box">
-				<uni-icons type="search" size="20" color="#999"></uni-icons>
-				<input :value="value" @input="onInput" class="text" placeholder="搜索"></input>
+				<uni-icons type="search" size="20" color="#A39B90"></uni-icons>
+				<input :value="value" @input="onInput" class="text" placeholder="搜索" placeholder-style="color:#A39B90" confirm-type="search"></input>
 			</view>
-			<uni-icons type="close" size="20" v-if="isShowCloseIcon" @click="onClearSearchText"></uni-icons>
+			<uni-icons type="close" size="20" color="#A39B90" v-if="isShowCloseIcon" @click="onClearSearchText"></uni-icons>
 			<view class="btn" @click="onSearch">搜索</view>
 		</view>
 	</view>
@@ -49,34 +49,41 @@
 			align-items: center;
 			justify-content: space-between;
 			height: 80rpx;
-			background: #fff;
-			border-radius: 16rpx;
-			padding: 0 24rpx;
-			box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+			background: $bg-card;
+			border: 2rpx solid $border-light;
+			border-radius: $radius-pill;
+			padding: 0 20rpx 0 28rpx;
 
 			.search_box {
 				display: flex;
 				align-items: center;
 				flex: 1;
-				color: #999;
+				color: $text-tertiary;
 				font-size: 28rpx;
 
 				.text {
 					margin-left: 16rpx;
+					flex: 1;
+					color: $text-primary;
 				}
 			}
 
 			.btn {
-				width: 120rpx;
+				width: 112rpx;
 				height: 56rpx;
-				background: $uni-topic-color;
-				color: #fff;
-				font-size: 26rpx;
-				border-radius: 12rpx;
+				background: $brand-primary;
+				color: $text-on-primary;
+				font-size: 24rpx;
+				font-weight: 500;
+				border-radius: $radius-pill;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				margin-left: 20rpx;
+				margin-left: 16rpx;
+
+				&:active {
+					background: $brand-primary-deep;
+				}
 			}
 		}
 	}

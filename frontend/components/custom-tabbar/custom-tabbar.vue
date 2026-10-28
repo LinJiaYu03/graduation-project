@@ -112,8 +112,9 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
-		background-color: #ffffff;
-		border-top: 1px solid #e5e5e5;
+		background-color: $bg-card;
+		border-top: 1rpx solid $border-light;
+		box-shadow: $shadow-bar;
 		z-index: 999;
 	}
 
@@ -121,7 +122,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-around;
-		padding: 10rpx 0;
+		padding: 8rpx 0;
 		height: 98rpx;
 	}
 
@@ -132,7 +133,7 @@
 		justify-content: center;
 		flex: 1;
 		height: 100%;
-		transition: all 0.3s;
+		transition: opacity 0.2s ease;
 	}
 
 	.tabbar-icon {
@@ -142,24 +143,25 @@
 	}
 
 	.tabbar-text {
-		font-size: 24rpx;
-		color: #bfbfbf;
-		transition: color 0.3s;
+		font-size: 22rpx;
+		color: $text-tertiary;
+		transition: color 0.2s ease;
 	}
 
 	.tabbar-item.active .tabbar-text {
-		color: #007aff;
+		color: $brand-primary;
+		font-weight: 500;
 	}
 
 	.safety-area {
 		width: 100%;
 		height: env(safe-area-inset-bottom);
-		background-color: #ffffff;
+		background-color: $bg-card;
 	}
-	
+
 	.area {
 		width: 100%;
 		height: calc(env(safe-area-inset-bottom) + 100rpx);
-		background-color: #ffffff;
+		background-color: transparent;
 	}
 </style>
