@@ -100,7 +100,7 @@
 			// 保存token以便后续请求使用
 			uni.setStorageSync('token', token)
 			uni.navigateTo({
-				url: `/pages/system/userInfo/userInfo?id=${user.id}`,
+				url: '/pages/system/userInfo/userInfo',
 				success() {
 					uni.showToast({
 						title: '请先完善个人信息',

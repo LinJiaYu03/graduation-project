@@ -66,9 +66,6 @@
 		onMounted
 	} from 'vue'
 	import {
-		onLoad
-	} from '@dcloudio/uni-app'
-	import {
 		apiGetSchoolInfoTree
 	} from '@/api/school/index.js'
 	import {
@@ -86,9 +83,8 @@
 		phone: '',
 		email: ''
 	})
-	const userId = ref()
 
-	// 三级联动数据（示例数据，可根据实际情况修改）
+	// 三级联动数据
 	const schoolData = ref([])
 
 	// 初始化 multiIndex，兼容后端返回的对象结构
@@ -280,7 +276,7 @@
 		try {
 			await form.value.validate()
 
-			let res = await apiImproveUserInfo(userId.value, formData)
+			let res = await apiImproveUserInfo(formData)
 
 			if (res.code === 200) {
 				uni.setStorageSync('userInfo', res.data.user)
@@ -313,10 +309,6 @@
 
 	onMounted(async () => {
 		getSchoolInfoTree()
-	})
-
-	onLoad((e) => {
-		userId.value = e.id
 	})
 </script>
 

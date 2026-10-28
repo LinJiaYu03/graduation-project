@@ -10,9 +10,7 @@ from app.core.login_guard import (
     record_login_failure,
 )
 from app.core.rbac import (
-    Perm,
     RoleCode,
-    assert_permission,
     get_user_permission_codes,
     get_user_roles,
 )
@@ -38,15 +36,6 @@ DEFAULT_AVATAR = "https://env-00jxuc2o76k9.normal.cloudstatic.cn/avatar/admin.jp
 def _has_text(v) -> bool:
     """对齐 Spring StringUtils.hasText"""
     return v is not None and str(v).strip() != ""
-
-
-def _ensure_can_update_user(
-    db: Session, current_user: User, user_id: int
-) -> None:
-    if current_user.id == user_id:
-        assert_permission(db, current_user, Perm.USER_UPDATE)
-    else:
-        assert_permission(db, current_user, Perm.USER_MANAGE)
 
 
 def _token_response(
@@ -147,31 +136,24 @@ def logout(refresh_token) -> dict:
 
 
 def complete_profile(
-    db: Session, user_id: int, request: ProfileUpdateRequest, current_user: User
+    db: Session, request: ProfileUpdateRequest, current_user: User
 ) -> dict:
-    # 本人需要 user:update，修改他人需要 user:manage
-    _ensure_can_update_user(db, current_user, user_id)
-
-    user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
-        raise ValueError("用户不存在")
-
     for attr, value in request.model_dump(exclude_none=True).items():
         if isinstance(value, str) and not value.strip():
             continue
-        setattr(user, attr, value)
+        setattr(current_user, attr, value)
 
-    user.is_completed = True
-    user.complete_time = datetime.now()
+    current_user.is_completed = True
+    current_user.complete_time = datetime.now()
 
     db.commit()
-    db.refresh(user)
-    roles = get_user_roles(db, user.id)
-    permissions = sorted(get_user_permission_codes(db, user.id))
+    db.refresh(current_user)
+    roles = get_user_roles(db, current_user.id)
+    permissions = sorted(get_user_permission_codes(db, current_user.id))
     return success_response(
         data={
             "user": serialize_user(
-                user, roles=roles, permissions=permissions
+                current_user, roles=roles, permissions=permissions
             )
         },
         message="信息完善成功",
@@ -179,33 +161,26 @@ def complete_profile(
 
 
 def update_password(
-    db: Session, user_id: int, request: PasswordUpdateRequest, current_user: User
+    db: Session, request: PasswordUpdateRequest, current_user: User
 ) -> dict:
-    _ensure_can_update_user(db, current_user, user_id)
     if not _has_text(request.password):
         raise ValueError("密码不能为空")
-    user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
-        raise ValueError("用户不存在")
+    if not _has_text(request.old_password):
+        raise ValueError("旧密码不能为空")
+    if not verify_password(request.old_password, current_user.password):
+        raise ValueError("旧密码错误")
 
-    # 本人修改需校验旧密码；超级管理员代为重置时可直接修改
-    if current_user.id == user_id:
-        if not _has_text(request.old_password):
-            raise ValueError("旧密码不能为空")
-        if not verify_password(request.old_password, user.password):
-            raise ValueError("旧密码错误")
-
-    user.password = hash_password(request.password)
+    current_user.password = hash_password(request.password)
     # 改密后使已签发的令牌全部失效
-    user.token_version = (user.token_version or 0) + 1
+    current_user.token_version = (current_user.token_version or 0) + 1
     db.commit()
-    db.refresh(user)
-    roles = get_user_roles(db, user.id)
-    permissions = sorted(get_user_permission_codes(db, user.id))
+    db.refresh(current_user)
+    roles = get_user_roles(db, current_user.id)
+    permissions = sorted(get_user_permission_codes(db, current_user.id))
     return success_response(
         data={
             "user": serialize_user(
-                user, roles=roles, permissions=permissions
+                current_user, roles=roles, permissions=permissions
             )
         },
         message="密码修改成功",

@@ -93,16 +93,15 @@ def delete_users(ids: list[int] = Body(...), db: Session = Depends(get_db)):
 
 
 @user_router.put(
-    "/{id}/profile", response_model=ApiResponse[ProfileUpdateData],
+    "/profile", response_model=ApiResponse[ProfileUpdateData],
     summary="完善用户信息",
 )
 def complete_profile(
-    id: int,
     request: ProfileUpdateRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return user_services.complete_profile(db, id, request, current_user)
+    return user_services.complete_profile(db, request, current_user)
 
 
 @user_router.put(
@@ -118,23 +117,10 @@ def assign_user_roles(
     return rbac_services.assign_global_roles(db, id, request, current_user)
 
 
-@user_router.get(
-    "/{id}/roles",
-    summary="查看用户角色",
-)
-def get_user_roles(
-    id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    return rbac_services.get_user_role_info(db, id, current_user)
-
-
-@user_router.put("/{id}/password", summary="修改密码")
+@user_router.put("/password", summary="修改密码")
 def update_password(
-    id: int,
     request: PasswordUpdateRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return user_services.update_password(db, id, request, current_user)
+    return user_services.update_password(db, request, current_user)

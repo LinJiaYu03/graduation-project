@@ -297,7 +297,7 @@
 
 			// 保存用户信息
 			console.log(userInfo.value.avatarUrl);
-			let res = await apiImproveUserInfo(userInfo.value.id, userInfo.value)
+			let res = await apiImproveUserInfo(userInfo.value)
 			
 			uni.hideLoading()
 			

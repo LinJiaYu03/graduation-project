@@ -21,9 +21,9 @@ export const apiUserLogout=(data)=>request({
 	method:'POST'
 })
 
-// 完善个人信息
-export const apiImproveUserInfo=(id,data)=>request({
-	url:`/users/${id}/profile`,
+// 完善个人信息（当前登录用户，后端从令牌识别）
+export const apiImproveUserInfo=(data)=>request({
+	url:'/users/profile',
 	data,
 	method:'PUT'
 })
@@ -31,11 +31,4 @@ export const apiImproveUserInfo=(id,data)=>request({
 // 当前用户角色与权限
 export const apiGetMyPermissions=()=>request({
 	url:'/rbac/me'
-})
-
-// 分配用户全局角色
-export const apiAssignUserRoles=(id,data)=>request({
-	url:`/users/${id}/roles`,
-	data,
-	method:'PUT'
 })

@@ -158,11 +158,3 @@ def get_my_permissions(db: Session, current_user: User) -> dict:
         },
         message="查询成功",
     )
-
-
-def get_user_role_info(db: Session, user_id: int, current_user: User) -> dict:
-    if current_user.id != user_id:
-        assert_permission(db, current_user, Perm.USER_VIEW)
-    return success_response(
-        data={"roles": get_user_roles(db, user_id)}, message="查询成功"
-    )
