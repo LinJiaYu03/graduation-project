@@ -170,18 +170,14 @@ CREATE TABLE `user`  (
   `college_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '学院名称',
   `class_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '班级名称',
   `complete_time` datetime NULL DEFAULT NULL COMMENT '完善时间',
-  `is_manager` tinyint(1) NULL DEFAULT 0 COMMENT '是否为管理者(0-否,1-是)',
   `avatar_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'https://env-00jxuc2o76k9.normal.cloudstatic.cn/avatar/admin.jpg' COMMENT '用户头像',
   `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '登录令牌',
   `token_version` int NOT NULL DEFAULT 0 COMMENT '令牌版本号',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_boss` tinyint UNSIGNED NULL DEFAULT 0 COMMENT '是否为超级管理者(0-否,1-是)',
-  `wx_openid` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '微信OpenID',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_username`(`username` ASC) USING BTREE,
-  UNIQUE INDEX `uk_student_no`(`student_no` ASC) USING BTREE,
-  INDEX `idx_wx_openid`(`wx_openid` ASC) USING BTREE
+  UNIQUE INDEX `uk_student_no`(`student_no` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 28 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 SET FOREIGN_KEY_CHECKS = 1;

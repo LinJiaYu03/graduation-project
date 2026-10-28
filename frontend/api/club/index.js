@@ -45,8 +45,8 @@ export const apiGetClubNewList=()=>request({
 })
 
 // 获取用户管理的社团下拉列表
-export const apiGetClubManageList=(id)=>request({
-	url:`/clubs/managed?userId=${id}`
+export const apiGetClubManageList=()=>request({
+	url:'/clubs/managed'
 })
 
 // 查看社团详情

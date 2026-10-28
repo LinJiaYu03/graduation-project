@@ -52,7 +52,6 @@ class ActivityCreateRequest(BaseModel):
 
 class ActivityUpdateRequest(BaseModel):
     activityId: Optional[int] = None
-    managerUserId: Optional[int] = None
     name: Optional[str] = None
     description: Optional[str] = None
     activityType: Optional[str] = None
@@ -69,7 +68,6 @@ class ActivityUpdateRequest(BaseModel):
 
 class ActivityReviewRequest(BaseModel):
     activityId: Optional[int] = None
-    auditUserId: Optional[int] = None
     pass_: Optional[bool] = Field(default=None, alias="pass")
     remark: Optional[str] = None
 
@@ -86,12 +84,11 @@ class ActivitySearchRequest(BaseModel):
 
 
 class ActivityRegisterRequest(BaseModel):
-    userId: Optional[int] = None
+    pass
 
 
 class ActivityCommentRequest(BaseModel):
     activityId: Optional[int] = None
-    userId: Optional[int] = None
     score: Optional[Decimal] = None
     comment: Optional[str] = None
 
@@ -99,7 +96,6 @@ class ActivityCommentRequest(BaseModel):
 class RegistrationReviewRequest(BaseModel):
     activityId: Optional[int] = None
     userId: Optional[int] = None
-    managerUserId: Optional[int] = None
     pass_: Optional[bool] = Field(default=None, alias="pass")
     remark: Optional[str] = None
 
@@ -250,8 +246,6 @@ def serialize_user_dto(u) -> dict | None:
         "collegeName": u.college_name,
         "className": u.class_name,
         "completeTime": dt_to_millis(u.complete_time),
-        "isManager": u.is_manager,
-        "isBoss": u.is_boss,
         "avatarUrl": u.avatar_url,
         "createTime": dt_to_millis(u.create_time),
         "updateTime": dt_to_millis(u.update_time),

@@ -3,6 +3,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import BizException
+from app.core.rbac import assert_permission
 from app.core.security import decode_token
 from app.db.database import get_db
 from app.models.user import User
@@ -42,7 +43,14 @@ def get_current_user(
     return user
 
 
-def require_boss(current_user: User = Depends(get_current_user)) -> User:
-    if not current_user.is_boss:
-        raise BizException(403, "无权限操作")
-    return current_user
+def require_permission(code: str):
+    """全局权限依赖：仅校验 club_id=0 的全局角色。"""
+
+    def dependency(
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+    ) -> User:
+        assert_permission(db, current_user, code)
+        return current_user
+
+    return dependency

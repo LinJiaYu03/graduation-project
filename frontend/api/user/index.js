@@ -27,3 +27,15 @@ export const apiImproveUserInfo=(id,data)=>request({
 	data,
 	method:'PUT'
 })
+
+// 当前用户角色与权限
+export const apiGetMyPermissions=()=>request({
+	url:'/rbac/me'
+})
+
+// 分配用户全局角色
+export const apiAssignUserRoles=(id,data)=>request({
+	url:`/users/${id}/roles`,
+	data,
+	method:'PUT'
+})

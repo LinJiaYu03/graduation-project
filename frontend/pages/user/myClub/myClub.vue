@@ -38,7 +38,9 @@
 
 	const userId = ref('')
 	const userInfo = uni.getStorageSync('userInfo')
-	const isManager = userInfo.isBoss || userInfo.isManager // 判断是否为管理员
+	const isManager = (userInfo.roles || []).some(role =>
+		role.code === 'ADMIN' || role.code === 'CLUB_MANAGER'
+	)
 	const clubList = ref([])
 	const searchData = ref({
 		keyword: '',

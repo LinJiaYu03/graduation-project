@@ -10,7 +10,6 @@ class ClubRequest(BaseModel):
     tags: Optional[str] = None
     description: Optional[str] = None
     levelTag: Optional[str] = None
-    userId: Optional[int] = None
 
 
 class ClubSearchRequest(BaseModel):
@@ -21,11 +20,9 @@ class ClubSearchRequest(BaseModel):
 
 class JoinClubRequest(BaseModel):
     clubId: Optional[int] = None
-    userId: Optional[int] = None
 
 
 class JoinedClubSearchRequest(BaseModel):
-    userId: Optional[int] = None
     keyword: Optional[str] = None
     currentPage: Optional[int] = None
     pageSize: Optional[int] = None

@@ -78,8 +78,11 @@ Activities flow through states: `审核中` → `已通过/已拒绝` → `报�
 Check-in requires: (1) approved registration, (2) activity within start/end time window, (3) QR code scan
 
 ### Permission Model
-- `isBoss=true` users: super admins (can review activities)
-- `isManager=true` in ClubMember: club administrators (manage club activities, review registrations)
+- RBAC tables: `user_role` → `role` → `role_permission` → `permission`
+- `user_role.club_id = 0` means a global role; a non-zero value scopes the role to that club
+- Roles: `ADMIN` (global super admin), `CLUB_MANAGER` (club-scoped), `USER` (basic logged-in user)
+- Authorization uses `assert_permission` / `require_permission`; `club_member.is_manager` is membership/display data only
+- `user.is_boss` / `user.is_manager` no longer exist
 
 ### Image Storage
 Image URLs stored as comma-separated strings in database (e.g., `"url1,url2,url3"`)

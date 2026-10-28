@@ -2,7 +2,10 @@ from fastapi import APIRouter, Body, Depends
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.core.deps import get_current_user, require_permission
+from app.core.rbac import Perm
 from app.db.database import get_db
+from app.models.user import User
 from app.schemas.activity import (
     ActivityCommentRequest,
     ActivityCreateRequest,
@@ -18,33 +21,51 @@ activity_router = APIRouter()
 
 
 @activity_router.post("/create")
-def create_activity(request: ActivityCreateRequest, db: Session = Depends(get_db)):
-    return activity_services.create_activity(db, request)
+def create_activity(
+    request: ActivityCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return activity_services.create_activity(db, request, current_user)
 
 
 @activity_router.put("/update")
-def update_activity(request: ActivityUpdateRequest, db: Session = Depends(get_db)):
-    return activity_services.update_activity(db, request)
+def update_activity(
+    request: ActivityUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return activity_services.update_activity(db, request, current_user)
 
 
 @activity_router.get("/pending")
 def pending_activities(
-    bossUserId: int,
     currentPage: int = 1,
     pageSize: int = 10,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission(Perm.ACTIVITY_REVIEW)),
 ):
-    return activity_services.pending_activities(db, bossUserId, currentPage, pageSize)
+    return activity_services.pending_activities(
+        db, current_user, currentPage, pageSize
+    )
 
 
 @activity_router.post("/review")
-def review_activity(request: ActivityReviewRequest, db: Session = Depends(get_db)):
-    return activity_services.review_activity(db, request)
+def review_activity(
+    request: ActivityReviewRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission(Perm.ACTIVITY_REVIEW)),
+):
+    return activity_services.review_activity(db, request, current_user)
 
 
 @activity_router.post("/registrations/review")
-def review_registration(request: RegistrationReviewRequest, db: Session = Depends(get_db)):
-    return activity_services.review_registration(db, request)
+def review_registration(
+    request: RegistrationReviewRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return activity_services.review_registration(db, request, current_user)
 
 
 @activity_router.post("/search")
@@ -68,13 +89,21 @@ def activities_by_club(
 
 
 @activity_router.post("/comment")
-def comment_activity(request: ActivityCommentRequest, db: Session = Depends(get_db)):
-    return activity_services.comment_activity(db, request)
+def comment_activity(
+    request: ActivityCommentRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission(Perm.ACTIVITY_COMMENT)),
+):
+    return activity_services.comment_activity(db, request, current_user)
 
 
 @activity_router.post("/checkin")
-def checkin(payload: dict = Body(...), db: Session = Depends(get_db)):
-    return activity_services.checkin(db, payload)
+def checkin(
+    payload: dict = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission(Perm.ACTIVITY_CHECKIN)),
+):
+    return activity_services.checkin(db, payload, current_user)
 
 
 @activity_router.get("/user/{userId}")
@@ -83,8 +112,11 @@ def user_activities(
     type: str = "all",
     keyword: str | None = None,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return activity_services.user_activities(db, userId, type, keyword)
+    return activity_services.user_activities(
+        db, userId, type, keyword, current_user
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -92,72 +124,102 @@ def user_activities(
 # ---------------------------------------------------------------------------
 
 @activity_router.get("/{id}")
-def get_activity_detail(
-    id: int, managerUserId: int | None = None, db: Session = Depends(get_db)
-):
+def get_activity_detail(id: int, db: Session = Depends(get_db)):
     return activity_services.get_activity_detail(db, id)
 
 
 @activity_router.get("/{activityId}/registrations/pending")
 def pending_registrations(
-    activityId: int, managerUserId: int, db: Session = Depends(get_db)
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return activity_services.pending_registrations(db, activityId, managerUserId)
+    return activity_services.pending_registrations(db, activityId, current_user)
 
 
 @activity_router.get("/{activityId}/registrations/status")
 def registration_status(
-    activityId: int, managerUserId: int, db: Session = Depends(get_db)
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return activity_services.registration_status(db, activityId, managerUserId)
+    return activity_services.registration_status(db, activityId, current_user)
 
 
 @activity_router.get("/{activityId}/registrations/check")
-def check_registration(activityId: int, userId: int, db: Session = Depends(get_db)):
-    return activity_services.check_registration(db, activityId, userId)
+def check_registration(
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return activity_services.check_registration(db, activityId, current_user.id)
 
 
 @activity_router.get("/{activityId}/statistics")
 def activity_statistics(
-    activityId: int, managerUserId: int, db: Session = Depends(get_db)
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return activity_services.activity_statistics(db, activityId, managerUserId)
+    return activity_services.activity_statistics(db, activityId, current_user)
 
 
 @activity_router.get("/{activityId}/checkin-statistics")
 def checkin_statistics(
-    activityId: int, managerUserId: int, db: Session = Depends(get_db)
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return activity_services.checkin_statistics(db, activityId, managerUserId)
+    return activity_services.checkin_statistics(db, activityId, current_user)
 
 
 @activity_router.get("/{activityId}/score-statistics")
-def score_statistics(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
-    return activity_services.score_statistics(db, activityId, managerUserId)
+def score_statistics(
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return activity_services.score_statistics(db, activityId, current_user)
 
 
 @activity_router.get("/{activityId}/qrcode")
-def generate_qrcode(activityId: int, db: Session = Depends(get_db)):
-    return activity_services.generate_qrcode(db, activityId)
+def generate_qrcode(
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return activity_services.generate_qrcode(db, activityId, current_user)
 
 
 @activity_router.post("/{activityId}/register")
 def register_activity(
-    activityId: int, request: ActivityRegisterRequest, db: Session = Depends(get_db)
+    activityId: int,
+    request: ActivityRegisterRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission(Perm.ACTIVITY_REGISTER)),
 ):
-    return activity_services.register_activity(db, activityId, request)
+    return activity_services.register_activity(db, activityId, request, current_user)
 
 
 @activity_router.put("/{activityId}/publish-status")
 def update_publish_status(
-    activityId: int, payload: dict = Body(...), db: Session = Depends(get_db)
+    activityId: int,
+    payload: dict = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return activity_services.update_publish_status(db, activityId, payload)
+    return activity_services.update_publish_status(
+        db, activityId, payload, current_user
+    )
 
 
 @activity_router.delete("/{activityId}")
-def delete_activity(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
-    return activity_services.delete_activity(db, activityId, managerUserId)
+def delete_activity(
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return activity_services.delete_activity(db, activityId, current_user)
 
 
 # ---------------------------------------------------------------------------
@@ -187,10 +249,14 @@ def _export_error(e: Exception) -> Response:
 
 
 @activity_router.get("/{activityId}/export/registration")
-def export_registration(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
+def export_registration(
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     try:
         content, filename = activity_services.export_registration(
-            db, activityId, managerUserId
+            db, activityId, current_user
         )
     except Exception as e:
         return _export_error(e)
@@ -198,18 +264,30 @@ def export_registration(activityId: int, managerUserId: int, db: Session = Depen
 
 
 @activity_router.get("/{activityId}/export/checkin")
-def export_checkin(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
+def export_checkin(
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     try:
-        content, filename = activity_services.export_checkin(db, activityId, managerUserId)
+        content, filename = activity_services.export_checkin(
+            db, activityId, current_user
+        )
     except Exception as e:
         return _export_error(e)
     return _excel_response(content, filename)
 
 
 @activity_router.get("/{activityId}/export/score")
-def export_score(activityId: int, managerUserId: int, db: Session = Depends(get_db)):
+def export_score(
+    activityId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     try:
-        content, filename = activity_services.export_score(db, activityId, managerUserId)
+        content, filename = activity_services.export_score(
+            db, activityId, current_user
+        )
     except Exception as e:
         return _export_error(e)
     return _excel_response(content, filename)

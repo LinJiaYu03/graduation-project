@@ -1,12 +1,15 @@
-export default function useUserPermission(){
+export default function useUserPermission() {
 	const userInfo = uni.getStorageSync('userInfo') || {}
-	console.log('userInfo:', userInfo)
-	const isBoss = userInfo.isBoss
-	const isManager = userInfo.isManager
-	console.log('isBoss:', isBoss, 'isManager:', isManager)
+	const roles = userInfo.roles || []
+	const permissions = userInfo.permissions || []
+
+	const isBoss = roles.some(role => role.code === 'ADMIN')
+	const isManager = roles.some(role => role.code === 'CLUB_MANAGER')
 
 	return {
 		isBoss,
-		isManager
+		isManager,
+		roles,
+		permissions
 	}
 }

@@ -28,13 +28,6 @@ class ProfileUpdateRequest(BaseModel):
     avatar_url: Optional[str] = None
 
 
-class PermissionUpdateRequest(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-
-    is_manager: Optional[bool] = None
-    is_boss: Optional[bool] = None
-
-
 class PasswordUpdateRequest(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
@@ -48,10 +41,15 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: Optional[str] = None
 
 
+class RoleItem(BaseModel):
+    code: Optional[str] = None
+    name: Optional[str] = None
+    clubId: Optional[int] = None
+
+
 class UserResponse(BaseModel):
     id: Optional[int] = None
     username: Optional[str] = None
-    wxOpenid: Optional[str] = None
     isCompleted: Optional[bool] = None
     realName: Optional[str] = None
     studentNo: Optional[str] = None
@@ -62,12 +60,12 @@ class UserResponse(BaseModel):
     collegeName: Optional[str] = None
     className: Optional[str] = None
     completeTime: Optional[datetime] = None
-    isManager: Optional[bool] = None
-    isBoss: Optional[bool] = None
     avatarUrl: Optional[str] = None
     token: Optional[str] = None
     createTime: Optional[datetime] = None
     updateTime: Optional[datetime] = None
+    roles: Optional[list[RoleItem]] = None
+    permissions: Optional[list[str]] = None
 
 
 class ProfileUpdateData(BaseModel):
@@ -83,13 +81,12 @@ class TokenData(BaseModel):
     user: Optional[UserResponse] = None
 
 
-def serialize_user(u) -> dict | None:
+def serialize_user(u, roles=None, permissions=None) -> dict | None:
     if u is None:
         return None
     return {
         "id": u.id,
         "username": u.username,
-        "wxOpenid": u.wx_openid,
         "isCompleted": u.is_completed,
         "realName": u.real_name,
         "studentNo": u.student_no,
@@ -100,10 +97,10 @@ def serialize_user(u) -> dict | None:
         "collegeName": u.college_name,
         "className": u.class_name,
         "completeTime": u.complete_time,
-        "isManager": u.is_manager,
-        "isBoss": u.is_boss,
         "avatarUrl": u.avatar_url,
         "token": None,
         "createTime": u.create_time,
         "updateTime": u.update_time,
+        "roles": roles,
+        "permissions": permissions,
     }

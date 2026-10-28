@@ -46,7 +46,9 @@
 	const activeTab = ref('participated')
 	const userInfo = uni.getStorageSync('userInfo')
 	const userId = userInfo.id
-	const isManager = userInfo.isBoss || userInfo.isManager // 判断是否为管理员
+	const isManager = (userInfo.roles || []).some(role =>
+		role.code === 'ADMIN' || role.code === 'CLUB_MANAGER'
+	)
 	const activity_participated = ref([])
 	const activity_managed = ref([])
 

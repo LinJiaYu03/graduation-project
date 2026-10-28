@@ -1,21 +1,22 @@
 from fastapi import APIRouter, Body, Depends
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, require_boss
+from app.core.deps import get_current_user, require_permission
+from app.core.rbac import Perm
 from app.db.database import get_db
 from app.core.respones import ApiResponse
 from app.models.user import User
+from app.schemas.rbac import UserRoleAssignRequest
 from app.schemas.user import (
     RegisterRequest,
     LoginRequest,
     ProfileUpdateRequest,
-    PermissionUpdateRequest,
     PasswordUpdateRequest,
     ProfileUpdateData,
     RefreshTokenRequest,
     TokenData,
 )
-from app.services import user_services
+from app.services import rbac_services, user_services
 
 user_router = APIRouter()
 
@@ -48,7 +49,11 @@ def logout(request: RefreshTokenRequest):
     return user_services.logout(request.refresh_token)
 
 
-@user_router.get("/", dependencies=[Depends(get_current_user)], summary="分页查询用户")
+@user_router.get(
+    "/",
+    dependencies=[Depends(require_permission(Perm.USER_VIEW))],
+    summary="分页查询用户",
+)
 def get_user_list(
     currentPage: int = 1, pageSize: int = 10, db: Session = Depends(get_db)
 ):
@@ -56,7 +61,9 @@ def get_user_list(
 
 
 @user_router.get(
-    "/search", dependencies=[Depends(get_current_user)], summary="搜索用户"
+    "/search",
+    dependencies=[Depends(require_permission(Perm.USER_VIEW))],
+    summary="搜索用户",
 )
 def search_users(
     keyword: str | None = None,
@@ -68,14 +75,18 @@ def search_users(
 
 
 @user_router.delete(
-    "/{id}", dependencies=[Depends(require_boss)], summary="删除用户"
+    "/{id}",
+    dependencies=[Depends(require_permission(Perm.USER_DELETE))],
+    summary="删除用户",
 )
 def delete_user(id: int, db: Session = Depends(get_db)):
     return user_services.delete_user(db, id)
 
 
 @user_router.delete(
-    "/", dependencies=[Depends(require_boss)], summary="批量删除用户"
+    "/",
+    dependencies=[Depends(require_permission(Perm.USER_DELETE))],
+    summary="批量删除用户",
 )
 def delete_users(ids: list[int] = Body(...), db: Session = Depends(get_db)):
     return user_services.delete_users(db, ids)
@@ -95,14 +106,28 @@ def complete_profile(
 
 
 @user_router.put(
-    "/{id}/permission",
-    dependencies=[Depends(require_boss)],
-    summary="修改用户权限",
+    "/{id}/roles",
+    summary="分配用户全局角色",
 )
-def update_permission(
-    id: int, request: PermissionUpdateRequest, db: Session = Depends(get_db)
+def assign_user_roles(
+    id: int,
+    request: UserRoleAssignRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_permission(Perm.USER_ROLE_ASSIGN)),
 ):
-    return user_services.update_permission(db, id, request)
+    return rbac_services.assign_global_roles(db, id, request, current_user)
+
+
+@user_router.get(
+    "/{id}/roles",
+    summary="查看用户角色",
+)
+def get_user_roles(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return rbac_services.get_user_role_info(db, id, current_user)
 
 
 @user_router.put("/{id}/password", summary="修改密码")

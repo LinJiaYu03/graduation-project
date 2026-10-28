@@ -139,14 +139,6 @@
 	}
 
 	function onShowSettingManagerDialog(item) {
-		// 超级管理员不能被设置为管理员
-		if (item.user && item.user.isBoss) {
-			uni.showToast({
-				title: '无法操作超级管理员',
-				icon: 'none'
-			})
-			return
-		}
 		settingManagerUserid.value = item.userId
 		showRight.value?.close()
 		settingManagerDialog.value?.open()

@@ -12,6 +12,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from app.core.rbac import Perm, assert_permission, has_permission
 from app.core.respones import page_result, success_response
 from app.models.activity import Activity, ActivityCheckin, ActivityRegistration
 from app.models.club import Club, ClubMember
@@ -72,20 +73,6 @@ def _approved_count(db: Session, activity_id) -> int:
     )
 
 
-def _is_club_manager(db: Session, club_id, user_id) -> bool:
-    member = (
-        db.query(ClubMember)
-        .filter(ClubMember.club_id == club_id, ClubMember.user_id == user_id)
-        .first()
-    )
-    return member is not None and member.is_manager is True
-
-
-def _is_boss(db: Session, user_id) -> bool:
-    user = db.query(User).filter(User.id == user_id).first()
-    return user is not None and user.is_boss is True
-
-
 def refresh_activity_status_by_time(db: Session, activity: Activity) -> None:
     """对齐 Java refreshActivityStatusByTime，会根据当前时间刷新状态并持久化。"""
     if activity is None:
@@ -133,7 +120,9 @@ def _status_priority(status) -> int:
 # 创建 / 编辑 / 审核
 # ---------------------------------------------------------------------------
 
-def create_activity(db: Session, request: ActivityCreateRequest):
+def create_activity(
+    db: Session, request: ActivityCreateRequest, current_user: User
+):
     if not _has_text(request.name):
         raise ValueError("活动名称不能为空")
     if request.clubId is None:
@@ -142,6 +131,14 @@ def create_activity(db: Session, request: ActivityCreateRequest):
     club = db.query(Club).filter(Club.id == request.clubId).first()
     if club is None:
         raise ValueError("主办方社团不存在")
+
+    assert_permission(
+        db,
+        current_user,
+        Perm.ACTIVITY_CREATE,
+        club_id=club.id,
+        message="无权限在该社团下创建活动",
+    )
 
     activity = Activity()
     activity.name = request.name
@@ -175,18 +172,23 @@ def create_activity(db: Session, request: ActivityCreateRequest):
     )
 
 
-def update_activity(db: Session, request: ActivityUpdateRequest):
+def update_activity(
+    db: Session, request: ActivityUpdateRequest, current_user: User
+):
     if request.activityId is None:
         raise ValueError("活动ID不能为空")
-    if request.managerUserId is None:
-        raise ValueError("管理员用户ID不能为空")
 
     activity = db.query(Activity).filter(Activity.id == request.activityId).first()
     if activity is None:
         raise ValueError("活动不存在")
 
-    if not _is_club_manager(db, activity.club_id, request.managerUserId):
-        raise ValueError("无权限编辑该活动，您不是该活动主办社团的管理员")
+    assert_permission(
+        db,
+        current_user,
+        Perm.ACTIVITY_UPDATE,
+        club_id=activity.club_id,
+        message="无权限编辑该活动",
+    )
 
     if _has_text(request.name):
         activity.name = request.name
@@ -230,10 +232,10 @@ def update_activity(db: Session, request: ActivityUpdateRequest):
     )
 
 
-def pending_activities(db: Session, boss_user_id, current_page: int, page_size: int):
-    user = db.query(User).filter(User.id == boss_user_id).first()
-    if user is None or user.is_boss is not True:
-        raise ValueError("无权限查看待审核活动")
+def pending_activities(
+    db: Session, current_user: User, current_page: int, page_size: int
+):
+    assert_permission(db, current_user, Perm.ACTIVITY_REVIEW)
 
     query = (
         db.query(Activity)
@@ -255,17 +257,13 @@ def pending_activities(db: Session, boss_user_id, current_page: int, page_size: 
     )
 
 
-def review_activity(db: Session, request: ActivityReviewRequest):
-    if (
-        request.activityId is None
-        or request.auditUserId is None
-        or request.pass_ is None
-    ):
+def review_activity(
+    db: Session, request: ActivityReviewRequest, current_user: User
+):
+    if request.activityId is None or request.pass_ is None:
         raise ValueError("参数不完整")
 
-    user = db.query(User).filter(User.id == request.auditUserId).first()
-    if user is None or user.is_boss is not True:
-        raise ValueError("无审核权限")
+    assert_permission(db, current_user, Perm.ACTIVITY_REVIEW)
 
     activity = db.query(Activity).filter(Activity.id == request.activityId).first()
     if activity is None:
@@ -276,7 +274,7 @@ def review_activity(db: Session, request: ActivityReviewRequest):
     else:
         activity.audit_status = 2
         activity.status = "已拒绝"
-    activity.audit_user_id = request.auditUserId
+    activity.audit_user_id = current_user.id
     activity.audit_time = datetime.now()
 
     if activity.audit_status == 1:
@@ -290,13 +288,18 @@ def review_activity(db: Session, request: ActivityReviewRequest):
 # 报名审核
 # ---------------------------------------------------------------------------
 
-def pending_registrations(db: Session, activity_id, manager_user_id):
+def pending_registrations(db: Session, activity_id, current_user: User):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
         raise ValueError("活动不存在")
 
-    if not _is_club_manager(db, activity.club_id, manager_user_id):
-        raise ValueError("无权限查看该活动报名信息")
+    assert_permission(
+        db,
+        current_user,
+        Perm.REGISTRATION_VIEW,
+        club_id=activity.club_id,
+        message="无权限查看该活动报名信息",
+    )
 
     records = (
         db.query(ActivityRegistration)
@@ -310,21 +313,23 @@ def pending_registrations(db: Session, activity_id, manager_user_id):
     return [serialize_registration(r) for r in records]
 
 
-def review_registration(db: Session, request: RegistrationReviewRequest):
-    if (
-        request.activityId is None
-        or request.userId is None
-        or request.managerUserId is None
-        or request.pass_ is None
-    ):
+def review_registration(
+    db: Session, request: RegistrationReviewRequest, current_user: User
+):
+    if request.activityId is None or request.userId is None or request.pass_ is None:
         raise ValueError("参数不完整")
 
     activity = db.query(Activity).filter(Activity.id == request.activityId).first()
     if activity is None:
         raise ValueError("活动不存在")
 
-    if not _is_club_manager(db, activity.club_id, request.managerUserId):
-        raise ValueError("无审核权限")
+    assert_permission(
+        db,
+        current_user,
+        Perm.REGISTRATION_REVIEW,
+        club_id=activity.club_id,
+        message="无审核权限",
+    )
 
     registration = (
         db.query(ActivityRegistration)
@@ -342,7 +347,7 @@ def review_registration(db: Session, request: RegistrationReviewRequest):
         registration.status = "已通过"
     else:
         registration.status = "已拒绝"
-    registration.audit_user_id = request.managerUserId
+    registration.audit_user_id = current_user.id
     registration.audit_time = datetime.now()
     db.commit()
 
@@ -536,10 +541,9 @@ def get_activity_detail(db: Session, activity_id):
 # 报名 / 评价
 # ---------------------------------------------------------------------------
 
-def register_activity(db: Session, activity_id, request):
-    if request.userId is None:
-        raise ValueError("用户ID不能为空")
-
+def register_activity(
+    db: Session, activity_id, request, current_user: User
+):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
         raise ValueError("活动不存在")
@@ -558,7 +562,7 @@ def register_activity(db: Session, activity_id, request):
         db.query(ActivityRegistration)
         .filter(
             ActivityRegistration.activity_id == activity_id,
-            ActivityRegistration.user_id == request.userId,
+            ActivityRegistration.user_id == current_user.id,
         )
         .first()
     )
@@ -571,7 +575,7 @@ def register_activity(db: Session, activity_id, request):
 
     registration = ActivityRegistration()
     registration.activity_id = activity_id
-    registration.user_id = request.userId
+    registration.user_id = current_user.id
     if activity.need_audit is True:
         registration.status = "待审核"
     else:
@@ -590,8 +594,10 @@ def register_activity(db: Session, activity_id, request):
     )
 
 
-def comment_activity(db: Session, request: ActivityCommentRequest):
-    if request.activityId is None or request.userId is None:
+def comment_activity(
+    db: Session, request: ActivityCommentRequest, current_user: User
+):
+    if request.activityId is None:
         raise ValueError("参数不完整")
     if request.score is None and (request.comment is None or request.comment.strip() == ""):
         raise ValueError("请至少提供评分或文字评价")
@@ -610,7 +616,7 @@ def comment_activity(db: Session, request: ActivityCommentRequest):
         db.query(ActivityRegistration)
         .filter(
             ActivityRegistration.activity_id == request.activityId,
-            ActivityRegistration.user_id == request.userId,
+            ActivityRegistration.user_id == current_user.id,
         )
         .first()
     )
@@ -623,7 +629,7 @@ def comment_activity(db: Session, request: ActivityCommentRequest):
         db.query(ActivityCheckin)
         .filter(
             ActivityCheckin.activity_id == request.activityId,
-            ActivityCheckin.user_id == request.userId,
+            ActivityCheckin.user_id == current_user.id,
         )
         .first()
     )
@@ -676,13 +682,18 @@ def comment_activity(db: Session, request: ActivityCommentRequest):
 # 报名状态 / 统计
 # ---------------------------------------------------------------------------
 
-def registration_status(db: Session, activity_id, manager_user_id):
+def registration_status(db: Session, activity_id, current_user: User):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
         raise ValueError("活动不存在")
 
-    if not _is_club_manager(db, activity.club_id, manager_user_id):
-        raise ValueError("无权限查看该活动报名信息")
+    assert_permission(
+        db,
+        current_user,
+        Perm.REGISTRATION_VIEW,
+        club_id=activity.club_id,
+        message="无权限查看该活动报名信息",
+    )
 
     registrations = (
         db.query(ActivityRegistration)
@@ -748,17 +759,22 @@ def check_registration(db: Session, activity_id, user_id):
     return success_response(data={"registration": result}, message="查询成功")
 
 
-def _activity_statistics_base(db: Session, activity_id, manager_user_id):
+def _activity_statistics_base(db: Session, activity_id, current_user: User):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
         raise ValueError("活动不存在")
-    if not _is_club_manager(db, activity.club_id, manager_user_id):
-        raise ValueError("无权限查看该活动统计信息")
+    assert_permission(
+        db,
+        current_user,
+        Perm.ACTIVITY_STATS,
+        club_id=activity.club_id,
+        message="无权限查看该活动统计信息",
+    )
     return activity
 
 
-def activity_statistics(db: Session, activity_id, manager_user_id):
-    activity = _activity_statistics_base(db, activity_id, manager_user_id)
+def activity_statistics(db: Session, activity_id, current_user: User):
+    activity = _activity_statistics_base(db, activity_id, current_user)
 
     pending = (
         db.query(ActivityRegistration)
@@ -800,8 +816,8 @@ def activity_statistics(db: Session, activity_id, manager_user_id):
     return success_response(data={"statistics": statistics}, message="查询成功")
 
 
-def checkin_statistics(db: Session, activity_id, manager_user_id):
-    activity = _activity_statistics_base(db, activity_id, manager_user_id)
+def checkin_statistics(db: Session, activity_id, current_user: User):
+    activity = _activity_statistics_base(db, activity_id, current_user)
 
     approved = _approved_count(db, activity_id)
     checked_in = (
@@ -825,8 +841,8 @@ def checkin_statistics(db: Session, activity_id, manager_user_id):
     return success_response(data={"statistics": statistics}, message="查询成功")
 
 
-def score_statistics(db: Session, activity_id, manager_user_id):
-    activity = _activity_statistics_base(db, activity_id, manager_user_id)
+def score_statistics(db: Session, activity_id, current_user: User):
+    activity = _activity_statistics_base(db, activity_id, current_user)
 
     scored_registrations = (
         db.query(ActivityRegistration)
@@ -937,11 +953,13 @@ def _workbook_bytes(wb) -> bytes:
     return buffer.getvalue()
 
 
-def _export_context(db: Session, activity_id, manager_user_id):
+def _export_context(db: Session, activity_id, current_user: User):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
         raise ExportError(404, "活动不存在")
-    if not _is_club_manager(db, activity.club_id, manager_user_id):
+    if not has_permission(
+        db, current_user.id, Perm.ACTIVITY_EXPORT, activity.club_id
+    ):
         raise ExportError(403, "无权限导出")
     return activity
 
@@ -967,8 +985,8 @@ def _fill_user_columns(ws, row_num: int, index: int, user: User) -> None:
     ws.cell(row=row_num, column=7, value=user.class_name if user.class_name is not None else "")
 
 
-def export_registration(db: Session, activity_id, manager_user_id):
-    activity = _export_context(db, activity_id, manager_user_id)
+def export_registration(db: Session, activity_id, current_user: User):
+    activity = _export_context(db, activity_id, current_user)
     approved = _approved_registrations(db, activity_id)
 
     headers = ["序号", "姓名", "性别", "学号", "学校", "学院", "班级"]
@@ -986,8 +1004,8 @@ def export_registration(db: Session, activity_id, manager_user_id):
     return _workbook_bytes(wb), filename
 
 
-def export_checkin(db: Session, activity_id, manager_user_id):
-    activity = _export_context(db, activity_id, manager_user_id)
+def export_checkin(db: Session, activity_id, current_user: User):
+    activity = _export_context(db, activity_id, current_user)
     approved = _approved_registrations(db, activity_id)
 
     headers = ["序号", "姓名", "性别", "学号", "学校", "学院", "班级", "报名状态", "签到状态"]
@@ -1015,8 +1033,8 @@ def export_checkin(db: Session, activity_id, manager_user_id):
     return _workbook_bytes(wb), filename
 
 
-def export_score(db: Session, activity_id, manager_user_id):
-    activity = _export_context(db, activity_id, manager_user_id)
+def export_score(db: Session, activity_id, current_user: User):
+    activity = _export_context(db, activity_id, current_user)
     approved = _approved_registrations(db, activity_id)
 
     headers = ["序号", "姓名", "性别", "学号", "学校", "学院", "班级", "报名状态", "评分"]
@@ -1048,7 +1066,12 @@ def export_disposition(filename: str) -> str:
 # 用户活动 / 二维码 / 签到 / 上下架 / 删除
 # ---------------------------------------------------------------------------
 
-def user_activities(db: Session, user_id, type_, keyword):
+def user_activities(
+    db: Session, user_id, type_, keyword, current_user: User
+):
+    if user_id != current_user.id:
+        assert_permission(db, current_user, Perm.USER_VIEW)
+
     if type_ is None or str(type_).strip() == "":
         type_ = "all"
     type_ = str(type_).lower().strip()
@@ -1151,10 +1174,18 @@ def user_activities(db: Session, user_id, type_, keyword):
     return success_response(data=data, message="查询成功")
 
 
-def generate_qrcode(db: Session, activity_id):
+def generate_qrcode(db: Session, activity_id, current_user: User):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
         raise ValueError("活动不存在")
+
+    assert_permission(
+        db,
+        current_user,
+        Perm.ACTIVITY_QRCODE,
+        club_id=activity.club_id,
+        message="无权限生成签到二维码",
+    )
 
     now_ms = int(datetime.now().timestamp() * 1000)
     qr_content = json.dumps(
@@ -1183,32 +1214,31 @@ def generate_qrcode(db: Session, activity_id):
     return success_response(data={"qrcode": qrcode_data}, message="生成二维码成功")
 
 
-def checkin(db: Session, payload: dict):
-    activity_id = None
-    user_id = None
+def checkin(db: Session, payload: dict, current_user: User):
+    assert_permission(db, current_user, Perm.ACTIVITY_CHECKIN)
 
-    if "activityId" in payload and "userId" in payload:
-        activity_id = _to_long(payload.get("activityId"))
-        user_id = _to_long(payload.get("userId"))
-    elif "qrContent" in payload and "userId" in payload:
-        qr_content = str(payload.get("qrContent"))
-        user_id = _to_long(payload.get("userId"))
-        qr_data = json.loads(qr_content)
-        activity_id = _to_long(qr_data.get("activityId"))
+    user_id = current_user.id
+    qr_content = payload.get("qrContent")
+    if not _has_text(qr_content):
+        raise ValueError("请扫描活动二维码签到")
 
-        if "timestamp" in qr_data:
-            timestamp = int(qr_data.get("timestamp"))
-            expires_in = (
-                int(qr_data.get("expiresIn")) if "expiresIn" in qr_data else 60000
-            )
-            now_ms = int(datetime.now().timestamp() * 1000)
-            if now_ms - timestamp > expires_in:
-                raise ValueError("二维码已过期，请刷新后重试")
-    else:
-        raise ValueError("参数不完整，需要提供activityId和userId，或者qrContent和userId")
+    try:
+        qr_data = json.loads(str(qr_content))
+    except (TypeError, ValueError):
+        raise ValueError("二维码内容格式不正确")
 
-    if activity_id is None or user_id is None:
-        raise ValueError("活动ID和用户ID不能为空")
+    activity_id = _to_long(qr_data.get("activityId"))
+    if activity_id is None:
+        raise ValueError("二维码中缺少活动ID")
+
+    if "timestamp" in qr_data:
+        timestamp = int(qr_data.get("timestamp"))
+        expires_in = (
+            int(qr_data.get("expiresIn")) if "expiresIn" in qr_data else 60000
+        )
+        now_ms = int(datetime.now().timestamp() * 1000)
+        if now_ms - timestamp > expires_in:
+            raise ValueError("二维码已过期，请刷新后重试")
 
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
@@ -1267,27 +1297,29 @@ def checkin(db: Session, payload: dict):
     return success_response(data={"checkin": checkin_data}, message="签到成功")
 
 
-def update_publish_status(db: Session, activity_id, payload: dict):
+def update_publish_status(
+    db: Session, activity_id, payload: dict, current_user: User
+):
     if activity_id is None:
         raise ValueError("活动ID不能为空")
 
-    manager_user_id = None
     is_published = None
-    if "managerUserId" in payload:
-        manager_user_id = _to_long(payload.get("managerUserId"))
     if "isPublished" in payload:
         is_published = str(payload.get("isPublished")).strip().lower() == "true"
-
-    if manager_user_id is None or is_published is None:
-        raise ValueError("参数不完整，需要提供 managerUserId 和 isPublished")
+    if is_published is None:
+        raise ValueError("参数不完整，需要提供 isPublished")
 
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
         raise ValueError("活动不存在")
 
-    if not _is_boss(db, manager_user_id):
-        if not _is_club_manager(db, activity.club_id, manager_user_id):
-            raise ValueError("无权限操作该活动")
+    assert_permission(
+        db,
+        current_user,
+        Perm.ACTIVITY_PUBLISH,
+        club_id=activity.club_id,
+        message="无权限操作该活动",
+    )
 
     if is_published is True:
         if activity.audit_status is None or activity.audit_status != 1:
@@ -1303,7 +1335,7 @@ def update_publish_status(db: Session, activity_id, payload: dict):
     )
 
 
-def delete_activity(db: Session, activity_id, manager_user_id):
+def delete_activity(db: Session, activity_id, current_user: User):
     if activity_id is None:
         raise ValueError("活动ID不能为空")
 
@@ -1311,9 +1343,13 @@ def delete_activity(db: Session, activity_id, manager_user_id):
     if activity is None:
         raise ValueError("活动不存在")
 
-    if not _is_boss(db, manager_user_id):
-        if not _is_club_manager(db, activity.club_id, manager_user_id):
-            raise ValueError("无权限删除该活动")
+    assert_permission(
+        db,
+        current_user,
+        Perm.ACTIVITY_DELETE,
+        club_id=activity.club_id,
+        message="无权限删除该活动",
+    )
 
     db.delete(activity)
     db.commit()

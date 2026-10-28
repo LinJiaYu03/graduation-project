@@ -42,6 +42,9 @@ function refreshAccessToken() {
 				if (res.statusCode === 200 && res.data && res.data.code === 200 && data) {
 					uni.setStorageSync('token', data.accessToken)
 					uni.setStorageSync('refreshToken', data.refreshToken)
+					if (data.user) {
+						uni.setStorageSync('userInfo', data.user)
+					}
 					resolve(data.accessToken)
 				} else {
 					reject(new Error((res.data && res.data.message) || '登录状态已失效'))
