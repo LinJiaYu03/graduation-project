@@ -89,7 +89,7 @@
 				<!-- 我的社团 -->
 				<view class="service-item" @click="() => {
 					uni.navigateTo({
-						url: `/pages/user/myClub/myClub?id=${userInfo.id}`
+						url: '/pages/user/myClub/myClub'
 					})
 				}">
 					<view class="service-icon">
@@ -126,15 +126,18 @@
 
 <script setup>
 import {
-	ref
+	ref,
+	computed
 } from 'vue';
 import customTabbar from '@/components/custom-tabbar/custom-tabbar.vue';
-import useUserPermission from '@/hooks/useUserPermission.js'
+import { storeToRefs } from 'pinia'
 import { apiUserLogout } from '@/api/user/index.js'
+import { useUserStore } from '@/stores/user.js'
 
+const userStore = useUserStore()
 const token = uni.getStorageSync('token')
-const userInfo = uni.getStorageSync('userInfo')
-const { isBoss,isManager }=useUserPermission()
+const userInfo = computed(() => userStore.user || {})
+const { isBoss, isManager } = storeToRefs(userStore)
 
 const logoutPopup = ref(null)
 
@@ -146,6 +149,7 @@ async function confirmLogout() {
 	await apiUserLogout({
 		refreshToken: uni.getStorageSync('refreshToken')
 	})
+	userStore.clear()
 	uni.clearStorageSync()
 	uni.reLaunch({
 		url: '/pages/index/index'

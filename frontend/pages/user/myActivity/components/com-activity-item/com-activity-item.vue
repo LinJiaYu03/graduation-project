@@ -84,7 +84,6 @@
 	} from '@/api/activity/index.js'
 
 	const props = defineProps(['activeInfo'])
-	const userId = uni.getStorageSync('userInfo').id
 	const rateActivityPopup = ref()
 	const rateValue = ref(0)
 	const commentText = ref('')
@@ -114,7 +113,6 @@
 
 		let res = await apiActivityRate({
 			activityId: props.activeInfo.id,
-			userId: userId,
 			score: rateValue.value,
 			comment:commentText.value
 		})

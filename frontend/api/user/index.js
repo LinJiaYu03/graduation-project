@@ -28,7 +28,12 @@ export const apiImproveUserInfo=(data)=>request({
 	method:'PUT'
 })
 
-// 当前用户角色与权限
+// 当前登录用户角色与权限
 export const apiGetMyPermissions=()=>request({
 	url:'/rbac/me'
+})
+
+// 当前登录用户信息
+export const apiGetCurrentUser=()=>request({
+	url:'/users/profile'
 })

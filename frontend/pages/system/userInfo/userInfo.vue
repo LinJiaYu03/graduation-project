@@ -71,7 +71,9 @@
 	import {
 		apiImproveUserInfo
 	} from '@/api/user/index.js'
+	import { useUserStore } from '@/stores/user.js'
 
+	const userStore = useUserStore()
 	const form = ref(null)
 	const formData = reactive({
 		realName: '',
@@ -279,7 +281,9 @@
 			let res = await apiImproveUserInfo(formData)
 
 			if (res.code === 200) {
-				uni.setStorageSync('userInfo', res.data.user)
+				try {
+					await userStore.fetchMe()
+				} catch (e) {}
 				uni.showToast({
 					title: '保存成功',
 					icon: 'success'

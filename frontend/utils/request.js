@@ -1,6 +1,12 @@
 const BASE_URL = 'http://localhost:8080/api/v1'
 
 let refreshTask = null
+let unauthorizedHandler = null
+
+// 由 App 注册，避免 request 直接依赖 store 造成循环引用
+export function setUnauthorizedHandler(handler) {
+	unauthorizedHandler = handler
+}
 
 function buildHeader(header = {}) {
 	const token = uni.getStorageSync('token')
@@ -14,6 +20,9 @@ function redirectToLogin() {
 	uni.removeStorageSync('token')
 	uni.removeStorageSync('refreshToken')
 	uni.removeStorageSync('userInfo')
+	if (unauthorizedHandler) {
+		unauthorizedHandler()
+	}
 	uni.reLaunch({
 		url: '/pages/system/login/login'
 	})
@@ -42,9 +51,6 @@ function refreshAccessToken() {
 				if (res.statusCode === 200 && res.data && res.data.code === 200 && data) {
 					uni.setStorageSync('token', data.accessToken)
 					uni.setStorageSync('refreshToken', data.refreshToken)
-					if (data.user) {
-						uni.setStorageSync('userInfo', data.user)
-					}
 					resolve(data.accessToken)
 				} else {
 					reject(new Error((res.data && res.data.message) || '登录状态已失效'))

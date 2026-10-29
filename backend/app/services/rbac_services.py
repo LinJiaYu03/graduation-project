@@ -65,12 +65,10 @@ def assign_global_roles(
     db.refresh(user)
     user_roles = get_user_roles(db, user_id)
     permissions = sorted(get_user_permission_codes(db, user_id))
+    user_data = serialize_user(user, roles=user_roles)
+    user_data["permissions"] = permissions
     return success_response(
-        data={
-            "user": serialize_user(
-                user, roles=user_roles, permissions=permissions
-            )
-        },
+        data={"user": user_data},
         message="角色分配成功",
     )
 

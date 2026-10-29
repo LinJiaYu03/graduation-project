@@ -50,14 +50,12 @@
 	const managerReviewDialog = ref(null)
 	const activeId = ref('')
 	const userId = ref('')
-	const managerUserId = uni.getStorageSync('userInfo').id
 	const userList = ref([])
 	const changeValue = ref()
 
 	async function getMemberReviewList() {
 		let res = await apiGetMemberReviewList({
-			activityId: activeId.value,
-			userId: managerUserId
+			activityId: activeId.value
 		})
 
 		if (res.code == 200) {
@@ -75,7 +73,6 @@
 		let res = await apiMemberReview({
 			activityId: activeId.value,
 			userId: userId.value,
-			managerUserId,
 			pass: changeValue.value,
 		})
 

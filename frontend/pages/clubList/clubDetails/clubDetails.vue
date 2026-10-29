@@ -84,11 +84,11 @@
 	import {
 		apiGetClubActivity
 	} from '@/api/activity/index.js'
-	import useUserPermission from '@/hooks/useUserPermission';
+	import { storeToRefs } from 'pinia';
+	import { useUserStore } from '@/stores/user.js';
 
-	const {
-		isBoss
-	} = useUserPermission()
+	const userStore = useUserStore()
+	const { isBoss } = storeToRefs(userStore)
 
 	const props = defineProps({
 		info: {
@@ -103,7 +103,6 @@
 	const activityList = ref([])
 	const clubInfo = ref([])
 	const userList = ref([])
-	const userInfo = ref(uni.getStorageSync('userInfo'))
 	const settingManagerUserid = ref('')
 
 	function onShowDialog() {
@@ -112,8 +111,7 @@
 
 	async function onJoinClub() {
 		let res = await apiJoinClub({
-			clubId: clubInfo.value.id,
-			userId: userInfo.value.id
+			clubId: clubInfo.value.id
 		})
 
 		if (res.code == 200) {

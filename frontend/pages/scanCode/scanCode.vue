@@ -35,8 +35,6 @@
 
 	const isHandlingResult = ref(false);
 	const canUseCamera = ref(false);
-	// 获取用户信息
-	const userInfo = uni.getStorageSync('userInfo');
 
 	// 处理扫码结果并执行签到
 	const handleScanResult = async (res) => {
@@ -93,10 +91,9 @@
 		});
 
 		try {
-			// 调用签到接口（使用方式2：传递二维码内容和用户ID）
+			// 调用签到接口（仅传递二维码内容，用户由令牌识别）
 			const checkinRes = await apiCheckinActivity({
-				qrContent: qrContent,
-				userId: userInfo.id
+				qrContent: qrContent
 			});
 
 			uni.hideLoading();

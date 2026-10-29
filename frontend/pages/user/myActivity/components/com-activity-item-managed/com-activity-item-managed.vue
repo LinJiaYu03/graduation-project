@@ -102,7 +102,6 @@
 
 	const props = defineProps(['activeInfo'])
 	const emits=defineEmits(['updataActivityList'])
-	const userId = uni.getStorageSync('userInfo').id
 	const rateActivityPopup = ref()
 	const rateValue = ref(0)
 	const qrcodePopup = ref(null)
@@ -134,7 +133,6 @@
 			async success(e) {
 				if (e.confirm) {
 					let res = await apiUpdateActivityStatus(props.activeInfo.id, {
-						managerUserId: userId,
 						isPublished: !value
 					})
 
@@ -156,7 +154,7 @@
 			content: '确认删除该活动？删除后不可恢复！',
 			async success(e) {
 				if (e.confirm) {
-					let res = await apiDeleteActivity(props.activeInfo.id, userId)
+					let res = await apiDeleteActivity(props.activeInfo.id)
 					if (res.code === 200) {
 						uni.showToast({
 							title: '删除成功',

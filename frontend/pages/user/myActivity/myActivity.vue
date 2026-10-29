@@ -41,19 +41,19 @@
 	import {
 		apiGetJoinOrManangeActivity
 	} from '@/api/activity/index.js'
+	import { storeToRefs } from 'pinia'
+	import { useUserStore } from '@/stores/user.js'
 
 	const searchValue = ref('')
 	const activeTab = ref('participated')
-	const userInfo = uni.getStorageSync('userInfo')
-	const userId = userInfo.id
-	const isManager = (userInfo.roles || []).some(role =>
-		role.code === 'ADMIN' || role.code === 'CLUB_MANAGER'
-	)
+	const userStore = useUserStore()
+	const userId = computed(() => userStore.id)
+	const { isManager } = storeToRefs(userStore)
 	const activity_participated = ref([])
 	const activity_managed = ref([])
 
 	const tabs = computed(() => {
-		if (isManager) {
+		if (isManager.value) {
 			return [
 				{ label: '参与', value: 'participated' },
 				{ label: '管理', value: 'managed' }
@@ -67,7 +67,7 @@
 	}
 
 	function OnChangeActiveTab(tab) {
-		if (!isManager && tab === 'managed') return // 非管理员不能切换到管理 tab
+		if (!isManager.value && tab === 'managed') return // 非管理员不能切换到管理 tab
 		activeTab.value = tab
 		getJoinOrManangeActivityList()
 	}
@@ -75,7 +75,7 @@
 
 	async function getJoinOrManangeActivityList() {
 		let res = await apiGetJoinOrManangeActivity({
-			id: userId,
+			id: userId.value,
 			type: activeTab.value,
 			keyword: searchValue.value
 		})

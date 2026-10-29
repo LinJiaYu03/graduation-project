@@ -25,7 +25,6 @@
 	import formatTime from '@/utils/dateUtil'
 
 	const props = defineProps(['activeId'])
-	const userId = uni.getStorageSync('userInfo').id
 	const registrationTime=ref('')
 	const active = ref(1)
 	const activeColor='#E56B62'
@@ -41,8 +40,7 @@
 
 	async function getActiviyStatus() {
 		let res = await apiGetActiviyStatus({
-			activityId: props.activeId,
-			userId: userId
+			activityId: props.activeId
 		})
 		
 		if (res.code == 200) {

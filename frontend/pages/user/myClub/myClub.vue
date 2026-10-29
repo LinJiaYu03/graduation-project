@@ -34,13 +34,11 @@
 	import {
 		apiQueryJoinClubList
 	} from '@/api/club/index.js'
-	
+	import { storeToRefs } from 'pinia'
+	import { useUserStore } from '@/stores/user.js'
 
-	const userId = ref('')
-	const userInfo = uni.getStorageSync('userInfo')
-	const isManager = (userInfo.roles || []).some(role =>
-		role.code === 'ADMIN' || role.code === 'CLUB_MANAGER'
-	)
+	const userStore = useUserStore()
+	const { isManager } = storeToRefs(userStore)
 	const clubList = ref([])
 	const searchData = ref({
 		keyword: '',
@@ -50,7 +48,7 @@
 	})
 
 	const btnList = computed(() => {
-		if (isManager) {
+		if (isManager.value) {
 			return [
 				{ name: '加入的', value: 'join' },
 				{ name: '管理的', value: 'management' }
@@ -60,7 +58,7 @@
 	})
 
 	function onChangeActive(item) {
-		if (!isManager && item.value === 'management') return // 非管理员不能切换到管理 tab
+		if (!isManager.value && item.value === 'management') return // 非管理员不能切换到管理 tab
 		searchData.value.type = item.value
 		getClubList()
 	}
@@ -69,7 +67,6 @@
 		let {
 			data
 		} = await apiQueryJoinClubList({
-			userId: userId.value,
 			...searchData.value
 		})
 		if (searchData.value.currentPage == data.page.currentPage && searchData.value.pageSize == data.page.pageSize) {
@@ -83,8 +80,7 @@
 		getClubList()
 	}
 
-	onLoad(async (e) => {
-		userId.value = e.id
+	onLoad(() => {
 		getClubList()
 	})
 </script>

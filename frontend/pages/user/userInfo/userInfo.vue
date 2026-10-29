@@ -80,8 +80,10 @@
 	import {
 		apiGetSchoolInfoTree
 	} from '@/api/school/index.js'
+	import { useUserStore } from '@/stores/user.js'
 
-	const userInfo = ref(uni.getStorageSync('userInfo'))
+	const userStore = useUserStore()
+	const userInfo = ref({ ...(userStore.user || {}) })
 	const userAvatar = ref(userInfo.value.avatarUrl)
 	const filesName = ref()
 	const schoolData = ref([])
@@ -296,13 +298,14 @@
 			}
 
 			// 保存用户信息
-			console.log(userInfo.value.avatarUrl);
 			let res = await apiImproveUserInfo(userInfo.value)
 			
 			uni.hideLoading()
 			
 			if (res.code === 200) {
-				uni.setStorageSync('userInfo', res.data.user)
+				try {
+					await userStore.fetchMe()
+				} catch (e) {}
 				uni.showToast({
 					title: '保存成功',
 					icon: 'success'

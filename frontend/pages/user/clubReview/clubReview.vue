@@ -77,7 +77,6 @@
 
 	const activityList = ref([])
 	const imageLoaded = ref({})
-	const userId = uni.getStorageSync('userInfo').id
 	
 	async function getActivityReviewList() {
 		try {

@@ -75,7 +75,6 @@
 	} from '@/api/activity/index.js'
 	import formatTime from '@/utils/dateUtil.js'
 
-	const userId = uni.getStorageSync('userInfo').id
 	const formRef = ref(null)
 	const filePicker = ref(null)
 	const activityId = ref(null) // 编辑模式的活动ID
@@ -268,7 +267,6 @@
 			
 			let updateData = {
 				activityId: activityId.value,
-				managerUserId: userId,
 				name: form.name,
 				description: form.description,
 				activityType: form.activityType,
@@ -419,7 +417,7 @@
 	})
 
 	onMounted(async () => {
-		let res = await apiGetClubManageList(userId)
+		let res = await apiGetClubManageList()
 		organizerOptions.value = res.data.items
 	})
 </script>

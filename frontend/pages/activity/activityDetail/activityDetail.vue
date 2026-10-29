@@ -196,7 +196,6 @@
 	const isCollected = ref(true)
 	const bannerList = ref([])
 	const clubInfo = ref()
-	const userId = uni.getStorageSync('userInfo').id
 
 	const onSwiperChange = (e) => {
 		currentSwiper.value = e.detail.current
@@ -216,9 +215,7 @@
 	}
 
 	async function handelJoinActivity() {
-		let res = await apiJoinActivity(props.id, {
-			userId,
-		})
+		let res = await apiJoinActivity(props.id)
 
 		if (res.code == 200) {
 			uni.showToast({
@@ -242,7 +239,6 @@
 				if (res.confirm) {
 					let res = await apiActivityReview({
 						activityId: props.id,
-						auditUserId: userId,
 						pass: value
 					})
 

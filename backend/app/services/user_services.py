@@ -11,7 +11,6 @@ from app.core.login_guard import (
 )
 from app.core.rbac import (
     RoleCode,
-    get_user_permission_codes,
     get_user_roles,
 )
 from app.core.respones import error_response, page_result, success_response
@@ -38,15 +37,8 @@ def _has_text(v) -> bool:
     return v is not None and str(v).strip() != ""
 
 
-def _token_response(
-    db: Session, user: User, message: str = "登录成功"
-) -> dict:
+def _token_response(user: User, message: str = "登录成功") -> dict:
     access_token, refresh_token, expires_in = create_token_pair(user)
-    roles = get_user_roles(db, user.id)
-    permissions = sorted(get_user_permission_codes(db, user.id))
-    user_data = serialize_user(user, roles=roles, permissions=permissions)
-    # 兼容旧前端：仍从 user.token 读取令牌
-    user_data["token"] = access_token
     return success_response(
         data={
             "token": access_token,
@@ -54,7 +46,6 @@ def _token_response(
             "refreshToken": refresh_token,
             "tokenType": "Bearer",
             "expiresIn": expires_in,
-            "user": user_data,
         },
         message=message,
     )
@@ -86,7 +77,7 @@ def register(db: Session, username, password) -> dict:
 
     db.commit()
     db.refresh(user)
-    return success_response(data={"userId": user.id}, message="注册成功")
+    return success_response(message="注册成功")
 
 
 def login(db: Session, username, password) -> dict:
@@ -99,7 +90,7 @@ def login(db: Session, username, password) -> dict:
         raise ValueError("账号或密码错误")
 
     clear_login_failures(username)
-    return _token_response(db, user, message="登录成功")
+    return _token_response(user, message="登录成功")
 
 
 def refresh(db: Session, refresh_token) -> dict:
@@ -117,7 +108,7 @@ def refresh(db: Session, refresh_token) -> dict:
         raise BizException(401, "登录状态已失效，请重新登录")
 
     consume_refresh_jti(payload)
-    return _token_response(db, user, message="刷新成功")
+    return _token_response(user, message="刷新成功")
 
 
 def logout(refresh_token) -> dict:
@@ -148,15 +139,14 @@ def complete_profile(
 
     db.commit()
     db.refresh(current_user)
+    return success_response(message="信息完善成功")
+
+
+def get_profile(db: Session, current_user: User) -> dict:
     roles = get_user_roles(db, current_user.id)
-    permissions = sorted(get_user_permission_codes(db, current_user.id))
     return success_response(
-        data={
-            "user": serialize_user(
-                current_user, roles=roles, permissions=permissions
-            )
-        },
-        message="信息完善成功",
+        data=serialize_user(current_user, roles=roles),
+        message="查询成功",
     )
 
 
@@ -175,16 +165,7 @@ def update_password(
     current_user.token_version = (current_user.token_version or 0) + 1
     db.commit()
     db.refresh(current_user)
-    roles = get_user_roles(db, current_user.id)
-    permissions = sorted(get_user_permission_codes(db, current_user.id))
-    return success_response(
-        data={
-            "user": serialize_user(
-                current_user, roles=roles, permissions=permissions
-            )
-        },
-        message="密码修改成功",
-    )
+    return success_response(message="密码修改成功")
 
 
 def get_users_page(db: Session, page: int, page_size: int) -> dict:

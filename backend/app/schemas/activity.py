@@ -83,10 +83,6 @@ class ActivitySearchRequest(BaseModel):
     pageSize: Optional[int] = None
 
 
-class ActivityRegisterRequest(BaseModel):
-    pass
-
-
 class ActivityCommentRequest(BaseModel):
     activityId: Optional[int] = None
     score: Optional[Decimal] = None

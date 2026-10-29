@@ -9,7 +9,6 @@ from app.models.user import User
 from app.schemas.activity import (
     ActivityCommentRequest,
     ActivityCreateRequest,
-    ActivityRegisterRequest,
     ActivityReviewRequest,
     ActivitySearchRequest,
     ActivityUpdateRequest,
@@ -194,11 +193,10 @@ def generate_qrcode(
 @activity_router.post("/{activityId}/register")
 def register_activity(
     activityId: int,
-    request: ActivityRegisterRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_permission(Perm.ACTIVITY_REGISTER)),
 ):
-    return activity_services.register_activity(db, activityId, request, current_user)
+    return activity_services.register_activity(db, activityId, current_user)
 
 
 @activity_router.put("/{activityId}/publish-status")

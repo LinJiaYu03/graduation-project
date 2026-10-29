@@ -35,6 +35,9 @@
 	import {
 		apiUserLogin
 	} from '@/api/user/index.js'
+	import { useUserStore } from '@/stores/user.js'
+
+	const userStore = useUserStore()
 
 	const form = ref(null)
 	const formData = reactive({
@@ -77,18 +80,26 @@
 		let res = await apiUserLogin(formData)
 
 		if (res.code === 200) {
-			handleLoginSuccess(res.data.user, res.data.refreshToken)
+			await handleLoginSuccess(res.data.accessToken, res.data.refreshToken)
 		}
 
 	}
 
-	const handleLoginSuccess = (user, refreshToken) => {
-		const token = user.token
+	const handleLoginSuccess = async (token, refreshToken) => {
+		uni.setStorageSync('token', token)
 		uni.setStorageSync('refreshToken', refreshToken)
-		
-		if (user.isCompleted) {
-			uni.setStorageSync('token', token)
-			uni.setStorageSync('userInfo', user)
+
+		try {
+			await userStore.fetchMe()
+		} catch (e) {
+			uni.showToast({
+				title: '获取用户信息失败',
+				icon: 'none'
+			})
+			return
+		}
+
+		if (userStore.isCompleted) {
 			uni.showToast({
 				title: '登录成功',
 				icon: 'success'
@@ -97,8 +108,6 @@
 				url: '/pages/index/index'
 			})
 		} else {
-			// 保存token以便后续请求使用
-			uni.setStorageSync('token', token)
 			uni.navigateTo({
 				url: '/pages/system/userInfo/userInfo',
 				success() {

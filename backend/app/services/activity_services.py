@@ -542,7 +542,7 @@ def get_activity_detail(db: Session, activity_id):
 # ---------------------------------------------------------------------------
 
 def register_activity(
-    db: Session, activity_id, request, current_user: User
+    db: Session, activity_id, current_user: User
 ):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:

@@ -64,7 +64,6 @@
 	} from '@/api/activity/index.js'
 
 	const props = defineProps(['id'])
-	const managerUserId = uni.getStorageSync('userInfo').id
 
 	// 图表引用
 	const registrationChartRef = ref(null)
@@ -120,8 +119,7 @@
 	const getActivityStatistics = async () => {
 		// 获取报名统计
 		const registrationResponse = await apiGetRegistrationStatistics({
-			activityId: props.id,
-			managerUserId
+			activityId: props.id
 		});
 
 		if (registrationResponse.code === 200) {
@@ -141,8 +139,7 @@
 
 		// 获取签到统计
 		const checkinResponse = await apiGetCheckinStatistics({
-			activityId: props.id,
-			managerUserId
+			activityId: props.id
 		});
 
 		if (checkinResponse.code === 200) {
@@ -159,8 +156,7 @@
 
 		// 获取评分统计
 		const scoreResponse = await apiGetScoreStatistics({
-			activityId: props.id,
-			managerUserId
+			activityId: props.id
 		});
 
 		if (scoreResponse.code === 200) {
@@ -362,17 +358,17 @@
 
 	// 导出报名情况表
 	const handleExportRegistration = () => {
-		apiExportRegistration(props.id, managerUserId)
+		apiExportRegistration(props.id)
 	}
 
 	// 导出签到情况表
 	const handleExportCheckin = () => {
-		apiExportCheckin(props.id, managerUserId)
+		apiExportCheckin(props.id)
 	}
 
 	// 导出评分情况表
 	const handleExportScore = () => {
-		apiExportScore(props.id, managerUserId)
+		apiExportScore(props.id)
 	}
 
 	// 页面加载时获取数据

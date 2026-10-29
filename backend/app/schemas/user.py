@@ -1,7 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from typing import Optional
-from datetime import datetime
 
 
 class RegisterRequest(BaseModel):
@@ -59,17 +58,8 @@ class UserResponse(BaseModel):
     schoolName: Optional[str] = None
     collegeName: Optional[str] = None
     className: Optional[str] = None
-    completeTime: Optional[datetime] = None
     avatarUrl: Optional[str] = None
-    token: Optional[str] = None
-    createTime: Optional[datetime] = None
-    updateTime: Optional[datetime] = None
     roles: Optional[list[RoleItem]] = None
-    permissions: Optional[list[str]] = None
-
-
-class ProfileUpdateData(BaseModel):
-    user: Optional[UserResponse] = None
 
 
 class TokenData(BaseModel):
@@ -78,10 +68,9 @@ class TokenData(BaseModel):
     refreshToken: Optional[str] = None
     tokenType: Optional[str] = None
     expiresIn: Optional[int] = None
-    user: Optional[UserResponse] = None
 
 
-def serialize_user(u, roles=None, permissions=None) -> dict | None:
+def serialize_user(u, roles=None) -> dict | None:
     if u is None:
         return None
     return {
@@ -96,11 +85,6 @@ def serialize_user(u, roles=None, permissions=None) -> dict | None:
         "schoolName": u.school_name,
         "collegeName": u.college_name,
         "className": u.class_name,
-        "completeTime": u.complete_time,
         "avatarUrl": u.avatar_url,
-        "token": None,
-        "createTime": u.create_time,
-        "updateTime": u.update_time,
         "roles": roles,
-        "permissions": permissions,
     }
