@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -132,8 +130,6 @@ def complete_profile(
         if isinstance(value, str) and not value.strip():
             continue
         setattr(current_user, attr, value)
-
-    current_user.complete_time = datetime.now()
 
     db.commit()
     db.refresh(current_user)

@@ -240,7 +240,6 @@ def serialize_user_dto(u) -> dict | None:
         "schoolName": u.school_name,
         "collegeName": u.college_name,
         "className": u.class_name,
-        "completeTime": dt_to_millis(u.complete_time),
         "avatarUrl": u.avatar_url,
         "createTime": dt_to_millis(u.create_time),
         "updateTime": dt_to_millis(u.update_time),
