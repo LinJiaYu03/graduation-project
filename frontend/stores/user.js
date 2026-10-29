@@ -13,7 +13,6 @@ export const useUserStore = defineStore('user', () => {
 
 	const id = computed(() => user.value?.id)
 	const roles = computed(() => user.value?.roles || [])
-	const isCompleted = computed(() => !!(user.value && user.value.isCompleted))
 	const isBoss = computed(() => roles.value.some(role => role.code === 'ADMIN'))
 	const isManager = computed(() => roles.value.some(role => role.code === 'CLUB_MANAGER'))
 	const avatarUrl = computed(() => user.value?.avatarUrl || '')
@@ -36,7 +35,6 @@ export const useUserStore = defineStore('user', () => {
 		user,
 		id,
 		roles,
-		isCompleted,
 		isBoss,
 		isManager,
 		avatarUrl,

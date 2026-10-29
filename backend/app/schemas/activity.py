@@ -232,7 +232,6 @@ def serialize_user_dto(u) -> dict | None:
     return {
         "id": u.id,
         "username": u.username,
-        "isCompleted": u.is_completed,
         "realName": u.real_name,
         "studentNo": u.student_no,
         "gender": u.gender,

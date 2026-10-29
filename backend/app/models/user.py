@@ -2,7 +2,6 @@ from sqlalchemy import (
     Column,
     BigInteger,
     String,
-    Boolean,
     Integer,
     DateTime,
     text,
@@ -16,7 +15,6 @@ class User(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     username = Column(String(50), nullable=False)
     password = Column(String(255), nullable=False)
-    is_completed = Column(Boolean, default=False)
     real_name = Column(String(50))
     student_no = Column(String(30))
     gender = Column(Integer)

@@ -60,7 +60,6 @@ def register(db: Session, username, password) -> dict:
     user = User(
         username=username,
         password=hash_password(password),
-        is_completed=False,
         avatar_url=DEFAULT_AVATAR,
     )
     db.add(user)
@@ -134,7 +133,6 @@ def complete_profile(
             continue
         setattr(current_user, attr, value)
 
-    current_user.is_completed = True
     current_user.complete_time = datetime.now()
 
     db.commit()

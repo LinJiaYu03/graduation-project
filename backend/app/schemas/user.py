@@ -49,7 +49,6 @@ class RoleItem(BaseModel):
 class UserResponse(BaseModel):
     id: Optional[int] = None
     username: Optional[str] = None
-    isCompleted: Optional[bool] = None
     realName: Optional[str] = None
     studentNo: Optional[str] = None
     gender: Optional[int] = None
@@ -76,7 +75,6 @@ def serialize_user(u, roles=None) -> dict | None:
     return {
         "id": u.id,
         "username": u.username,
-        "isCompleted": u.is_completed,
         "realName": u.real_name,
         "studentNo": u.student_no,
         "gender": u.gender,

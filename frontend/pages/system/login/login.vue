@@ -99,25 +99,13 @@
 			return
 		}
 
-		if (userStore.isCompleted) {
-			uni.showToast({
-				title: '登录成功',
-				icon: 'success'
-			})
-			uni.reLaunch({
-				url: '/pages/index/index'
-			})
-		} else {
-			uni.navigateTo({
-				url: '/pages/system/userInfo/userInfo',
-				success() {
-					uni.showToast({
-						title: '请先完善个人信息',
-						icon: 'none'
-					})
-				}
-			})
-		}
+		uni.showToast({
+			title: '登录成功',
+			icon: 'success'
+		})
+		uni.reLaunch({
+			url: '/pages/index/index'
+		})
 	}
 
 	const goToRegister = () => {

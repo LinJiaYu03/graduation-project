@@ -88,15 +88,6 @@
 			}
 		},
 		{
-			"path" : "pages/system/userInfo/userInfo",
-			"style" : 
-			{
-				"navigationBarTitleText" : "完善信息",
-				"navigationBarBackgroundColor": "#FFFFFF",
-				"navigationBarTextStyle": "black"
-			}
-		},
-		{
 			"path" : "pages/user/userInfo/userInfo",
 			"style" : 
 			{

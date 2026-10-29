@@ -32,8 +32,8 @@ export function createApp() {
 
 // 需要权限的api
 const routeTypes = ['navigateTo', 'redirectTo', 'switchTab', 'reLaunch', 'navigateBack'];
-// 不需要权限的页面
-const routeNoControl=['/pages/index/index','/pages/system/login/login','/pages/system/registration/registration','/pages/system/userInfo/userInfo','/pages/activity/activity','/pages/user/user']
+// 不需要登录的页面
+const routeNoControl=['/pages/index/index','/pages/system/login/login','/pages/system/registration/registration','/pages/activity/activity','/pages/user/user']
 
 // 兼容带查询参数的路径匹配
 const normalizePath = (url = '') => url.split('?')[0] || ''

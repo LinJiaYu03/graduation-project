@@ -59,7 +59,7 @@ def get_profile(
     return user_services.get_profile(db, current_user)
 
 
-@user_router.put("/profile", summary="完善用户信息")
+@user_router.put("/profile", summary="更新用户信息")
 def complete_profile(
     request: ProfileUpdateRequest,
     db: Session = Depends(get_db),
