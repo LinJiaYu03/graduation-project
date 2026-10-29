@@ -18,8 +18,9 @@
 			</view>
 		</view>
 
-		<!-- 快捷入口 -->
+		<!-- 个人信息 -->
 		<view class="quick-section">
+			<text class="section-title">个人信息</text>
 			<view class="quick-grid">
 				<!-- 基本信息 -->
 				<view class="quick-item" @click="() => uni.navigateTo({
@@ -60,9 +61,9 @@
 			</view>
 		</view>
 
-		<!-- 我的服务 -->
+		<!-- 活动信息 -->
 		<view class="services-section">
-			<text class="section-title">我的服务</text>
+			<text class="section-title">活动信息</text>
 			<view class="services-grid">
 				<!-- 活动审核 -->
 				<view v-if="isBoss" class="service-item" @click="uni.navigateTo({
@@ -287,6 +288,29 @@ async function confirmLogout() {
 	}
 }
 
+// 区块标题
+.section-title {
+	display: block;
+	font-size: 30rpx;
+	font-weight: 600;
+	color: $text-primary;
+	margin-bottom: 32rpx;
+	padding-left: 16rpx;
+	position: relative;
+
+	&::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 6rpx;
+		height: 24rpx;
+		background: $brand-primary;
+		border-radius: 3rpx;
+	}
+}
+
 // 我的服务
 .services-section {
 	background: $bg-card;
@@ -294,28 +318,6 @@ async function confirmLogout() {
 	border-radius: $radius-md;
 	padding: 32rpx 24rpx;
 	box-shadow: $shadow-card;
-
-	.section-title {
-		display: block;
-		font-size: 30rpx;
-		font-weight: 600;
-		color: $text-primary;
-		margin-bottom: 32rpx;
-		padding-left: 16rpx;
-		position: relative;
-
-		&::before {
-			content: '';
-			position: absolute;
-			left: 0;
-			top: 50%;
-			transform: translateY(-50%);
-			width: 6rpx;
-			height: 24rpx;
-			background: $brand-primary;
-			border-radius: 3rpx;
-		}
-	}
 
 	.services-grid {
 		display: grid;
