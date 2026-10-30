@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.rbac import Perm, RoleCode, assert_permission, has_permission
 from app.core.respones import page_result, success_response
-from app.models.activity import Activity, ActivityCheckin, ActivityRegistration
+from app.models.activity import Activity, ActivityRegistration
 from app.models.club import Club
 from app.models.rbac import Role, UserRole
 from app.models.user import User
@@ -624,15 +624,7 @@ def comment_activity(
     if registration.status != "已通过":
         raise ValueError("报名未通过，不能评价")
 
-    checkin = (
-        db.query(ActivityCheckin)
-        .filter(
-            ActivityCheckin.activity_id == request.activityId,
-            ActivityCheckin.user_id == current_user.id,
-        )
-        .first()
-    )
-    if checkin is None:
+    if registration.checkin_time is None:
         raise ValueError("您未签到该活动，不能评价")
 
     if registration.score is not None or (
@@ -733,17 +725,8 @@ def check_registration(db: Session, activity_id, user_id):
         result["status"] = None
     else:
         status = registration.status
-        if status == "已通过":
-            checkin = (
-                db.query(ActivityCheckin)
-                .filter(
-                    ActivityCheckin.activity_id == activity_id,
-                    ActivityCheckin.user_id == user_id,
-                )
-                .first()
-            )
-            if checkin is not None:
-                status = "签到成功"
+        if status == "已通过" and registration.checkin_time is not None:
+            status = "签到成功"
 
         result["isRegistered"] = True
         result["status"] = status
@@ -820,8 +803,12 @@ def checkin_statistics(db: Session, activity_id, current_user: User):
 
     approved = _approved_count(db, activity_id)
     checked_in = (
-        db.query(ActivityCheckin)
-        .filter(ActivityCheckin.activity_id == activity_id)
+        db.query(ActivityRegistration)
+        .filter(
+            ActivityRegistration.activity_id == activity_id,
+            ActivityRegistration.status == "已通过",
+            ActivityRegistration.checkin_time.isnot(None),
+        )
         .count()
     )
     not_checked_in = approved - checked_in
@@ -1012,17 +999,13 @@ def export_checkin(db: Session, activity_id, current_user: User):
         user = db.query(User).filter(User.id == reg.user_id).first()
         if user is None:
             continue
-        checkin = (
-            db.query(ActivityCheckin)
-            .filter(
-                ActivityCheckin.activity_id == activity_id,
-                ActivityCheckin.user_id == reg.user_id,
-            )
-            .first()
-        )
         _fill_user_columns(ws, row_num, index, user)
         ws.cell(row=row_num, column=5, value=reg.status if reg.status is not None else "")
-        ws.cell(row=row_num, column=6, value="已签到" if checkin is not None else "未签到")
+        ws.cell(
+            row=row_num,
+            column=6,
+            value="已签到" if reg.checkin_time is not None else "未签到",
+        )
         row_num += 1
 
     filename = activity.name + "_签到情况表.xlsx"
@@ -1277,28 +1260,24 @@ def checkin(db: Session, payload: dict, current_user: User):
     if now > activity.end_time:
         raise ValueError("活动已结束，无法签到")
 
-    existing_checkin = (
-        db.query(ActivityCheckin)
+    updated = (
+        db.query(ActivityRegistration)
         .filter(
-            ActivityCheckin.activity_id == activity_id,
-            ActivityCheckin.user_id == user_id,
+            ActivityRegistration.activity_id == activity_id,
+            ActivityRegistration.user_id == user_id,
+            ActivityRegistration.status == "已通过",
+            ActivityRegistration.checkin_time.is_(None),
         )
-        .first()
+        .update({ActivityRegistration.checkin_time: now}, synchronize_session=False)
     )
-    if existing_checkin is not None:
+    if updated == 0:
+        db.rollback()
         raise ValueError("您已经签到过了")
-
-    checkin_row = ActivityCheckin()
-    checkin_row.activity_id = activity_id
-    checkin_row.user_id = user_id
-    checkin_row.checkin_time = now
-    db.add(checkin_row)
     db.commit()
-    db.refresh(checkin_row)
 
     checkin_data = {
-        "checkinId": checkin_row.id,
-        "checkinTime": dt_to_millis(checkin_row.checkin_time),
+        "checkinId": registration.id,
+        "checkinTime": dt_to_millis(now),
         "activityName": activity.name,
     }
     return success_response(data={"checkin": checkin_data}, message="签到成功")

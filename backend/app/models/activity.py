@@ -40,19 +40,9 @@ class ActivityRegistration(Base):
     status = Column(String(20), default="待审核")
     score = Column(Numeric(5, 2))
     comment = Column(Text)
+    checkin_time = Column(DateTime)
     audit_user_id = Column(BigInteger)
     audit_time = Column(DateTime)
     registration_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-    create_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-    update_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-
-
-class ActivityCheckin(Base):
-    __tablename__ = "activity_checkin"
-
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
-    activity_id = Column(BigInteger, nullable=False)
-    user_id = Column(BigInteger, nullable=False)
-    checkin_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     create_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     update_time = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
