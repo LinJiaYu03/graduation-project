@@ -103,12 +103,10 @@ CREATE TABLE `club`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '社团ID',
   `icon_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '社团图标URL',
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '社团名称',
-  `tags` varchar(255) CHARACTER SET utf16 COLLATE utf16_general_ci NULL DEFAULT NULL COMMENT '社团标签（多个标签用逗号分隔）',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '社团简介',
   `status` tinyint(1) NULL DEFAULT 1 COMMENT '状态(0-禁用,1-启用)',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `level_tag` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '社团类型',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_name`(`name` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社团表' ROW_FORMAT = DYNAMIC;
@@ -118,20 +116,20 @@ CREATE TABLE `club`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `club_member`;
 CREATE TABLE `club_member`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '关系ID',
   `club_id` bigint NOT NULL COMMENT '社团ID',
   `user_id` bigint NOT NULL COMMENT '用户ID',
-  `user_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '用户名称',
-  `is_manager` tinyint(1) NULL DEFAULT 0 COMMENT '是否为管理员(0-否,1-是)',
-  `join_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '加入时间',
+  `status` tinyint NOT NULL DEFAULT 0 COMMENT '状态(0-待审核,1-正常,2-已拒绝)',
+  `apply_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
+  `join_time` datetime NULL DEFAULT NULL COMMENT '通过审核时间',
+  `audit_user_id` bigint NULL DEFAULT NULL COMMENT '审核人ID',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_club_user`(`club_id` ASC, `user_id` ASC) USING BTREE COMMENT '社团和用户唯一索引',
-  INDEX `idx_club_id`(`club_id` ASC) USING BTREE,
-  INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
-  INDEX `idx_user_name`(`user_name` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社团人员表' ROW_FORMAT = DYNAMIC;
+  INDEX `idx_user_status`(`user_id` ASC, `status` ASC) USING BTREE,
+  INDEX `idx_club_status`(`club_id` ASC, `status` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社团成员关系表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for user

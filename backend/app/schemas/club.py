@@ -7,9 +7,7 @@ from app.schemas.user import serialize_user
 class ClubRequest(BaseModel):
     iconUrl: Optional[str] = None
     name: Optional[str] = None
-    tags: Optional[str] = None
     description: Optional[str] = None
-    levelTag: Optional[str] = None
 
 
 class ClubSearchRequest(BaseModel):
@@ -29,6 +27,14 @@ class JoinedClubSearchRequest(BaseModel):
     type: Optional[str] = None
 
 
+class MemberAuditRequest(BaseModel):
+    approved: bool = True
+
+
+class QuitClubRequest(BaseModel):
+    clubId: Optional[int] = None
+
+
 def serialize_club(c, member_count=None) -> dict | None:
     if c is None:
         return None
@@ -36,12 +42,10 @@ def serialize_club(c, member_count=None) -> dict | None:
         "id": c.id,
         "iconUrl": c.icon_url,
         "name": c.name,
-        "tags": c.tags,
         "description": c.description,
         "status": c.status,
         "createTime": c.create_time,
         "updateTime": c.update_time,
-        "levelTag": c.level_tag,
         "memberCount": member_count,
     }
 
@@ -54,7 +58,7 @@ def _user_name(user) -> str | None:
     return user.username
 
 
-def serialize_club_member(m, user=None) -> dict | None:
+def serialize_club_member(m, user=None, is_manager=False) -> dict | None:
     if m is None:
         return None
     return {
@@ -62,19 +66,23 @@ def serialize_club_member(m, user=None) -> dict | None:
         "clubId": m.club_id,
         "userId": m.user_id,
         "userName": _user_name(user),
-        "isManager": m.is_manager,
+        "isManager": is_manager,
+        "status": m.status,
+        "applyTime": m.apply_time,
         "joinTime": m.join_time,
         "createTime": m.create_time,
         "updateTime": m.update_time,
     }
 
 
-def serialize_member_with_user(m, user) -> dict:
+def serialize_member_with_user(m, user, is_manager=False) -> dict:
     return {
         "id": m.id,
         "clubId": m.club_id,
         "userId": m.user_id,
-        "isManager": m.is_manager,
+        "isManager": is_manager,
+        "status": m.status,
+        "applyTime": m.apply_time.isoformat() if m.apply_time is not None else None,
         "joinTime": m.join_time.isoformat() if m.join_time is not None else None,
         "user": serialize_user(user),
     }

@@ -12,10 +12,11 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from app.core.rbac import Perm, assert_permission, has_permission
+from app.core.rbac import Perm, RoleCode, assert_permission, has_permission
 from app.core.respones import page_result, success_response
 from app.models.activity import Activity, ActivityCheckin, ActivityRegistration
-from app.models.club import Club, ClubMember
+from app.models.club import Club
+from app.models.rbac import Role, UserRole
 from app.models.user import User
 from app.schemas.activity import (
     ActivityCommentRequest,
@@ -157,8 +158,6 @@ def create_activity(
     if request.imageUrls:
         activity.image_urls = ",".join(request.imageUrls)
 
-    # 对齐 ActivityServiceImpl.createActivity
-    activity.activity_level = club.level_tag
     activity.status = "审核中"
     activity.audit_status = 0
     activity.score = "0"
@@ -1125,15 +1124,26 @@ def user_activities(
         participated_dtos = [serialize_activity_dto(a) for a in participated_activities]
 
     if type_ in ("managed", "all"):
-        manager_records = (
-            db.query(ClubMember)
-            .filter(ClubMember.user_id == user_id, ClubMember.is_manager.is_(True))
-            .all()
+        manager_role = (
+            db.query(Role)
+            .filter(Role.code == RoleCode.CLUB_MANAGER, Role.status == 1)
+            .first()
         )
+        managed_club_ids = []
+        if manager_role is not None:
+            rows = (
+                db.query(UserRole.club_id)
+                .filter(
+                    UserRole.user_id == user_id,
+                    UserRole.role_id == manager_role.id,
+                    UserRole.club_id > 0,
+                )
+                .all()
+            )
+            managed_club_ids = list({row[0] for row in rows})
 
         managed_activities = []
-        if manager_records:
-            managed_club_ids = list({m.club_id for m in manager_records})
+        if managed_club_ids:
             query = db.query(Activity).filter(Activity.club_id.in_(managed_club_ids))
             if _has_text(keyword):
                 kw = f"%{keyword}%"

@@ -12,10 +12,6 @@
 					<image class="club_avatar" :src="item.iconUrl" mode="aspectFill"></image>
 					<view class="club_info">
 						<view class="club_name">{{ item.name }}</view>
-						<view class="club_meta">
-							<text class="club_tag" v-if="item.levelTag">{{ item.levelTag }}</text>
-							<text class="club_tags" v-if="item.tags">{{ item.tags }}</text>
-						</view>
 					</view>
 					<view class="club_count">
 						<text class="num">{{ item.memberCount }}</text>
@@ -123,29 +119,6 @@
 						overflow: hidden;
 						white-space: nowrap;
 						text-overflow: ellipsis;
-					}
-
-					.club_meta {
-						display: flex;
-						align-items: center;
-						font-size: 22rpx;
-						color: $text-tertiary;
-						overflow: hidden;
-
-						.club_tag {
-							padding: 2rpx 12rpx;
-							margin-right: 12rpx;
-							background: $brand-primary-soft;
-							color: $brand-primary-ink;
-							border-radius: $radius-pill;
-							flex-shrink: 0;
-						}
-
-						.club_tags {
-							overflow: hidden;
-							white-space: nowrap;
-							text-overflow: ellipsis;
-						}
 					}
 				}
 

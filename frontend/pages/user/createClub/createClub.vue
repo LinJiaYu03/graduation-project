@@ -21,24 +21,6 @@
 					<view class="char-count">{{ form.description.length }}/500</view>
 				</uni-forms-item>
 
-				<!-- 社团标签 -->
-				<uni-forms-item label="社团级别" name="tags" required>
-					<view class="tags-container">
-						<uni-tag v-for="(tag, index) in levelTags" :key="index" :text="tag"
-							:type="tag===form.levelTag? 'primary' : 'default'" :inverted="!(tag===form.levelTag)"
-							@click="toggleLevelTag(tag)" class="tag-item" />
-					</view>
-					<view class="tip-text">请至少选择1个标签</view>
-				</uni-forms-item>
-
-				<!-- 社团标签 -->
-				<uni-forms-item label="社团标签" name="tags" required>
-					<view class="tags-container">
-						<uni-tag v-for="(tag, index) in availableTags" :key="index" :text="tag"
-							:type="isTagSelected(tag) ? 'primary' : 'default'" :inverted="!isTagSelected(tag)"
-							@click="toggleTag(tag)" class="tag-item" />
-					</view>
-				</uni-forms-item>
 			</uni-forms>
 
 			<!-- 提交按钮 -->
@@ -57,41 +39,15 @@
 		apiCreateClub
 	} from '@/api/club/index.js'
 
-	const levelTags = ['班级', '院级', '校级']
-	// 可用的标签列表
-	const availableTags = ['团支部', '音乐', '文艺', '传媒', '社团与协会', '公益志愿']
 	const formRef = ref(null)
 	const form = reactive({
 		iconUrl: [],
 		name: '',
-		description: '',
-		levelTag: '',
-		tags: []
+		description: ''
 	})
 	const coverImageUrl = ref('')
 	const filesName = ref('')
 	const filePath = ref('')
-
-	// 判断标签是否被选中
-	function isTagSelected(tagValue) {
-		return form.tags.includes(tagValue)
-	}
-
-	// 切换标签选中状态
-	function toggleTag(tagValue) {
-		const index = form.tags.indexOf(tagValue)
-		if (index > -1) {
-			// 取消选中
-			form.tags.splice(index, 1)
-		} else {
-			// 选中
-			form.tags.push(tagValue)
-		}
-	}
-
-	function toggleLevelTag(value) {
-		form.levelTag = value
-	}
 
 	// 表单验证规则
 	const rules = {
@@ -120,17 +76,6 @@
 				}
 				if (value.length < 10) {
 					callback('活动简介至少需要10个字符')
-					return
-				}
-				callback()
-			}
-		},
-		tags: {
-			required: true,
-			errorMessage: '请至少选择1个标签',
-			validator: (rule, value, callback) => {
-				if (!Array.isArray(value) || value.length < 1) {
-					callback('请至少选择1个标签')
 					return
 				}
 				callback()
@@ -172,9 +117,7 @@
 					// 构建提交数据
 					const formData = {
 						name: form.name,
-						description: form.description || undefined,
-						levelTag:form.levelTag,
-						tags: form.tags.length > 0 ? form.tags.join(',') : undefined
+						description: form.description || undefined
 					}
 
 					// 如果有上传的图片，添加 iconUrl
@@ -278,25 +221,6 @@
 		text-align: right;
 		font-size: 24rpx;
 		color: $text-tertiary;
-	}
-
-	.tags-container {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 20rpx;
-		margin-top: 12rpx;
-
-		.tag-item {
-			margin: 0;
-			cursor: pointer;
-		}
-	}
-
-	.tip-text {
-		margin-top: 12rpx;
-		font-size: 24rpx;
-		color: $text-tertiary;
-		line-height: 1.5;
 	}
 
 	.submit-btn {

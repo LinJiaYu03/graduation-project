@@ -72,6 +72,7 @@ INSERT INTO `permission` (`code`, `name`, `resource`, `action`) VALUES
 ('club:update',            '修改社团',         'club',         'update'),
 ('club:join',              '加入社团',         'club',         'join'),
 ('club:member:view',       '查看社团成员',     'club',         'member:view'),
+('club:member:audit',      '审核社团加入申请', 'club',         'member:audit'),
 ('club:manager:assign',    '设置社团管理员',   'club',         'manager:assign'),
 
 ('activity:view',          '查看活动',         'activity',     'view'),
@@ -113,6 +114,7 @@ SELECT r.id, p.id
 FROM `role` r
 JOIN `permission` p ON p.code IN (
   'user:update', 'club:view', 'club:create', 'club:join', 'club:member:view',
+  'club:member:audit',
   'activity:view', 'activity:register', 'activity:comment', 'activity:checkin',
   'club:update', 'activity:create', 'activity:update', 'activity:delete',
   'activity:publish', 'activity:qrcode', 'activity:stats', 'activity:export',
@@ -127,17 +129,10 @@ JOIN `permission` p
 WHERE r.code = 'ADMIN';
 
 -- ---------------------------------------------------------------------------
--- 存量社团数据迁移
--- 原超级管理员已在上线时迁移为 ADMIN，user.is_boss / user.is_manager 字段已删除
+-- 存量用户补默认 USER 全局角色
+-- 社团管理员身份统一由 user_role(club_id > 0, role=CLUB_MANAGER) 表达，
+-- club_member 只保存成员关系，不再维护 is_manager
 -- ---------------------------------------------------------------------------
--- 社团管理员 -> 对应社团的 CLUB_MANAGER 角色
-INSERT IGNORE INTO `user_role` (`user_id`, `role_id`, `club_id`)
-SELECT cm.user_id, r.id, cm.club_id
-FROM `club_member` cm
-JOIN `role` r ON r.code = 'CLUB_MANAGER'
-WHERE cm.is_manager = 1;
-
--- 所有用户补默认 USER 全局角色
 INSERT IGNORE INTO `user_role` (`user_id`, `role_id`, `club_id`)
 SELECT u.id, r.id, 0
 FROM `user` u

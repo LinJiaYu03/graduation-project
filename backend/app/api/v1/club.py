@@ -10,6 +10,8 @@ from app.schemas.club import (
     ClubSearchRequest,
     JoinClubRequest,
     JoinedClubSearchRequest,
+    MemberAuditRequest,
+    QuitClubRequest,
 )
 from app.services import club_services
 
@@ -37,6 +39,15 @@ def join_club(
     current_user: User = Depends(require_permission(Perm.CLUB_JOIN)),
 ):
     return club_services.join_club(db, request.clubId, current_user)
+
+
+@club_router.post("/quit")
+def quit_club(
+    request: QuitClubRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return club_services.quit_club(db, request.clubId, current_user)
 
 
 @club_router.post("/joined")
@@ -67,6 +78,28 @@ def get_latest_clubs(limit: int = 4, db: Session = Depends(get_db)):
 )
 def get_club_members(clubId: int, db: Session = Depends(get_db)):
     return club_services.club_members(db, clubId)
+
+
+@club_router.get("/{clubId}/applications")
+def get_club_applications(
+    clubId: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return club_services.pending_members(db, clubId, current_user)
+
+
+@club_router.post("/{clubId}/members/{userId}/audit")
+def audit_club_member(
+    clubId: int,
+    userId: int,
+    request: MemberAuditRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return club_services.audit_member(
+        db, clubId, userId, request.approved, current_user
+    )
 
 
 @club_router.post("/{clubId}/members/{userId}/manager")

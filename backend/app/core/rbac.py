@@ -24,6 +24,7 @@ class Perm:
     CLUB_UPDATE = "club:update"
     CLUB_JOIN = "club:join"
     CLUB_MEMBER_VIEW = "club:member:view"
+    CLUB_MEMBER_AUDIT = "club:member:audit"
     CLUB_MANAGER_ASSIGN = "club:manager:assign"
 
     ACTIVITY_VIEW = "activity:view"
