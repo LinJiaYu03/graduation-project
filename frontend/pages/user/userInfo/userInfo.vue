@@ -1,14 +1,14 @@
 <template>
 	<view class="page container">
-		<!-- 头像区域 -->
-		<view class="avatar-section">
-			<view class="avatar-wrapper">
-				<image :src="userAvatar" mode="aspectFill" class="avatar" @click="upload" />
-			</view>
-		</view>
-
 		<!-- 信息列表 -->
-		<uni-list class="info-card">
+		<uni-list class="info-card avatar-card">
+			<uni-list-item title="头像" clickable class="info-item" @click="openAvatarPreview">
+				<template #footer>
+					<view class="avatar-preview">
+						<image :src="userAvatar || '/static/logo.png'" mode="aspectFill" class="avatar-img" />
+					</view>
+				</template>
+			</uni-list-item>
 			<uni-list-item title="姓名" clickable :right-text="userInfo.realName" class="info-item" @click="editField('realName', '姓名', userInfo.realName)" />
 			<uni-list-item title="性别" clickable :right-text="userInfo.gender===1?'男':'女'" class="info-item" @click="editGender" />
 		</uni-list>
@@ -22,6 +22,14 @@
 		<view class="save-button-container">
 			<button class="save-btn" @click="saveChanges">
 				<text class="btn-text">保存修改</text>
+			</button>
+		</view>
+
+		<!-- 头像预览 -->
+		<view v-if="showAvatarPreview" class="avatar-preview-mask" @click="closeAvatarPreview">
+			<image :src="userAvatar || '/static/logo.png'" mode="aspectFit" class="avatar-preview-img" />
+			<button class="avatar-change-btn" @click.stop="upload">
+				<text class="btn-text">更换头像</text>
 			</button>
 		</view>
 
@@ -42,12 +50,24 @@
 	const userInfo = ref({ ...(userStore.user || {}) })
 	const userAvatar = ref(userInfo.value.avatarUrl)
 	const filesName = ref()
+	const showAvatarPreview = ref(false)
+
+	// 打开头像预览
+	function openAvatarPreview() {
+		showAvatarPreview.value = true
+	}
+
+	// 关闭头像预览
+	function closeAvatarPreview() {
+		showAvatarPreview.value = false
+	}
 
 	function upload() {
 		uni.chooseImage({
 			count: 1,
 			success(e) {
 				userAvatar.value = e.tempFilePaths[0]
+				showAvatarPreview.value = false
 				// 某些情况下可能没有 name 属性，使用时间戳或文件名
 				filesName.value = e.tempFiles[0]?.name || e.tempFilePaths[0].split('/').pop() || 'avatar.jpg'
 			}
@@ -195,47 +215,72 @@
 		padding: 0;
 	}
 
-	// 头像区域
-	.avatar-section {
-		position: relative;
+	// 头像列表项
+	.avatar-card {
+		margin-top: 24rpx;
+	}
+
+	.avatar-preview {
+		width: 88rpx;
+		height: 88rpx;
+		border-radius: 50%;
+		overflow: hidden;
+		background: $bg-card;
+		border: 1rpx solid $border-color;
+
+		.avatar-img {
+			width: 100%;
+			height: 100%;
+			display: block;
+		}
+	}
+
+	// 头像预览
+	.avatar-preview-mask {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding: 60rpx 0 48rpx;
-		background: linear-gradient(135deg, $brand-primary-soft 0%, $brand-primary-fade 100%);
-		border-bottom: 1rpx solid $border-color;
-		margin-bottom: 24rpx;
-		overflow: hidden;
+		justify-content: center;
+		background: rgba(0, 0, 0, 0.75);
+		z-index: 999;
+	}
 
-		.avatar-bg {
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			opacity: 0.5;
+	.avatar-preview-img {
+		width: 600rpx;
+		height: 600rpx;
+		border-radius: $radius-md;
+		background: $bg-card;
+	}
+
+	.avatar-change-btn {
+		position: absolute;
+		left: 50%;
+		bottom: 100rpx;
+		transform: translateX(-50%);
+		width: 480rpx;
+		height: 88rpx;
+		line-height: 88rpx;
+		background: $brand-primary;
+		border-radius: $radius-pill;
+		color: $text-on-primary;
+		font-size: 30rpx;
+		text-align: center;
+
+		&::after {
+			border: none;
 		}
 
-		.avatar-wrapper {
-			margin-bottom: 24rpx;
-			z-index: 1;
-
-			.avatar {
-				margin-left: -300rpx;
-				width: 180rpx;
-				height: 180rpx;
-				border-radius: 50%;
-				background: $bg-card;
-				border: 4rpx solid $bg-card;
-			}
+		&:active {
+			background: $brand-primary-deep;
 		}
 
-		.user-name {
-			font-size: 36rpx;
-			font-weight: 600;
-			color: $text-primary;
-			letter-spacing: 1rpx;
-			z-index: 1;
+		.btn-text {
+			letter-spacing: 2rpx;
 		}
 	}
 
@@ -269,6 +314,8 @@
 			}
 
 			.uni-list-item__container {
+				align-items: center;
+
 				.uni-list-item__content {
 					.uni-list-item__content-title {
 						font-size: 30rpx;
