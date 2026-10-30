@@ -49,15 +49,6 @@
 					</view>
 					<text class="quick-label">创建社团</text>
 				</view>
-				<!-- 创建班级 -->
-				<view v-if="isBoss" class="quick-item" @click="() => uni.navigateTo({
-					url: '/pages/user/createClass/createClass'
-				})">
-					<view class="quick-icon">
-						<uni-icons type="plusempty" size="24" color="#E9A23C"></uni-icons>
-					</view>
-					<text class="quick-label">添加班级</text>
-				</view>
 			</view>
 		</view>
 
@@ -97,16 +88,6 @@
 						<uni-icons type="medal" size="24" color="#E9A23C"></uni-icons>
 					</view>
 					<text class="service-label">我的社团</text>
-				</view>
-
-				<!-- 班级列表 -->
-				<view v-if="isBoss" class="service-item" @click="() => uni.navigateTo({
-					url: '/pages/user/classList/classList'
-				})">
-					<view class="service-icon">
-						<uni-icons type="contact" size="24" color="#E9A23C"></uni-icons>
-					</view>
-					<text class="service-label">班级列表</text>
 				</view>
 			</view>
 		</view>

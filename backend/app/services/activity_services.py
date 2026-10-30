@@ -980,16 +980,13 @@ def _fill_user_columns(ws, row_num: int, index: int, user: User) -> None:
     ws.cell(row=row_num, column=2, value=user.real_name if user.real_name is not None else "")
     ws.cell(row=row_num, column=3, value=_gender_to_string(user.gender))
     ws.cell(row=row_num, column=4, value=user.student_no if user.student_no is not None else "")
-    ws.cell(row=row_num, column=5, value=user.school_name if user.school_name is not None else "")
-    ws.cell(row=row_num, column=6, value=user.college_name if user.college_name is not None else "")
-    ws.cell(row=row_num, column=7, value=user.class_name if user.class_name is not None else "")
 
 
 def export_registration(db: Session, activity_id, current_user: User):
     activity = _export_context(db, activity_id, current_user)
     approved = _approved_registrations(db, activity_id)
 
-    headers = ["序号", "姓名", "性别", "学号", "学校", "学院", "班级"]
+    headers = ["序号", "姓名", "性别", "学号"]
     wb, ws = _new_workbook("报名情况表", headers)
 
     row_num = 2
@@ -1008,7 +1005,7 @@ def export_checkin(db: Session, activity_id, current_user: User):
     activity = _export_context(db, activity_id, current_user)
     approved = _approved_registrations(db, activity_id)
 
-    headers = ["序号", "姓名", "性别", "学号", "学校", "学院", "班级", "报名状态", "签到状态"]
+    headers = ["序号", "姓名", "性别", "学号", "报名状态", "签到状态"]
     wb, ws = _new_workbook("签到情况表", headers)
 
     row_num = 2
@@ -1025,8 +1022,8 @@ def export_checkin(db: Session, activity_id, current_user: User):
             .first()
         )
         _fill_user_columns(ws, row_num, index, user)
-        ws.cell(row=row_num, column=8, value=reg.status if reg.status is not None else "")
-        ws.cell(row=row_num, column=9, value="已签到" if checkin is not None else "未签到")
+        ws.cell(row=row_num, column=5, value=reg.status if reg.status is not None else "")
+        ws.cell(row=row_num, column=6, value="已签到" if checkin is not None else "未签到")
         row_num += 1
 
     filename = activity.name + "_签到情况表.xlsx"
@@ -1037,7 +1034,7 @@ def export_score(db: Session, activity_id, current_user: User):
     activity = _export_context(db, activity_id, current_user)
     approved = _approved_registrations(db, activity_id)
 
-    headers = ["序号", "姓名", "性别", "学号", "学校", "学院", "班级", "报名状态", "评分"]
+    headers = ["序号", "姓名", "性别", "学号", "报名状态", "评分"]
     wb, ws = _new_workbook("评分情况表", headers)
 
     row_num = 2
@@ -1046,10 +1043,10 @@ def export_score(db: Session, activity_id, current_user: User):
         if user is None:
             continue
         _fill_user_columns(ws, row_num, index, user)
-        ws.cell(row=row_num, column=8, value=reg.status if reg.status is not None else "")
+        ws.cell(row=row_num, column=5, value=reg.status if reg.status is not None else "")
         ws.cell(
             row=row_num,
-            column=9,
+            column=6,
             value=str(reg.score) if reg.score is not None else "未评分",
         )
         row_num += 1

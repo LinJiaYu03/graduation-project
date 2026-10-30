@@ -3,7 +3,7 @@
 		<view class="list-card" v-if="userList.length!=0">
 			<uni-list>
 				<uni-list-item style="height: 170rpx;" v-for="item in userList" :key="item.id" :title="item.realName"
-					:note="item.schoolName+item.collegeName+item.className" :thumb="item.avatarUrl" thumb-size="lg">
+					:note="item.studentNo" :thumb="item.avatarUrl" thumb-size="lg">
 					<!-- 自定义 footer-->
 					<template v-slot:footer>
 						<view v-for="tagItem in tagList" :key="tagItem.title" class="tag"

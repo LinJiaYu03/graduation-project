@@ -11,45 +11,6 @@
 		<uni-list class="info-card">
 			<uni-list-item title="姓名" clickable :right-text="userInfo.realName" class="info-item" @click="editField('realName', '姓名', userInfo.realName)" />
 			<uni-list-item title="性别" clickable :right-text="userInfo.gender===1?'男':'女'" class="info-item" @click="editGender" />
-			<view class="info-item-wrapper">
-				<uni-list-item title="学校" :right-text="userInfo.schoolName" class="info-item" />
-				<picker 
-					mode="multiSelector" 
-					:range="multiArray" 
-					:value="multiIndex" 
-					@change="onPickerChange"
-					@columnchange="onPickerColumnChange"
-					class="overlay-picker"
-				>
-					<view class="picker-overlay"></view>
-				</picker>
-			</view>
-			<view class="info-item-wrapper">
-				<uni-list-item title="学院" :right-text="userInfo.collegeName" class="info-item" />
-				<picker 
-					mode="multiSelector" 
-					:range="multiArray" 
-					:value="multiIndex" 
-					@change="onPickerChange"
-					@columnchange="onPickerColumnChange"
-					class="overlay-picker"
-				>
-					<view class="picker-overlay"></view>
-				</picker>
-			</view>
-			<view class="info-item-wrapper">
-				<uni-list-item title="班级" :right-text="userInfo.className" class="info-item" />
-				<picker 
-					mode="multiSelector" 
-					:range="multiArray" 
-					:value="multiIndex" 
-					@change="onPickerChange"
-					@columnchange="onPickerColumnChange"
-					class="overlay-picker"
-				>
-					<view class="picker-overlay"></view>
-				</picker>
-			</view>
 		</uni-list>
 
 		<uni-list class="info-card contact-card">
@@ -69,71 +30,18 @@
 
 <script setup>
 	import {
-		ref,
-		computed,
-		onMounted
+		ref
 	} from 'vue'
 	import convertCloudPath from '@/utils/convertCloudPath'
 	import {
 		apiImproveUserInfo
 	} from '@/api/user/index.js'
-	import {
-		apiGetSchoolInfoTree
-	} from '@/api/school/index.js'
 	import { useUserStore } from '@/stores/user.js'
 
 	const userStore = useUserStore()
 	const userInfo = ref({ ...(userStore.user || {}) })
 	const userAvatar = ref(userInfo.value.avatarUrl)
 	const filesName = ref()
-	const schoolData = ref([])
-	const multiIndex = ref([0, 0, 0])
-
-	// 构建三级联动的数组
-	const multiArray = computed(() => {
-		if (!schoolData.value || schoolData.value.length === 0) {
-			return [[], [], []]
-		}
-		const schools = schoolData.value.map(item => item.name)
-		const colleges = (schoolData.value[multiIndex.value[0]]?.colleges || []).map(item => item.name)
-		const classes = (schoolData.value[multiIndex.value[0]]?.colleges?.[multiIndex.value[1]]?.classes || []).map(item => item.name)
-		return [schools, colleges, classes]
-	})
-
-	// 初始化学校信息索引
-	const initMultiIndex = () => {
-		if (userInfo.value.schoolName && userInfo.value.collegeName && userInfo.value.className && schoolData.value.length > 0) {
-			const schoolIndex = schoolData.value.findIndex(school => school.name === userInfo.value.schoolName)
-			if (schoolIndex !== -1) {
-				const colleges = schoolData.value[schoolIndex].colleges || []
-				const collegeIndex = colleges.findIndex(college => college.name === userInfo.value.collegeName)
-				if (collegeIndex !== -1) {
-					const classes = colleges[collegeIndex].classes || []
-					const classIndex = classes.findIndex(cls => cls.name === userInfo.value.className)
-					if (classIndex !== -1) {
-						multiIndex.value = [schoolIndex, collegeIndex, classIndex]
-						return
-					}
-				}
-			}
-		}
-		multiIndex.value = [0, 0, 0]
-	}
-
-	// 获取学校信息树
-	async function getSchoolInfoTree() {
-		try {
-			let res = await apiGetSchoolInfoTree()
-			schoolData.value = res.data.items || []
-			initMultiIndex()
-		} catch (e) {
-			console.error('获取学校信息失败', e)
-		}
-	}
-
-	onMounted(() => {
-		getSchoolInfoTree()
-	})
 
 	function upload() {
 		uni.chooseImage({
@@ -200,68 +108,6 @@
 		})
 	}
 
-
-	// picker 选择变化
-	function onPickerChange(e) {
-		const values = e.detail.value
-		multiIndex.value = values
-
-		const schoolIndex = values[0]
-		const collegeIndex = values[1]
-		const classIndex = values[2]
-
-		const school = schoolData.value[schoolIndex]
-		if (school) {
-			userInfo.value.schoolName = school.name
-			const college = (school.colleges || [])[collegeIndex]
-			if (college) {
-				userInfo.value.collegeName = college.name
-				const cls = (college.classes || [])[classIndex]
-				if (cls) {
-					userInfo.value.className = cls.name
-				} else {
-					userInfo.value.className = ''
-				}
-			} else {
-				userInfo.value.collegeName = ''
-				userInfo.value.className = ''
-			}
-		}
-	}
-
-	// picker 列变化（联动处理）
-	function onPickerColumnChange(e) {
-		const column = e.detail.column
-		const value = e.detail.value
-
-		// 更新当前列的索引
-		const newIndex = [...multiIndex.value]
-		newIndex[column] = value
-
-		// 如果改变了学校，重置学院和班级
-		if (column === 0) {
-			newIndex[1] = 0
-			newIndex[2] = 0
-		}
-		// 如果改变了学院，重置班级
-		else if (column === 1) {
-			newIndex[2] = 0
-		}
-
-		// 避免越界
-		const schools = schoolData.value || []
-		if (!schools[newIndex[0]] || !(schools[newIndex[0]].colleges || []).length) {
-			newIndex[1] = 0
-			newIndex[2] = 0
-		} else {
-			const colleges = schools[newIndex[0]].colleges || []
-			if (!colleges[newIndex[1]] || !(colleges[newIndex[1]].classes || []).length) {
-				newIndex[2] = 0
-			}
-		}
-
-		multiIndex.value = newIndex
-	}
 
 	async function saveChanges() {
 		// 验证必填字段
@@ -481,25 +327,6 @@
 
 		.btn-text {
 			letter-spacing: 2rpx;
-		}
-	}
-
-	// 信息项包装器（用于覆盖 picker）
-	.info-item-wrapper {
-		position: relative;
-
-		.overlay-picker {
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			z-index: 10;
-
-			.picker-overlay {
-				width: 100%;
-				height: 100%;
-			}
 		}
 	}
 </style>

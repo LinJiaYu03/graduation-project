@@ -46,7 +46,7 @@
 				<uni-list>
 					<uni-list-item :clickable="isBoss" style="height: 170rpx;" v-for="item in userList" :key="item.userId"
 						:title="item.user.realName"
-						:note="item.user.schoolName+item.user.collegeName+item.user.className"
+						:note="item.user.studentNo"
 						:thumb="item.user.avatarUrl" thumb-size="lg" @click="onShowSettingManagerDialog(item)">
 						<!-- 自定义 footer-->
 						<template v-slot:footer>

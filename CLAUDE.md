@@ -32,7 +32,7 @@ HBuilderX IDE is required for development. Key configurations in `manifest.json`
 
 ```
 backend/app/
-├── api/            # REST endpoints (/api/*): user, club, activity, campus
+├── api/            # REST endpoints (/api/*): user, club, activity, rbac
 ├── services/       # Business logic
 ├── schemas/        # Pydantic request/response models (camelCase field names)
 ├── models/         # SQLAlchemy entities
@@ -43,7 +43,7 @@ backend/app/
 
 **Key entities**: `User`, `Club`, `ClubMember`, `Activity`, `ActivityRegistration`, `ActivityCheckin`
 
-**API prefix**: `/api/activities`, `/api/clubs`, `/api/users`, `/api/campus-info`
+**API prefix**: `/api/activities`, `/api/clubs`, `/api/users`, `/api/rbac`
 
 **Layered flow**: `api/` (router) → `services/` (business logic) → `models/` → database
 

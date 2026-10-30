@@ -21,9 +21,6 @@ class ProfileUpdateRequest(BaseModel):
     gender: Optional[int] = None
     phone: Optional[str] = None
     email: Optional[str] = None
-    school_name: Optional[str] = None
-    college_name: Optional[str] = None
-    class_name: Optional[str] = None
     avatar_url: Optional[str] = None
 
 
@@ -54,9 +51,6 @@ class UserResponse(BaseModel):
     gender: Optional[int] = None
     phone: Optional[str] = None
     email: Optional[str] = None
-    schoolName: Optional[str] = None
-    collegeName: Optional[str] = None
-    className: Optional[str] = None
     avatarUrl: Optional[str] = None
     roles: Optional[list[RoleItem]] = None
 
@@ -80,9 +74,6 @@ def serialize_user(u, roles=None) -> dict | None:
         "gender": u.gender,
         "phone": u.phone,
         "email": u.email,
-        "schoolName": u.school_name,
-        "collegeName": u.college_name,
-        "className": u.class_name,
         "avatarUrl": u.avatar_url,
         "roles": roles,
     }

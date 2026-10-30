@@ -96,25 +96,6 @@ CREATE TABLE `activity_registration`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 28 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '活动报名表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Table structure for campus_info
--- ----------------------------
-DROP TABLE IF EXISTS `campus_info`;
-CREATE TABLE `campus_info`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `school_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '学校名称',
-  `college_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '学院名称（可为空，表示学校级别）',
-  `class_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '班级名称（可为空，表示学校或学院级别）',
-  `level` tinyint NOT NULL COMMENT '层级：1-学校，2-学院，3-班级',
-  `parent_id` bigint NULL DEFAULT NULL COMMENT '父级ID',
-  `sort` int NULL DEFAULT 0 COMMENT '排序',
-  `status` tinyint(1) NULL DEFAULT 1 COMMENT '状态(1-启用,0-禁用)',
-  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uk_name_path`(`school_name` ASC, `college_name` ASC, `class_name` ASC) USING BTREE,
-  INDEX `idx_parent_id`(`parent_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 36 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
 -- Table structure for club
 -- ----------------------------
 DROP TABLE IF EXISTS `club`;
@@ -165,9 +146,6 @@ CREATE TABLE `user`  (
   `gender` tinyint(1) NULL DEFAULT NULL COMMENT '性别(0-女,1-男)',
   `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '手机号',
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '邮箱',
-  `school_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '学校名称',
-  `college_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '学院名称',
-  `class_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '班级名称',
   `avatar_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'https://env-00jxuc2o76k9.normal.cloudstatic.cn/avatar/admin.jpg' COMMENT '用户头像',
   `token_version` int NOT NULL DEFAULT 0 COMMENT '令牌版本号',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
