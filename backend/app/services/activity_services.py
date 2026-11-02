@@ -151,6 +151,8 @@ def create_activity(
     activity.registration_start_time = request.registrationStartTime
     activity.registration_end_time = request.registrationEndTime
     activity.start_time = request.startTime
+    activity.checkin_start_time = request.checkinStartTime
+    activity.checkin_end_time = request.checkinEndTime
     activity.end_time = request.endTime
     activity.max_participants = request.maxParticipants
     activity.need_audit = request.needAudit if request.needAudit is not None else False
@@ -205,6 +207,10 @@ def update_activity(
         activity.registration_end_time = request.registrationEndTime
     if request.startTime is not None:
         activity.start_time = request.startTime
+    if request.checkinStartTime is not None:
+        activity.checkin_start_time = request.checkinStartTime
+    if request.checkinEndTime is not None:
+        activity.checkin_end_time = request.checkinEndTime
     if request.endTime is not None:
         activity.end_time = request.endTime
     if request.maxParticipants is not None:
@@ -368,8 +374,8 @@ def search_activities(db: Session, request: ActivitySearchRequest):
     size = request.pageSize if (request.pageSize and request.pageSize > 0) else 10
 
     query = db.query(Activity)
-    # 排除已拒绝的活动
-    query = query.filter(Activity.audit_status != 2)
+    # 公开列表只展示审核通过的活动
+    query = query.filter(Activity.audit_status == 1)
     query = query.filter(Activity.is_published.is_(True))
 
     if _has_text(request.keyword):

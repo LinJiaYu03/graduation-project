@@ -32,6 +32,8 @@ CREATE TABLE `activity`  (
   `registration_start_time` datetime NULL DEFAULT NULL COMMENT '活动报名开始时间',
   `registration_end_time` datetime NULL DEFAULT NULL COMMENT '活动报名结束时间',
   `start_time` datetime NULL DEFAULT NULL COMMENT '活动开始时间',
+  `checkin_start_time` datetime NULL DEFAULT NULL COMMENT '签到开始时间',
+  `checkin_end_time` datetime NULL DEFAULT NULL COMMENT '签到结束时间',
   `end_time` datetime NULL DEFAULT NULL COMMENT '活动结束时间',
   `max_participants` int NULL DEFAULT NULL COMMENT '最大报名人数',
   `current_participants` int NULL DEFAULT 0 COMMENT '当前报名人数',
@@ -47,11 +49,11 @@ CREATE TABLE `activity`  (
   `score` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '0' COMMENT '活动总分',
   `is_published` tinyint(1) NULL DEFAULT 1 COMMENT '是否上架(0-下架,1-上架)',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_club_id`(`club_id` ASC) USING BTREE,
-  INDEX `idx_status`(`status` ASC) USING BTREE,
+  INDEX `idx_activity_audit_time`(`audit_status` ASC, `create_time` ASC, `is_published` ASC) USING BTREE,
+  INDEX `idx_activity_status_time`(`status` ASC, `is_published` ASC, `create_time` ASC) USING BTREE,
+  INDEX `idx_activity_club_time`(`club_id` ASC, `is_published` ASC, `create_time` ASC) USING BTREE,
   INDEX `idx_activity_type`(`activity_type` ASC) USING BTREE,
-  INDEX `idx_activity_level`(`activity_level` ASC) USING BTREE,
-  INDEX `idx_name`(`name` ASC) USING BTREE
+  INDEX `idx_activity_level`(`activity_level` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '活动表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------

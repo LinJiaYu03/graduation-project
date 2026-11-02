@@ -15,6 +15,8 @@ class Activity(Base):
     registration_start_time = Column(DateTime)
     registration_end_time = Column(DateTime)
     start_time = Column(DateTime)
+    checkin_start_time = Column(DateTime)
+    checkin_end_time = Column(DateTime)
     end_time = Column(DateTime)
     max_participants = Column(Integer)
     current_participants = Column(Integer, default=0)

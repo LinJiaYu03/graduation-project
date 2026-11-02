@@ -44,6 +44,8 @@ class ActivityCreateRequest(BaseModel):
     registrationStartTime: DateTime = None
     registrationEndTime: DateTime = None
     startTime: DateTime = None
+    checkinStartTime: DateTime = None
+    checkinEndTime: DateTime = None
     endTime: DateTime = None
     maxParticipants: Optional[int] = None
     needAudit: Optional[bool] = None
@@ -60,6 +62,8 @@ class ActivityUpdateRequest(BaseModel):
     registrationStartTime: DateTime = None
     registrationEndTime: DateTime = None
     startTime: DateTime = None
+    checkinStartTime: DateTime = None
+    checkinEndTime: DateTime = None
     endTime: DateTime = None
     maxParticipants: Optional[int] = None
     needAudit: Optional[bool] = None
@@ -139,6 +143,8 @@ def serialize_activity(a) -> dict | None:
         "registrationStartTime": a.registration_start_time,
         "registrationEndTime": a.registration_end_time,
         "startTime": a.start_time,
+        "checkinStartTime": a.checkin_start_time,
+        "checkinEndTime": a.checkin_end_time,
         "endTime": a.end_time,
         "maxParticipants": a.max_participants,
         "currentParticipants": a.current_participants,
@@ -171,6 +177,8 @@ def serialize_activity_dto(a, image_list: bool = True) -> dict | None:
         "registrationStartTime": dt_to_millis(a.registration_start_time),
         "registrationEndTime": dt_to_millis(a.registration_end_time),
         "startTime": dt_to_millis(a.start_time),
+        "checkinStartTime": dt_to_millis(a.checkin_start_time),
+        "checkinEndTime": dt_to_millis(a.checkin_end_time),
         "endTime": dt_to_millis(a.end_time),
         "maxParticipants": a.max_participants,
         "currentParticipants": a.current_participants,
