@@ -9,7 +9,7 @@ from urllib.parse import quote_plus
 import qrcode
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from sqlalchemy import or_
+from sqlalchemy import and_, false, func, or_
 from sqlalchemy.orm import Session
 
 from app.core.rbac import Perm, RoleCode, assert_permission, has_permission
@@ -27,6 +27,7 @@ from app.schemas.activity import (
     RegistrationReviewRequest,
     _number,
     _split_urls,
+    derive_activity_status,
     serialize_activity,
     serialize_activity_dto,
     serialize_registration,
@@ -74,37 +75,22 @@ def _approved_count(db: Session, activity_id) -> int:
     )
 
 
-def refresh_activity_status_by_time(db: Session, activity: Activity) -> None:
-    """对齐 Java refreshActivityStatusByTime，会根据当前时间刷新状态并持久化。"""
-    if activity is None:
-        return
-    if activity.audit_status is None or activity.audit_status != 1:
-        return
-
-    now = datetime.now()
-    reg_start = activity.registration_start_time
-    reg_end = activity.registration_end_time
-    start = activity.start_time
-    end = activity.end_time
-
-    if reg_start is None or reg_end is None or start is None or end is None:
-        db.commit()
-        return
-
-    if now > reg_start and now < reg_end:
-        new_status = "报名中"
-    elif (now > reg_end and now < start) or now < reg_start:
-        new_status = "等待中"
-    elif now > start and now < end:
-        new_status = "进行中"
-    elif now > end:
-        new_status = "已结束"
-    else:
-        new_status = activity.status
-
-    if new_status is not None and new_status != activity.status:
-        activity.status = new_status
-    db.commit()
+def _approved_counts(db: Session, activity_ids: list[int]) -> dict[int, int]:
+    if not activity_ids:
+        return {}
+    rows = (
+        db.query(
+            ActivityRegistration.activity_id,
+            func.count(ActivityRegistration.id),
+        )
+        .filter(
+            ActivityRegistration.activity_id.in_(activity_ids),
+            ActivityRegistration.status == "已通过",
+        )
+        .group_by(ActivityRegistration.activity_id)
+        .all()
+    )
+    return {row[0]: int(row[1]) for row in rows}
 
 
 def _status_priority(status) -> int:
@@ -115,6 +101,50 @@ def _status_priority(status) -> int:
     if status == "已结束":
         return 3
     return 4
+
+
+def _apply_status_filter(query, status: str, now: datetime):
+    """把展示状态筛选翻译成 audit_status 与时间窗条件。"""
+    if status == "审核中":
+        return query.filter(
+            or_(Activity.audit_status == 0, Activity.audit_status.is_(None))
+        )
+    if status == "已拒绝":
+        return query.filter(Activity.audit_status == 2)
+    if status == "报名中":
+        return query.filter(
+            Activity.audit_status == 1,
+            Activity.registration_start_time <= now,
+            Activity.registration_end_time >= now,
+        )
+    if status == "等待中":
+        return query.filter(
+            Activity.audit_status == 1,
+            or_(
+                Activity.registration_start_time.is_(None),
+                Activity.registration_end_time.is_(None),
+                Activity.start_time.is_(None),
+                Activity.end_time.is_(None),
+                Activity.registration_start_time > now,
+                and_(
+                    Activity.registration_end_time < now,
+                    Activity.start_time > now,
+                ),
+            ),
+        )
+    if status == "进行中":
+        return query.filter(
+            Activity.audit_status == 1,
+            Activity.registration_end_time < now,
+            Activity.start_time <= now,
+            Activity.end_time >= now,
+        )
+    if status == "已结束":
+        return query.filter(
+            Activity.audit_status == 1,
+            Activity.end_time < now,
+        )
+    return query.filter(false())
 
 
 # ---------------------------------------------------------------------------
@@ -160,7 +190,6 @@ def create_activity(
     if request.imageUrls:
         activity.image_urls = ",".join(request.imageUrls)
 
-    activity.status = "审核中"
     activity.audit_status = 0
     activity.score = "0"
     activity.is_published = False
@@ -169,7 +198,8 @@ def create_activity(
     db.commit()
     db.refresh(activity)
     return success_response(
-        data={"activity": serialize_activity(activity)}, message="创建活动成功"
+        data={"activity": serialize_activity(activity, current_participants=0)},
+        message="创建活动成功",
     )
 
 
@@ -225,14 +255,18 @@ def update_activity(
 
     # 编辑后重新进入审核状态
     activity.audit_status = 0
-    activity.status = "审核中"
     activity.audit_user_id = None
     activity.audit_time = None
 
     db.commit()
     db.refresh(activity)
     return success_response(
-        data={"activity": serialize_activity(activity)},
+        data={
+            "activity": serialize_activity(
+                activity,
+                current_participants=_approved_count(db, activity.id),
+            )
+        },
         message="编辑活动成功，活动已重新进入审核状态",
     )
 
@@ -249,13 +283,22 @@ def pending_activities(
     )
     total = query.count()
     records = query.offset((current_page - 1) * page_size).limit(page_size).all()
+    now = datetime.now()
+    counts = _approved_counts(db, [a.id for a in records])
     return success_response(
         data={
             "page": page_result(
                 total,
                 current_page,
                 page_size,
-                [serialize_activity_dto(a) for a in records],
+                [
+                    serialize_activity_dto(
+                        a,
+                        current_participants=counts.get(a.id, 0),
+                        now=now,
+                    )
+                    for a in records
+                ],
             )
         },
         message="查询成功",
@@ -278,14 +321,10 @@ def review_activity(
         activity.audit_status = 1
     else:
         activity.audit_status = 2
-        activity.status = "已拒绝"
     activity.audit_user_id = current_user.id
     activity.audit_time = datetime.now()
 
-    if activity.audit_status == 1:
-        refresh_activity_status_by_time(db, activity)
-    else:
-        db.commit()
+    db.commit()
     return success_response(message="审核成功")
 
 
@@ -347,7 +386,6 @@ def review_registration(
     if registration is None:
         raise ValueError("报名记录不存在")
 
-    old_status = registration.status
     if request.pass_ is True:
         registration.status = "已通过"
     else:
@@ -356,12 +394,6 @@ def review_registration(
     registration.audit_time = datetime.now()
     db.commit()
 
-    if request.pass_ is True and old_status != "已通过":
-        activity.current_participants = _approved_count(db, request.activityId)
-        db.commit()
-    elif request.pass_ is not True and old_status == "已通过":
-        activity.current_participants = _approved_count(db, request.activityId)
-        db.commit()
     return success_response(message="审核成功")
 
 
@@ -373,6 +405,7 @@ def search_activities(db: Session, request: ActivitySearchRequest):
     current = request.currentPage if (request.currentPage and request.currentPage > 0) else 1
     size = request.pageSize if (request.pageSize and request.pageSize > 0) else 10
 
+    now = datetime.now()
     query = db.query(Activity)
     # 公开列表只展示审核通过的活动
     query = query.filter(Activity.audit_status == 1)
@@ -388,7 +421,7 @@ def search_activities(db: Session, request: ActivitySearchRequest):
             )
         )
     if _has_text(request.status):
-        query = query.filter(Activity.status == request.status)
+        query = _apply_status_filter(query, request.status, now)
     if _has_text(request.category):
         query = query.filter(Activity.activity_type == request.category)
     if _has_text(request.level):
@@ -398,12 +431,21 @@ def search_activities(db: Session, request: ActivitySearchRequest):
 
     total = query.count()
     records = query.offset((current - 1) * size).limit(size).all()
-    for activity in records:
-        refresh_activity_status_by_time(db, activity)
+    counts = _approved_counts(db, [a.id for a in records])
     return success_response(
         data={
             "page": page_result(
-                total, current, size, [serialize_activity_dto(a) for a in records]
+                total,
+                current,
+                size,
+                [
+                    serialize_activity_dto(
+                        a,
+                        current_participants=counts.get(a.id, 0),
+                        now=now,
+                    )
+                    for a in records
+                ],
             )
         },
         message="查询成功",
@@ -411,36 +453,45 @@ def search_activities(db: Session, request: ActivitySearchRequest):
 
 
 def hot_activities(db: Session):
+    now = datetime.now()
     activities = (
         db.query(Activity)
         .filter(Activity.audit_status == 1, Activity.is_published.is_(True))
         .all()
     )
 
-    for activity in activities:
-        activity.current_participants = _approved_count(db, activity.id)
-        refresh_activity_status_by_time(db, activity)
+    counts = _approved_counts(db, [a.id for a in activities])
+    status_map = {a.id: derive_activity_status(a, now) for a in activities}
 
     hot = [
         a
         for a in activities
-        if a.status in ("报名中", "进行中", "已结束")
+        if status_map[a.id] in ("报名中", "进行中", "已结束")
     ]
 
     def _compare(a1, a2):
-        p1 = _status_priority(a1.status)
-        p2 = _status_priority(a2.status)
+        p1 = _status_priority(status_map[a1.id])
+        p2 = _status_priority(status_map[a2.id])
         if p1 != p2:
             return -1 if p1 < p2 else 1
-        c1 = a1.current_participants if a1.current_participants is not None else 0
-        c2 = a2.current_participants if a2.current_participants is not None else 0
+        c1 = counts.get(a1.id, 0)
+        c2 = counts.get(a2.id, 0)
         if c1 == c2:
             return 0
         return -1 if c2 < c1 else 1
 
     hot.sort(key=cmp_to_key(_compare))
     return success_response(
-        data={"activities": [serialize_activity_dto(a) for a in hot[:6]]},
+        data={
+            "activities": [
+                serialize_activity_dto(
+                    a,
+                    current_participants=counts.get(a.id, 0),
+                    now=now,
+                )
+                for a in hot[:6]
+            ]
+        },
         message="查询成功",
     )
 
@@ -457,16 +508,22 @@ def activities_by_club(db: Session, club_id, current_page: int, page_size: int):
     )
     total = query.count()
     records = query.offset((current_page - 1) * page_size).limit(page_size).all()
-    for activity in records:
-        refresh_activity_status_by_time(db, activity)
-        activity.current_participants = _approved_count(db, activity.id)
+    now = datetime.now()
+    counts = _approved_counts(db, [a.id for a in records])
     return success_response(
         data={
             "page": page_result(
                 total,
                 current_page,
                 page_size,
-                [serialize_activity_dto(a) for a in records],
+                [
+                    serialize_activity_dto(
+                        a,
+                        current_participants=counts.get(a.id, 0),
+                        now=now,
+                    )
+                    for a in records
+                ],
             )
         },
         message="查询成功",
@@ -478,8 +535,8 @@ def get_activity_detail(db: Session, activity_id):
     if activity is None:
         raise ValueError("活动不存在")
 
-    refresh_activity_status_by_time(db, activity)
-    activity.current_participants = _approved_count(db, activity_id)
+    now = datetime.now()
+    current_participants = _approved_count(db, activity_id)
 
     activity_map = {
         "id": activity.id,
@@ -493,11 +550,11 @@ def get_activity_detail(db: Session, activity_id):
         "startTime": dt_to_millis(activity.start_time),
         "endTime": dt_to_millis(activity.end_time),
         "maxParticipants": activity.max_participants,
-        "currentParticipants": activity.current_participants,
+        "currentParticipants": current_participants,
         "needAudit": activity.need_audit,
         "activityType": activity.activity_type,
         "activityLevel": activity.activity_level,
-        "status": activity.status,
+        "status": derive_activity_status(activity, now),
         "score": _number(activity.score),
         "auditStatus": activity.audit_status,
         "auditTime": activity.audit_time,
@@ -589,10 +646,6 @@ def register_activity(
     db.add(registration)
     db.commit()
     db.refresh(registration)
-
-    if activity.need_audit is not True:
-        activity.current_participants = _approved_count(db, activity_id)
-        db.commit()
 
     return success_response(
         data={"registration": serialize_registration(registration)}, message="报名成功"
@@ -763,6 +816,7 @@ def _activity_statistics_base(db: Session, activity_id, current_user: User):
 
 def activity_statistics(db: Session, activity_id, current_user: User):
     activity = _activity_statistics_base(db, activity_id, current_user)
+    now = datetime.now()
 
     pending = (
         db.query(ActivityRegistration)
@@ -795,17 +849,23 @@ def activity_statistics(db: Session, activity_id, current_user: User):
         success_rate = float(_round_half_up(approved / total * 100, 2))
 
     statistics = {
-        "activityInfo": serialize_activity_dto(activity, image_list=False),
+        "activityInfo": serialize_activity_dto(
+            activity,
+            image_list=False,
+            current_participants=approved,
+            now=now,
+        ),
         "statusStats": status_stats,
         "successRate": success_rate,
         "maxParticipants": activity.max_participants,
-        "currentParticipants": activity.current_participants,
+        "currentParticipants": approved,
     }
     return success_response(data={"statistics": statistics}, message="查询成功")
 
 
 def checkin_statistics(db: Session, activity_id, current_user: User):
     activity = _activity_statistics_base(db, activity_id, current_user)
+    now = datetime.now()
 
     approved = _approved_count(db, activity_id)
     checked_in = (
@@ -824,7 +884,12 @@ def checkin_statistics(db: Session, activity_id, current_user: User):
         checkin_rate = float(_round_half_up(checked_in / approved * 100, 2))
 
     statistics = {
-        "activityInfo": serialize_activity_dto(activity, image_list=False),
+        "activityInfo": serialize_activity_dto(
+            activity,
+            image_list=False,
+            current_participants=approved,
+            now=now,
+        ),
         "checkedIn": checked_in,
         "notCheckedIn": not_checked_in,
         "totalApproved": approved,
@@ -835,6 +900,7 @@ def checkin_statistics(db: Session, activity_id, current_user: User):
 
 def score_statistics(db: Session, activity_id, current_user: User):
     activity = _activity_statistics_base(db, activity_id, current_user)
+    now = datetime.now()
 
     scored_registrations = (
         db.query(ActivityRegistration)
@@ -885,7 +951,12 @@ def score_statistics(db: Session, activity_id, current_user: User):
         score_rate = float(_round_half_up(scored_count / total_approved * 100, 2))
 
     statistics = {
-        "activityInfo": serialize_activity_dto(activity, image_list=False),
+        "activityInfo": serialize_activity_dto(
+            activity,
+            image_list=False,
+            current_participants=total_approved,
+            now=now,
+        ),
         "scoreDistribution": {
             "0.5-1.0": score_05_10,
             "1.5-2.0": score_15_20,
@@ -1064,6 +1135,7 @@ def user_activities(
     if type_ not in ("participated", "managed", "all"):
         raise ValueError("type参数值无效，只能是：participated、managed 或 all")
 
+    now = datetime.now()
     participated_dtos = []
     managed_dtos = []
 
@@ -1083,6 +1155,7 @@ def user_activities(
         participated_ids = list({reg.activity_id for reg in registrations})
 
         participated_activities = []
+        participated_counts = {}
         if participated_ids:
             query = db.query(Activity).filter(Activity.id.in_(participated_ids))
             if _has_text(keyword):
@@ -1091,9 +1164,9 @@ def user_activities(
                     or_(Activity.name.like(kw), Activity.description.like(kw))
                 )
             participated_activities = query.all()
-            for activity in participated_activities:
-                refresh_activity_status_by_time(db, activity)
-                activity.current_participants = _approved_count(db, activity.id)
+            participated_counts = _approved_counts(
+                db, [a.id for a in participated_activities]
+            )
 
             def _compare_participated(a1, a2):
                 t1 = registration_time_map.get(a1.id)
@@ -1110,7 +1183,14 @@ def user_activities(
 
             participated_activities.sort(key=cmp_to_key(_compare_participated))
 
-        participated_dtos = [serialize_activity_dto(a) for a in participated_activities]
+        participated_dtos = [
+            serialize_activity_dto(
+                a,
+                current_participants=participated_counts.get(a.id, 0),
+                now=now,
+            )
+            for a in participated_activities
+        ]
 
     if type_ in ("managed", "all"):
         manager_role = (
@@ -1132,6 +1212,7 @@ def user_activities(
             managed_club_ids = list({row[0] for row in rows})
 
         managed_activities = []
+        managed_counts = {}
         if managed_club_ids:
             query = db.query(Activity).filter(Activity.club_id.in_(managed_club_ids))
             if _has_text(keyword):
@@ -1141,10 +1222,16 @@ def user_activities(
                 )
             query = query.order_by(Activity.create_time.desc())
             managed_activities = query.all()
+            managed_counts = _approved_counts(
+                db, [a.id for a in managed_activities]
+            )
+            status_map = {
+                a.id: derive_activity_status(a, now) for a in managed_activities
+            }
 
             def _compare_managed(a1, a2):
-                a1_running = a1.status == "进行中"
-                a2_running = a2.status == "进行中"
+                a1_running = status_map[a1.id] == "进行中"
+                a2_running = status_map[a2.id] == "进行中"
                 if a1_running and not a2_running:
                     return -1
                 if not a1_running and a2_running:
@@ -1155,11 +1242,14 @@ def user_activities(
 
             managed_activities.sort(key=cmp_to_key(_compare_managed))
 
-            for activity in managed_activities:
-                refresh_activity_status_by_time(db, activity)
-                activity.current_participants = _approved_count(db, activity.id)
-
-        managed_dtos = [serialize_activity_dto(a) for a in managed_activities]
+        managed_dtos = [
+            serialize_activity_dto(
+                a,
+                current_participants=managed_counts.get(a.id, 0),
+                now=now,
+            )
+            for a in managed_activities
+        ]
 
     if type_ == "participated":
         data = {"activities": participated_dtos}
@@ -1323,7 +1413,13 @@ def update_publish_status(
 
     message = "活动上架成功" if is_published is True else "活动下架成功"
     return success_response(
-        data={"activity": serialize_activity(activity)}, message=message
+        data={
+            "activity": serialize_activity(
+                activity,
+                current_participants=_approved_count(db, activity.id),
+            )
+        },
+        message=message,
     )
 
 

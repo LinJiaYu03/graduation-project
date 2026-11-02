@@ -34,6 +34,31 @@ def _parse_dt(v: Any):
 DateTime = Annotated[Optional[datetime], BeforeValidator(_parse_dt)]
 
 
+def derive_activity_status(activity, now: datetime) -> str:
+    """按审核状态与时间窗推导展示状态。"""
+    if activity.audit_status == 2:
+        return "已拒绝"
+    if activity.audit_status != 1:
+        return "审核中"
+
+    reg_start = activity.registration_start_time
+    reg_end = activity.registration_end_time
+    start = activity.start_time
+    end = activity.end_time
+    if None in (reg_start, reg_end, start, end):
+        return "等待中"
+
+    if now < reg_start:
+        return "等待中"
+    if now <= reg_end:
+        return "报名中"
+    if now < start:
+        return "等待中"
+    if now <= end:
+        return "进行中"
+    return "已结束"
+
+
 class ActivityCreateRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
@@ -128,10 +153,13 @@ def _split_urls(raw) -> list[str]:
     return [x.strip() for x in str(raw).split(",") if x.strip()]
 
 
-def serialize_activity(a) -> dict | None:
+def serialize_activity(
+    a, current_participants: int = 0, now: datetime | None = None
+) -> dict | None:
     """对齐 Jackson 序列化 Activity 实体（camelCase，imageUrls 为逗号字符串，时间为 ISO 字符串）"""
     if a is None:
         return None
+    now = now or datetime.now()
     return {
         "id": a.id,
         "imageUrls": a.image_urls,
@@ -147,11 +175,11 @@ def serialize_activity(a) -> dict | None:
         "checkinEndTime": a.checkin_end_time,
         "endTime": a.end_time,
         "maxParticipants": a.max_participants,
-        "currentParticipants": a.current_participants,
+        "currentParticipants": current_participants,
         "needAudit": a.need_audit,
         "activityType": a.activity_type,
         "activityLevel": a.activity_level,
-        "status": a.status,
+        "status": derive_activity_status(a, now),
         "score": _number(a.score),
         "auditStatus": a.audit_status,
         "auditTime": a.audit_time,
@@ -162,10 +190,16 @@ def serialize_activity(a) -> dict | None:
     }
 
 
-def serialize_activity_dto(a, image_list: bool = True) -> dict | None:
+def serialize_activity_dto(
+    a,
+    image_list: bool = True,
+    current_participants: int = 0,
+    now: datetime | None = None,
+) -> dict | None:
     """对齐 ActivityDTO：时间字段转毫秒时间戳，imageUrls 为数组（statistics 场景下为 null）。"""
     if a is None:
         return None
+    now = now or datetime.now()
     return {
         "id": a.id,
         "imageUrls": _split_urls(a.image_urls) if image_list else None,
@@ -181,11 +215,11 @@ def serialize_activity_dto(a, image_list: bool = True) -> dict | None:
         "checkinEndTime": dt_to_millis(a.checkin_end_time),
         "endTime": dt_to_millis(a.end_time),
         "maxParticipants": a.max_participants,
-        "currentParticipants": a.current_participants,
+        "currentParticipants": current_participants,
         "needAudit": a.need_audit,
         "activityType": a.activity_type,
         "activityLevel": a.activity_level,
-        "status": a.status,
+        "status": derive_activity_status(a, now),
         "score": _number(a.score),
         "auditStatus": a.audit_status,
         "auditTime": a.audit_time,
