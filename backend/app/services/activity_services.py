@@ -13,7 +13,7 @@ from sqlalchemy import and_, false, func, or_
 from sqlalchemy.orm import Session
 
 from app.core.rbac import Perm, RoleCode, assert_permission, has_permission
-from app.core.respones import page_result, success_response
+from app.core.response import page_result, success_response
 from app.models.activity import Activity, ActivityRegistration
 from app.models.club import Club
 from app.models.rbac import Role, UserRole

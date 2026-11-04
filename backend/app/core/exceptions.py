@@ -4,7 +4,7 @@ from fastapi.exceptions import RequestValidationError
 
 from typing import Any
 
-from app.core.respones import error_response
+from app.core.response import error_response
 
 class BizException(HTTPException):
     def __init__(

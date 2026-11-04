@@ -8,7 +8,7 @@ from app.core.rbac import (
     get_user_permission_codes,
     get_user_roles,
 )
-from app.core.respones import success_response
+from app.core.response import success_response
 from app.models.rbac import Permission, Role, RolePermission, UserRole
 from app.models.user import User
 from app.schemas.rbac import RolePermissionUpdateRequest, UserRoleAssignRequest

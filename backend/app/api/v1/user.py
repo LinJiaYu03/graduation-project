@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
 from app.db.database import get_db
-from app.core.respones import ApiResponse
+from app.core.response import ApiResponse
 from app.models.user import User
 from app.schemas.user import (
     RegisterRequest,

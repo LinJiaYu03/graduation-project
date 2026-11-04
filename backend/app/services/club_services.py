@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import BizException
 from app.core.rbac import Perm, RoleCode, assert_permission
-from app.core.respones import error_response, page_result, success_response
+from app.core.response import error_response, page_result, success_response
 from app.models.club import Club, ClubMember
 from app.models.rbac import Role, UserRole
 from app.models.user import User

@@ -10,7 +10,7 @@ from app.core.rbac import (
     RoleCode,
     get_user_roles,
 )
-from app.core.respones import error_response, page_result, success_response
+from app.core.response import error_response, page_result, success_response
 from app.core.security import (
     create_token_pair,
     decode_token,
