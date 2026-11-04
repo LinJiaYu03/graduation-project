@@ -35,7 +35,9 @@ CREATE TABLE IF NOT EXISTS `user_role` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_user_role_scope`(`user_id` ASC, `role_id` ASC, `club_id` ASC) USING BTREE,
   INDEX `idx_user_role_role`(`role_id` ASC) USING BTREE,
-  INDEX `idx_user_role_club`(`club_id` ASC) USING BTREE
+  INDEX `idx_user_role_club`(`club_id` ASC) USING BTREE,
+  CONSTRAINT `fk_user_role_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_user_role_role` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`) ON DELETE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `role_permission` (
@@ -45,7 +47,9 @@ CREATE TABLE IF NOT EXISTS `role_permission` (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_role_permission`(`role_id` ASC, `permission_id` ASC) USING BTREE,
-  INDEX `idx_role_permission_permission`(`permission_id` ASC) USING BTREE
+  INDEX `idx_role_permission_permission`(`permission_id` ASC) USING BTREE,
+  CONSTRAINT `fk_role_permission_role` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_role_permission_permission` FOREIGN KEY (`permission_id`) REFERENCES `permission` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------

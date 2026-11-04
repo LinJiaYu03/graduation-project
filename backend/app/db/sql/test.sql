@@ -50,7 +50,8 @@ CREATE TABLE `activity`  (
   INDEX `idx_activity_audit_time`(`audit_status` ASC, `create_time` ASC, `is_published` ASC) USING BTREE,
   INDEX `idx_activity_club_time`(`club_id` ASC, `is_published` ASC, `create_time` ASC) USING BTREE,
   INDEX `idx_activity_type`(`activity_type` ASC) USING BTREE,
-  INDEX `idx_activity_level`(`activity_level` ASC) USING BTREE
+  INDEX `idx_activity_level`(`activity_level` ASC) USING BTREE,
+  INDEX `idx_activity_audit_user`(`audit_user_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '活动表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -73,7 +74,8 @@ CREATE TABLE `activity_registration`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_activity_user`(`activity_id` ASC, `user_id` ASC) USING BTREE COMMENT '活动和用户唯一索引',
   INDEX `idx_reg_activity_status_time`(`activity_id` ASC, `status` ASC, `registration_time` ASC) USING BTREE,
-  INDEX `idx_reg_user_time`(`user_id` ASC, `registration_time` ASC) USING BTREE
+  INDEX `idx_reg_user_time`(`user_id` ASC, `registration_time` ASC) USING BTREE,
+  INDEX `idx_reg_audit_user`(`audit_user_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 28 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '活动报名表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -109,7 +111,8 @@ CREATE TABLE `club_member`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_club_user`(`club_id` ASC, `user_id` ASC) USING BTREE COMMENT '社团和用户唯一索引',
   INDEX `idx_user_status`(`user_id` ASC, `status` ASC) USING BTREE,
-  INDEX `idx_club_status`(`club_id` ASC, `status` ASC) USING BTREE
+  INDEX `idx_club_status`(`club_id` ASC, `status` ASC) USING BTREE,
+  INDEX `idx_audit_user`(`audit_user_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社团成员关系表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
@@ -133,5 +136,22 @@ CREATE TABLE `user`  (
   UNIQUE INDEX `uk_username`(`username` ASC) USING BTREE,
   UNIQUE INDEX `uk_student_no`(`student_no` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 28 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Foreign keys（所有表建完后统一添加，避免受建表顺序影响）
+-- ----------------------------
+ALTER TABLE `activity`
+  ADD CONSTRAINT `fk_activity_club` FOREIGN KEY (`club_id`) REFERENCES `club` (`id`),
+  ADD CONSTRAINT `fk_activity_audit_user` FOREIGN KEY (`audit_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `activity_registration`
+  ADD CONSTRAINT `fk_reg_activity` FOREIGN KEY (`activity_id`) REFERENCES `activity` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_reg_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_reg_audit_user` FOREIGN KEY (`audit_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `club_member`
+  ADD CONSTRAINT `fk_club_member_club` FOREIGN KEY (`club_id`) REFERENCES `club` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_club_member_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_club_member_audit_user` FOREIGN KEY (`audit_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL;
 
 SET FOREIGN_KEY_CHECKS = 1;
