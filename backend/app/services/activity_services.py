@@ -93,6 +93,15 @@ def _approved_counts(db: Session, activity_ids: list[int]) -> dict[int, int]:
     return {row[0]: int(row[1]) for row in rows}
 
 
+def _users_by_id(db: Session, user_ids) -> dict[int, User]:
+    """一次批量查询用户，避免逐条查库；缺失用户由调用方按原逻辑跳过。"""
+    ids = {uid for uid in user_ids if uid is not None}
+    if not ids:
+        return {}
+    users = db.query(User).filter(User.id.in_(ids)).all()
+    return {u.id: u for u in users}
+
+
 def _status_priority(status) -> int:
     if status == "报名中":
         return 1
@@ -575,9 +584,10 @@ def get_activity_detail(db: Session, activity_id):
         .all()
     )
 
+    users_map = _users_by_id(db, [reg.user_id for reg in commented_registrations])
     commented_members = []
     for reg in commented_registrations:
-        user = db.query(User).filter(User.id == reg.user_id).first()
+        user = users_map.get(reg.user_id)
         if user is None:
             continue
         commented_members.append(
@@ -1052,9 +1062,10 @@ def export_registration(db: Session, activity_id, current_user: User):
     headers = ["序号", "姓名", "性别", "学号"]
     wb, ws = _new_workbook("报名情况表", headers)
 
+    users_map = _users_by_id(db, [reg.user_id for reg in approved])
     row_num = 2
     for index, reg in enumerate(approved):
-        user = db.query(User).filter(User.id == reg.user_id).first()
+        user = users_map.get(reg.user_id)
         if user is None:
             continue
         _fill_user_columns(ws, row_num, index, user)
@@ -1071,9 +1082,10 @@ def export_checkin(db: Session, activity_id, current_user: User):
     headers = ["序号", "姓名", "性别", "学号", "报名状态", "签到状态"]
     wb, ws = _new_workbook("签到情况表", headers)
 
+    users_map = _users_by_id(db, [reg.user_id for reg in approved])
     row_num = 2
     for index, reg in enumerate(approved):
-        user = db.query(User).filter(User.id == reg.user_id).first()
+        user = users_map.get(reg.user_id)
         if user is None:
             continue
         _fill_user_columns(ws, row_num, index, user)
@@ -1096,9 +1108,10 @@ def export_score(db: Session, activity_id, current_user: User):
     headers = ["序号", "姓名", "性别", "学号", "报名状态", "评分"]
     wb, ws = _new_workbook("评分情况表", headers)
 
+    users_map = _users_by_id(db, [reg.user_id for reg in approved])
     row_num = 2
     for index, reg in enumerate(approved):
-        user = db.query(User).filter(User.id == reg.user_id).first()
+        user = users_map.get(reg.user_id)
         if user is None:
             continue
         _fill_user_columns(ws, row_num, index, user)
