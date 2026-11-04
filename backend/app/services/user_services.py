@@ -30,12 +30,12 @@ from app.schemas.user import (
 DEFAULT_AVATAR = "https://env-00jxuc2o76k9.normal.cloudstatic.cn/avatar/admin.jpg"
 
 
-def _has_text(v) -> bool:
+def has_text(v) -> bool:
     """对齐 Spring StringUtils.hasText"""
     return v is not None and str(v).strip() != ""
 
 
-def _token_response(user: User, message: str = "登录成功") -> dict:
+def token_response(user: User, message: str = "登录成功") -> dict:
     access_token, refresh_token, expires_in = create_token_pair(user)
     return success_response(
         data={
@@ -50,7 +50,7 @@ def _token_response(user: User, message: str = "登录成功") -> dict:
 
 
 def register(db: Session, username, password) -> dict:
-    if not _has_text(username) or not _has_text(password):
+    if not has_text(username) or not has_text(password):
         raise ValueError("账号和密码不能为空")
     exists = db.query(User).filter(User.username == username).first()
     if exists is not None:
@@ -78,7 +78,7 @@ def register(db: Session, username, password) -> dict:
 
 
 def login(db: Session, username, password) -> dict:
-    if not _has_text(username) or not _has_text(password):
+    if not has_text(username) or not has_text(password):
         raise ValueError("账号和密码不能为空")
     ensure_not_locked(username)
     user = db.query(User).filter(User.username == username).first()
@@ -87,11 +87,11 @@ def login(db: Session, username, password) -> dict:
         raise ValueError("账号或密码错误")
 
     clear_login_failures(username)
-    return _token_response(user, message="登录成功")
+    return token_response(user, message="登录成功")
 
 
 def refresh(db: Session, refresh_token) -> dict:
-    if not _has_text(refresh_token):
+    if not has_text(refresh_token):
         raise BizException(401, "refreshToken 不能为空")
 
     try:
@@ -105,12 +105,12 @@ def refresh(db: Session, refresh_token) -> dict:
         raise BizException(401, "登录状态已失效，请重新登录")
 
     consume_refresh_jti(payload)
-    return _token_response(user, message="刷新成功")
+    return token_response(user, message="刷新成功")
 
 
 def logout(refresh_token) -> dict:
     """退出登录：吊销前端传入的 refresh 令牌"""
-    if not _has_text(refresh_token):
+    if not has_text(refresh_token):
         raise BizException(401, "refreshToken 不能为空")
 
     try:
@@ -147,9 +147,9 @@ def get_profile(db: Session, current_user: User) -> dict:
 def update_password(
     db: Session, request: PasswordUpdateRequest, current_user: User
 ) -> dict:
-    if not _has_text(request.password):
+    if not has_text(request.password):
         raise ValueError("密码不能为空")
-    if not _has_text(request.old_password):
+    if not has_text(request.old_password):
         raise ValueError("旧密码不能为空")
     if not verify_password(request.old_password, current_user.password):
         raise ValueError("旧密码错误")
@@ -179,7 +179,7 @@ def get_users_page(db: Session, page: int, page_size: int) -> dict:
 
 def search_users(db: Session, keyword, page: int, page_size: int) -> dict:
     query = db.query(User)
-    if _has_text(keyword):
+    if has_text(keyword):
         query = query.filter(
             or_(
                 User.username.like(f"%{keyword}%"),

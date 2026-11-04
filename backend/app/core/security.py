@@ -22,7 +22,7 @@ def verify_password(password: str, stored: str | None) -> bool:
         return False
 
 
-def _create_token(
+def create_token(
     user,
     token_type: str,
     expires_delta: timedelta,
@@ -49,10 +49,10 @@ def create_token_pair(user) -> tuple[str, str, int]:
     refresh_delta = timedelta(days=settings.refresh_token_expire_days)
     sid = uuid.uuid4().hex
     # refresh 的 jti 即会话标识 sid，登出时可凭 access 里的 sid 吊销
-    refresh_token = _create_token(user, "refresh", refresh_delta, token_id=sid)
+    refresh_token = create_token(user, "refresh", refresh_delta, token_id=sid)
 
     expires_in = settings.access_token_expire_minutes * 60
-    access_token = _create_token(
+    access_token = create_token(
         user,
         "access",
         timedelta(seconds=expires_in),

@@ -25,8 +25,8 @@ from app.schemas.activity import (
     ActivitySearchRequest,
     ActivityUpdateRequest,
     RegistrationReviewRequest,
-    _number,
-    _split_urls,
+    number,
+    split_urls,
     derive_activity_status,
     serialize_activity,
     serialize_activity_dto,
@@ -45,12 +45,12 @@ class ExportError(Exception):
         self.message = message
 
 
-def _has_text(v) -> bool:
+def has_text(v) -> bool:
     """对齐 Spring StringUtils.hasText"""
     return v is not None and str(v).strip() != ""
 
 
-def _to_long(v) -> int | None:
+def to_long(v) -> int | None:
     if v is None:
         return None
     try:
@@ -59,12 +59,12 @@ def _to_long(v) -> int | None:
         return None
 
 
-def _round_half_up(value, places: int) -> Decimal:
+def round_half_up(value, places: int) -> Decimal:
     quant = Decimal(1).scaleb(-places)
     return Decimal(str(value)).quantize(quant, rounding=ROUND_HALF_UP)
 
 
-def _approved_count(db: Session, activity_id) -> int:
+def approved_count(db: Session, activity_id) -> int:
     return (
         db.query(ActivityRegistration)
         .filter(
@@ -75,7 +75,7 @@ def _approved_count(db: Session, activity_id) -> int:
     )
 
 
-def _approved_counts(db: Session, activity_ids: list[int]) -> dict[int, int]:
+def approved_counts(db: Session, activity_ids: list[int]) -> dict[int, int]:
     if not activity_ids:
         return {}
     rows = (
@@ -93,7 +93,7 @@ def _approved_counts(db: Session, activity_ids: list[int]) -> dict[int, int]:
     return {row[0]: int(row[1]) for row in rows}
 
 
-def _users_by_id(db: Session, user_ids) -> dict[int, User]:
+def users_by_id(db: Session, user_ids) -> dict[int, User]:
     """一次批量查询用户，避免逐条查库；缺失用户由调用方按原逻辑跳过。"""
     ids = {uid for uid in user_ids if uid is not None}
     if not ids:
@@ -102,7 +102,7 @@ def _users_by_id(db: Session, user_ids) -> dict[int, User]:
     return {u.id: u for u in users}
 
 
-def _status_priority(status) -> int:
+def status_priority(status) -> int:
     if status == "报名中":
         return 1
     if status == "进行中":
@@ -112,7 +112,7 @@ def _status_priority(status) -> int:
     return 4
 
 
-def _apply_status_filter(query, status: str, now: datetime):
+def apply_status_filter(query, status: str, now: datetime):
     """把展示状态筛选翻译成 audit_status 与时间窗条件。"""
     if status == "审核中":
         return query.filter(
@@ -163,7 +163,7 @@ def _apply_status_filter(query, status: str, now: datetime):
 def create_activity(
     db: Session, request: ActivityCreateRequest, current_user: User
 ):
-    if not _has_text(request.name):
+    if not has_text(request.name):
         raise ValueError("活动名称不能为空")
     if request.clubId is None:
         raise ValueError("主办方社团ID不能为空")
@@ -230,7 +230,7 @@ def update_activity(
         message="无权限编辑该活动",
     )
 
-    if _has_text(request.name):
+    if has_text(request.name):
         activity.name = request.name
     if request.description is not None:
         activity.description = request.description
@@ -273,7 +273,7 @@ def update_activity(
         data={
             "activity": serialize_activity(
                 activity,
-                current_participants=_approved_count(db, activity.id),
+                current_participants=approved_count(db, activity.id),
             )
         },
         message="编辑活动成功，活动已重新进入审核状态",
@@ -293,7 +293,7 @@ def pending_activities(
     total = query.count()
     records = query.offset((current_page - 1) * page_size).limit(page_size).all()
     now = datetime.now()
-    counts = _approved_counts(db, [a.id for a in records])
+    counts = approved_counts(db, [a.id for a in records])
     return success_response(
         data={
             "page": page_result(
@@ -420,7 +420,7 @@ def search_activities(db: Session, request: ActivitySearchRequest):
     query = query.filter(Activity.audit_status == 1)
     query = query.filter(Activity.is_published.is_(True))
 
-    if _has_text(request.keyword):
+    if has_text(request.keyword):
         kw = f"%{request.keyword}%"
         query = query.filter(
             or_(
@@ -429,18 +429,18 @@ def search_activities(db: Session, request: ActivitySearchRequest):
                 Activity.location.like(kw),
             )
         )
-    if _has_text(request.status):
-        query = _apply_status_filter(query, request.status, now)
-    if _has_text(request.category):
+    if has_text(request.status):
+        query = apply_status_filter(query, request.status, now)
+    if has_text(request.category):
         query = query.filter(Activity.activity_type == request.category)
-    if _has_text(request.level):
+    if has_text(request.level):
         query = query.filter(Activity.activity_level == request.level)
 
     query = query.order_by(Activity.create_time.desc())
 
     total = query.count()
     records = query.offset((current - 1) * size).limit(size).all()
-    counts = _approved_counts(db, [a.id for a in records])
+    counts = approved_counts(db, [a.id for a in records])
     return success_response(
         data={
             "page": page_result(
@@ -469,7 +469,7 @@ def hot_activities(db: Session):
         .all()
     )
 
-    counts = _approved_counts(db, [a.id for a in activities])
+    counts = approved_counts(db, [a.id for a in activities])
     status_map = {a.id: derive_activity_status(a, now) for a in activities}
 
     hot = [
@@ -478,9 +478,9 @@ def hot_activities(db: Session):
         if status_map[a.id] in ("报名中", "进行中", "已结束")
     ]
 
-    def _compare(a1, a2):
-        p1 = _status_priority(status_map[a1.id])
-        p2 = _status_priority(status_map[a2.id])
+    def compare(a1, a2):
+        p1 = status_priority(status_map[a1.id])
+        p2 = status_priority(status_map[a2.id])
         if p1 != p2:
             return -1 if p1 < p2 else 1
         c1 = counts.get(a1.id, 0)
@@ -489,7 +489,7 @@ def hot_activities(db: Session):
             return 0
         return -1 if c2 < c1 else 1
 
-    hot.sort(key=cmp_to_key(_compare))
+    hot.sort(key=cmp_to_key(compare))
     return success_response(
         data={
             "activities": [
@@ -518,7 +518,7 @@ def activities_by_club(db: Session, club_id, current_page: int, page_size: int):
     total = query.count()
     records = query.offset((current_page - 1) * page_size).limit(page_size).all()
     now = datetime.now()
-    counts = _approved_counts(db, [a.id for a in records])
+    counts = approved_counts(db, [a.id for a in records])
     return success_response(
         data={
             "page": page_result(
@@ -545,7 +545,7 @@ def get_activity_detail(db: Session, activity_id):
         raise ValueError("活动不存在")
 
     now = datetime.now()
-    current_participants = _approved_count(db, activity_id)
+    current_participants = approved_count(db, activity_id)
 
     activity_map = {
         "id": activity.id,
@@ -564,7 +564,7 @@ def get_activity_detail(db: Session, activity_id):
         "activityType": activity.activity_type,
         "activityLevel": activity.activity_level,
         "status": derive_activity_status(activity, now),
-        "score": _number(activity.score),
+        "score": number(activity.score),
         "auditStatus": activity.audit_status,
         "auditTime": activity.audit_time,
         "auditUserId": activity.audit_user_id,
@@ -584,7 +584,7 @@ def get_activity_detail(db: Session, activity_id):
         .all()
     )
 
-    users_map = _users_by_id(db, [reg.user_id for reg in commented_registrations])
+    users_map = users_by_id(db, [reg.user_id for reg in commented_registrations])
     commented_members = []
     for reg in commented_registrations:
         user = users_map.get(reg.user_id)
@@ -597,15 +597,15 @@ def get_activity_detail(db: Session, activity_id):
                 "studentNo": user.student_no,
                 "avatarUrl": user.avatar_url,
                 "comment": reg.comment,
-                "score": _number(reg.score),
+                "score": number(reg.score),
                 "commentTime": dt_to_millis(reg.update_time),
             }
         )
     activity_map["commentedMembers"] = commented_members
 
     data = {"activity": activity_map}
-    if _has_text(activity.image_urls):
-        data["imageUrls"] = _split_urls(activity.image_urls)
+    if has_text(activity.image_urls):
+        data["imageUrls"] = split_urls(activity.image_urls)
     return success_response(data=data, message="查询成功")
 
 
@@ -642,7 +642,7 @@ def register_activity(
         raise ValueError("您已报名该活动")
 
     if activity.max_participants is not None and activity.max_participants > 0:
-        if _approved_count(db, activity_id) >= activity.max_participants:
+        if approved_count(db, activity_id) >= activity.max_participants:
             raise ValueError("报名人数已达上限")
 
     registration = ActivityRegistration()
@@ -802,7 +802,7 @@ def check_registration(db: Session, activity_id, user_id):
         result["registrationId"] = registration.id
         result["registrationTime"] = dt_to_millis(registration.registration_time)
         result["auditTime"] = dt_to_millis(registration.audit_time)
-        result["score"] = _number(registration.score)
+        result["score"] = number(registration.score)
         result["isAccepted"] = (
             registration.status == "已通过" or status == "签到成功"
         )
@@ -810,7 +810,7 @@ def check_registration(db: Session, activity_id, user_id):
     return success_response(data={"registration": result}, message="查询成功")
 
 
-def _activity_statistics_base(db: Session, activity_id, current_user: User):
+def activity_statistics_base(db: Session, activity_id, current_user: User):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
         raise ValueError("活动不存在")
@@ -825,7 +825,7 @@ def _activity_statistics_base(db: Session, activity_id, current_user: User):
 
 
 def activity_statistics(db: Session, activity_id, current_user: User):
-    activity = _activity_statistics_base(db, activity_id, current_user)
+    activity = activity_statistics_base(db, activity_id, current_user)
     now = datetime.now()
 
     pending = (
@@ -836,7 +836,7 @@ def activity_statistics(db: Session, activity_id, current_user: User):
         )
         .count()
     )
-    approved = _approved_count(db, activity_id)
+    approved = approved_count(db, activity_id)
     rejected = (
         db.query(ActivityRegistration)
         .filter(
@@ -856,7 +856,7 @@ def activity_statistics(db: Session, activity_id, current_user: User):
     success_rate = 0.0
     total = pending + approved + rejected
     if total > 0:
-        success_rate = float(_round_half_up(approved / total * 100, 2))
+        success_rate = float(round_half_up(approved / total * 100, 2))
 
     statistics = {
         "activityInfo": serialize_activity_dto(
@@ -874,10 +874,10 @@ def activity_statistics(db: Session, activity_id, current_user: User):
 
 
 def checkin_statistics(db: Session, activity_id, current_user: User):
-    activity = _activity_statistics_base(db, activity_id, current_user)
+    activity = activity_statistics_base(db, activity_id, current_user)
     now = datetime.now()
 
-    approved = _approved_count(db, activity_id)
+    approved = approved_count(db, activity_id)
     checked_in = (
         db.query(ActivityRegistration)
         .filter(
@@ -891,7 +891,7 @@ def checkin_statistics(db: Session, activity_id, current_user: User):
 
     checkin_rate = 0.0
     if approved > 0:
-        checkin_rate = float(_round_half_up(checked_in / approved * 100, 2))
+        checkin_rate = float(round_half_up(checked_in / approved * 100, 2))
 
     statistics = {
         "activityInfo": serialize_activity_dto(
@@ -909,7 +909,7 @@ def checkin_statistics(db: Session, activity_id, current_user: User):
 
 
 def score_statistics(db: Session, activity_id, current_user: User):
-    activity = _activity_statistics_base(db, activity_id, current_user)
+    activity = activity_statistics_base(db, activity_id, current_user)
     now = datetime.now()
 
     scored_registrations = (
@@ -953,12 +953,12 @@ def score_statistics(db: Session, activity_id, current_user: User):
             Decimal("0.01"), rounding=ROUND_HALF_UP
         )
 
-    total_approved = _approved_count(db, activity_id)
+    total_approved = approved_count(db, activity_id)
     not_scored_count = total_approved - scored_count
 
     score_rate = 0.0
     if total_approved > 0:
-        score_rate = float(_round_half_up(scored_count / total_approved * 100, 2))
+        score_rate = float(round_half_up(scored_count / total_approved * 100, 2))
 
     statistics = {
         "activityInfo": serialize_activity_dto(
@@ -987,12 +987,12 @@ def score_statistics(db: Session, activity_id, current_user: User):
 # Excel 导出
 # ---------------------------------------------------------------------------
 
-def _gender_to_string(gender) -> str:
+def gender_to_string(gender) -> str:
     if gender is None:
         return ""
     return "女" if gender == 0 else "男"
 
-def _new_workbook(sheet_name: str, headers: list[str]):
+def new_workbook(sheet_name: str, headers: list[str]):
     wb = Workbook()
     ws = wb.active
     ws.title = sheet_name
@@ -1020,13 +1020,13 @@ def _new_workbook(sheet_name: str, headers: list[str]):
     return wb, ws
 
 
-def _workbook_bytes(wb) -> bytes:
+def workbook_bytes(wb) -> bytes:
     buffer = BytesIO()
     wb.save(buffer)
     return buffer.getvalue()
 
 
-def _export_context(db: Session, activity_id, current_user: User):
+def export_context(db: Session, activity_id, current_user: User):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if activity is None:
         raise ExportError(404, "活动不存在")
@@ -1037,7 +1037,7 @@ def _export_context(db: Session, activity_id, current_user: User):
     return activity
 
 
-def _approved_registrations(db: Session, activity_id):
+def approved_registrations(db: Session, activity_id):
     return (
         db.query(ActivityRegistration)
         .filter(
@@ -1048,47 +1048,47 @@ def _approved_registrations(db: Session, activity_id):
     )
 
 
-def _fill_user_columns(ws, row_num: int, index: int, user: User) -> None:
+def fill_user_columns(ws, row_num: int, index: int, user: User) -> None:
     ws.cell(row=row_num, column=1, value=index + 1)
     ws.cell(row=row_num, column=2, value=user.real_name if user.real_name is not None else "")
-    ws.cell(row=row_num, column=3, value=_gender_to_string(user.gender))
+    ws.cell(row=row_num, column=3, value=gender_to_string(user.gender))
     ws.cell(row=row_num, column=4, value=user.student_no if user.student_no is not None else "")
 
 
 def export_registration(db: Session, activity_id, current_user: User):
-    activity = _export_context(db, activity_id, current_user)
-    approved = _approved_registrations(db, activity_id)
+    activity = export_context(db, activity_id, current_user)
+    approved = approved_registrations(db, activity_id)
 
     headers = ["序号", "姓名", "性别", "学号"]
-    wb, ws = _new_workbook("报名情况表", headers)
+    wb, ws = new_workbook("报名情况表", headers)
 
-    users_map = _users_by_id(db, [reg.user_id for reg in approved])
+    users_map = users_by_id(db, [reg.user_id for reg in approved])
     row_num = 2
     for index, reg in enumerate(approved):
         user = users_map.get(reg.user_id)
         if user is None:
             continue
-        _fill_user_columns(ws, row_num, index, user)
+        fill_user_columns(ws, row_num, index, user)
         row_num += 1
 
     filename = activity.name + "_报名情况表.xlsx"
-    return _workbook_bytes(wb), filename
+    return workbook_bytes(wb), filename
 
 
 def export_checkin(db: Session, activity_id, current_user: User):
-    activity = _export_context(db, activity_id, current_user)
-    approved = _approved_registrations(db, activity_id)
+    activity = export_context(db, activity_id, current_user)
+    approved = approved_registrations(db, activity_id)
 
     headers = ["序号", "姓名", "性别", "学号", "报名状态", "签到状态"]
-    wb, ws = _new_workbook("签到情况表", headers)
+    wb, ws = new_workbook("签到情况表", headers)
 
-    users_map = _users_by_id(db, [reg.user_id for reg in approved])
+    users_map = users_by_id(db, [reg.user_id for reg in approved])
     row_num = 2
     for index, reg in enumerate(approved):
         user = users_map.get(reg.user_id)
         if user is None:
             continue
-        _fill_user_columns(ws, row_num, index, user)
+        fill_user_columns(ws, row_num, index, user)
         ws.cell(row=row_num, column=5, value=reg.status if reg.status is not None else "")
         ws.cell(
             row=row_num,
@@ -1098,23 +1098,23 @@ def export_checkin(db: Session, activity_id, current_user: User):
         row_num += 1
 
     filename = activity.name + "_签到情况表.xlsx"
-    return _workbook_bytes(wb), filename
+    return workbook_bytes(wb), filename
 
 
 def export_score(db: Session, activity_id, current_user: User):
-    activity = _export_context(db, activity_id, current_user)
-    approved = _approved_registrations(db, activity_id)
+    activity = export_context(db, activity_id, current_user)
+    approved = approved_registrations(db, activity_id)
 
     headers = ["序号", "姓名", "性别", "学号", "报名状态", "评分"]
-    wb, ws = _new_workbook("评分情况表", headers)
+    wb, ws = new_workbook("评分情况表", headers)
 
-    users_map = _users_by_id(db, [reg.user_id for reg in approved])
+    users_map = users_by_id(db, [reg.user_id for reg in approved])
     row_num = 2
     for index, reg in enumerate(approved):
         user = users_map.get(reg.user_id)
         if user is None:
             continue
-        _fill_user_columns(ws, row_num, index, user)
+        fill_user_columns(ws, row_num, index, user)
         ws.cell(row=row_num, column=5, value=reg.status if reg.status is not None else "")
         ws.cell(
             row=row_num,
@@ -1124,7 +1124,7 @@ def export_score(db: Session, activity_id, current_user: User):
         row_num += 1
 
     filename = activity.name + "_评分情况表.xlsx"
-    return _workbook_bytes(wb), filename
+    return workbook_bytes(wb), filename
 
 
 def export_disposition(filename: str) -> str:
@@ -1171,17 +1171,17 @@ def user_activities(
         participated_counts = {}
         if participated_ids:
             query = db.query(Activity).filter(Activity.id.in_(participated_ids))
-            if _has_text(keyword):
+            if has_text(keyword):
                 kw = f"%{keyword}%"
                 query = query.filter(
                     or_(Activity.name.like(kw), Activity.description.like(kw))
                 )
             participated_activities = query.all()
-            participated_counts = _approved_counts(
+            participated_counts = approved_counts(
                 db, [a.id for a in participated_activities]
             )
 
-            def _compare_participated(a1, a2):
+            def compare_participated(a1, a2):
                 t1 = registration_time_map.get(a1.id)
                 t2 = registration_time_map.get(a2.id)
                 if t1 is None and t2 is None:
@@ -1194,7 +1194,7 @@ def user_activities(
                     return 0
                 return -1 if t2 < t1 else 1
 
-            participated_activities.sort(key=cmp_to_key(_compare_participated))
+            participated_activities.sort(key=cmp_to_key(compare_participated))
 
         participated_dtos = [
             serialize_activity_dto(
@@ -1228,21 +1228,21 @@ def user_activities(
         managed_counts = {}
         if managed_club_ids:
             query = db.query(Activity).filter(Activity.club_id.in_(managed_club_ids))
-            if _has_text(keyword):
+            if has_text(keyword):
                 kw = f"%{keyword}%"
                 query = query.filter(
                     or_(Activity.name.like(kw), Activity.description.like(kw))
                 )
             query = query.order_by(Activity.create_time.desc())
             managed_activities = query.all()
-            managed_counts = _approved_counts(
+            managed_counts = approved_counts(
                 db, [a.id for a in managed_activities]
             )
             status_map = {
                 a.id: derive_activity_status(a, now) for a in managed_activities
             }
 
-            def _compare_managed(a1, a2):
+            def compare_managed(a1, a2):
                 a1_running = status_map[a1.id] == "进行中"
                 a2_running = status_map[a2.id] == "进行中"
                 if a1_running and not a2_running:
@@ -1253,7 +1253,7 @@ def user_activities(
                     return 0
                 return -1 if a2.create_time < a1.create_time else 1
 
-            managed_activities.sort(key=cmp_to_key(_compare_managed))
+            managed_activities.sort(key=cmp_to_key(compare_managed))
 
         managed_dtos = [
             serialize_activity_dto(
@@ -1318,7 +1318,7 @@ def checkin(db: Session, payload: dict, current_user: User):
 
     user_id = current_user.id
     qr_content = payload.get("qrContent")
-    if not _has_text(qr_content):
+    if not has_text(qr_content):
         raise ValueError("请扫描活动二维码签到")
 
     try:
@@ -1326,7 +1326,7 @@ def checkin(db: Session, payload: dict, current_user: User):
     except (TypeError, ValueError):
         raise ValueError("二维码内容格式不正确")
 
-    activity_id = _to_long(qr_data.get("activityId"))
+    activity_id = to_long(qr_data.get("activityId"))
     if activity_id is None:
         raise ValueError("二维码中缺少活动ID")
 
@@ -1429,7 +1429,7 @@ def update_publish_status(
         data={
             "activity": serialize_activity(
                 activity,
-                current_participants=_approved_count(db, activity.id),
+                current_participants=approved_count(db, activity.id),
             )
         },
         message=message,

@@ -19,7 +19,7 @@ from app.schemas.club import (
 )
 
 
-def _has_text(v) -> bool:
+def has_text(v) -> bool:
     return v is not None and str(v).strip() != ""
 
 
@@ -28,7 +28,7 @@ MEMBER_ACTIVE = 1
 MEMBER_REJECTED = 2
 
 
-def _manager_role(db: Session) -> Role:
+def manager_role(db: Session) -> Role:
     role = (
         db.query(Role)
         .filter(Role.code == RoleCode.CLUB_MANAGER, Role.status == 1)
@@ -39,8 +39,8 @@ def _manager_role(db: Session) -> Role:
     return role
 
 
-def _manager_user_ids(db: Session, club_id: int) -> set[int]:
-    role = _manager_role(db)
+def manager_user_ids(db: Session, club_id: int) -> set[int]:
+    role = manager_role(db)
     rows = (
         db.query(UserRole.user_id)
         .filter(UserRole.club_id == club_id, UserRole.role_id == role.id)
@@ -49,8 +49,8 @@ def _manager_user_ids(db: Session, club_id: int) -> set[int]:
     return {row[0] for row in rows}
 
 
-def _managed_club_ids(db: Session, user_id: int) -> list[int]:
-    role = _manager_role(db)
+def managed_club_ids(db: Session, user_id: int) -> list[int]:
+    role = manager_role(db)
     rows = (
         db.query(UserRole.club_id)
         .filter(
@@ -63,7 +63,7 @@ def _managed_club_ids(db: Session, user_id: int) -> list[int]:
     return list({row[0] for row in rows})
 
 
-def _member_counts(db: Session, club_ids: list[int]) -> dict[int, int]:
+def member_counts(db: Session, club_ids: list[int]) -> dict[int, int]:
     if not club_ids:
         return {}
     rows = (
@@ -81,7 +81,7 @@ def _member_counts(db: Session, club_ids: list[int]) -> dict[int, int]:
 def create_club(
     db: Session, request: ClubRequest, current_user: User
 ) -> dict:
-    if not _has_text(request.name):
+    if not has_text(request.name):
         raise ValueError("社团名称不能为空")
 
     club = Club(
@@ -93,7 +93,7 @@ def create_club(
     db.add(club)
     db.flush()
 
-    manager_role = _manager_role(db)
+    role = manager_role(db)
 
     now = datetime.now()
     db.add(
@@ -108,7 +108,7 @@ def create_club(
     db.add(
         UserRole(
             user_id=current_user.id,
-            role_id=manager_role.id,
+            role_id=role.id,
             club_id=club.id,
         )
     )
@@ -125,7 +125,7 @@ def search_clubs(db: Session, request: ClubSearchRequest) -> dict:
     size = request.pageSize if (request.pageSize and request.pageSize > 0) else 10
 
     query = db.query(Club).filter(Club.status == 1)
-    if _has_text(request.keyword):
+    if has_text(request.keyword):
         kw = f"%{request.keyword}%"
         query = query.filter(
             or_(
@@ -137,7 +137,7 @@ def search_clubs(db: Session, request: ClubSearchRequest) -> dict:
 
     total = query.count()
     records = query.offset((current - 1) * size).limit(size).all()
-    counts = _member_counts(db, [c.id for c in records])
+    counts = member_counts(db, [c.id for c in records])
     return success_response(
         data={
             "page": page_result(
@@ -155,7 +155,7 @@ def joined_clubs(
     size = request.pageSize if (request.pageSize and request.pageSize > 0) else 10
 
     if request.type and str(request.type).lower() == "management":
-        club_ids = _managed_club_ids(db, current_user.id)
+        club_ids = managed_club_ids(db, current_user.id)
     else:
         club_ids = list(
             {
@@ -175,7 +175,7 @@ def joined_clubs(
         )
 
     query = db.query(Club).filter(Club.id.in_(club_ids))
-    if _has_text(request.keyword):
+    if has_text(request.keyword):
         kw = f"%{request.keyword}%"
         query = query.filter(
             or_(
@@ -187,7 +187,7 @@ def joined_clubs(
 
     total = query.count()
     records = query.offset((current - 1) * size).limit(size).all()
-    counts = _member_counts(db, [c.id for c in records])
+    counts = member_counts(db, [c.id for c in records])
     return success_response(
         data={
             "page": page_result(
@@ -199,7 +199,7 @@ def joined_clubs(
 
 
 def managed_clubs(db: Session, current_user: User) -> dict:
-    club_ids = _managed_club_ids(db, current_user.id)
+    club_ids = managed_club_ids(db, current_user.id)
     if not club_ids:
         return success_response(data={"items": []}, message="查询成功")
 
@@ -229,7 +229,7 @@ def club_members(db: Session, club_id: int) -> dict:
     user_ids = [m.user_id for m in members]
     users = db.query(User).filter(User.id.in_(user_ids)).all()
     users_by_id = {u.id: u for u in users}
-    manager_ids = _manager_user_ids(db, club_id)
+    manager_ids = manager_user_ids(db, club_id)
 
     members.sort(
         key=lambda m: (
@@ -281,7 +281,7 @@ def get_club(db: Session, club_id: int) -> dict:
     club = db.query(Club).filter(Club.id == club_id).first()
     if club is None:
         return error_response(message="社团不存在")
-    counts = _member_counts(db, [club.id])
+    counts = member_counts(db, [club.id])
     return success_response(
         data={"club": serialize_club(club, counts.get(club.id, 0))}, message="查询成功"
     )
@@ -401,8 +401,8 @@ def quit_club(db: Session, club_id: int, current_user: User) -> dict:
     if member is None:
         raise ValueError("您不是该社团成员")
 
-    role = _manager_role(db)
-    manager_role = (
+    role = manager_role(db)
+    manager_user_role = (
         db.query(UserRole)
         .filter(
             UserRole.user_id == current_user.id,
@@ -411,7 +411,7 @@ def quit_club(db: Session, club_id: int, current_user: User) -> dict:
         )
         .first()
     )
-    if manager_role is not None:
+    if manager_user_role is not None:
         other_manager_count = (
             db.query(UserRole)
             .filter(
@@ -423,7 +423,7 @@ def quit_club(db: Session, club_id: int, current_user: User) -> dict:
         )
         if other_manager_count == 0:
             raise ValueError("社团至少保留一名管理员，请先设置其他管理员")
-        db.delete(manager_role)
+        db.delete(manager_user_role)
 
     db.delete(member)
     db.commit()
@@ -458,7 +458,7 @@ def set_manager(
     if member is None:
         raise ValueError("该用户未加入该社团")
 
-    role = _manager_role(db)
+    role = manager_role(db)
 
     existing_role = (
         db.query(UserRole)
@@ -513,7 +513,7 @@ def latest_clubs(db: Session, limit) -> dict:
         .limit(limit)
         .all()
     )
-    counts = _member_counts(db, [c.id for c in clubs])
+    counts = member_counts(db, [c.id for c in clubs])
     return success_response(
         data={"items": [serialize_club(c, counts.get(c.id, 0)) for c in clubs]},
         message="查询成功",

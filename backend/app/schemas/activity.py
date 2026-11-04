@@ -7,7 +7,7 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 from app.utils.time_util import dt_to_millis, millis_to_dt
 
 
-def _parse_dt(v: Any):
+def parse_dt(v: Any):
     """对齐 Jackson LocalDateTime：接受 "yyyy-MM-dd HH:mm:ss" 字符串或毫秒时间戳。"""
     if v is None:
         return None
@@ -31,7 +31,7 @@ def _parse_dt(v: Any):
         return None
 
 
-DateTime = Annotated[Optional[datetime], BeforeValidator(_parse_dt)]
+DateTime = Annotated[Optional[datetime], BeforeValidator(parse_dt)]
 
 
 def derive_activity_status(activity, now: datetime) -> str:
@@ -127,7 +127,7 @@ class RegistrationReviewRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
-def _number(v) -> Any:
+def number(v) -> Any:
     """对齐 Jackson BigDecimal：数字字符串/Decimal 序列化为 JSON number，不可解析时保留原值。"""
     if v is None:
         return None
@@ -147,7 +147,7 @@ def _number(v) -> Any:
     return int(f) if f.is_integer() else f
 
 
-def _split_urls(raw) -> list[str]:
+def split_urls(raw) -> list[str]:
     if raw is None:
         return []
     return [x.strip() for x in str(raw).split(",") if x.strip()]
@@ -180,7 +180,7 @@ def serialize_activity(
         "activityType": a.activity_type,
         "activityLevel": a.activity_level,
         "status": derive_activity_status(a, now),
-        "score": _number(a.score),
+        "score": number(a.score),
         "auditStatus": a.audit_status,
         "auditTime": a.audit_time,
         "auditUserId": a.audit_user_id,
@@ -202,7 +202,7 @@ def serialize_activity_dto(
     now = now or datetime.now()
     return {
         "id": a.id,
-        "imageUrls": _split_urls(a.image_urls) if image_list else None,
+        "imageUrls": split_urls(a.image_urls) if image_list else None,
         "name": a.name,
         "clubId": a.club_id,
         "description": a.description,
@@ -220,7 +220,7 @@ def serialize_activity_dto(
         "activityType": a.activity_type,
         "activityLevel": a.activity_level,
         "status": derive_activity_status(a, now),
-        "score": _number(a.score),
+        "score": number(a.score),
         "auditStatus": a.audit_status,
         "auditTime": a.audit_time,
         "auditUserId": a.audit_user_id,
@@ -239,7 +239,7 @@ def serialize_registration(r) -> dict | None:
         "activityId": r.activity_id,
         "userId": r.user_id,
         "status": r.status,
-        "score": _number(r.score),
+        "score": number(r.score),
         "comment": r.comment,
         "checkinTime": r.checkin_time,
         "auditUserId": r.audit_user_id,
@@ -259,7 +259,7 @@ def serialize_registration_dto(r) -> dict | None:
         "activityId": r.activity_id,
         "userId": r.user_id,
         "status": r.status,
-        "score": _number(r.score),
+        "score": number(r.score),
         "checkinTime": dt_to_millis(r.checkin_time),
         "auditUserId": r.audit_user_id,
         "auditTime": dt_to_millis(r.audit_time),

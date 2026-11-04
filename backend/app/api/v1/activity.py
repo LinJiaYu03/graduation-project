@@ -224,7 +224,7 @@ def delete_activity(
 # Excel 导出（二进制响应）
 # ---------------------------------------------------------------------------
 
-def _excel_response(content: bytes, filename: str) -> Response:
+def excel_response(content: bytes, filename: str) -> Response:
     return Response(
         content=content,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -232,7 +232,7 @@ def _excel_response(content: bytes, filename: str) -> Response:
     )
 
 
-def _export_error(e: Exception) -> Response:
+def export_error(e: Exception) -> Response:
     if isinstance(e, activity_services.ExportError):
         return Response(
             content=e.message,
@@ -257,8 +257,8 @@ def export_registration(
             db, activityId, current_user
         )
     except Exception as e:
-        return _export_error(e)
-    return _excel_response(content, filename)
+        return export_error(e)
+    return excel_response(content, filename)
 
 
 @activity_router.get("/{activityId}/export/checkin")
@@ -272,8 +272,8 @@ def export_checkin(
             db, activityId, current_user
         )
     except Exception as e:
-        return _export_error(e)
-    return _excel_response(content, filename)
+        return export_error(e)
+    return excel_response(content, filename)
 
 
 @activity_router.get("/{activityId}/export/score")
@@ -287,5 +287,5 @@ def export_score(
             db, activityId, current_user
         )
     except Exception as e:
-        return _export_error(e)
-    return _excel_response(content, filename)
+        return export_error(e)
+    return excel_response(content, filename)

@@ -50,7 +50,7 @@ def serialize_club(c, member_count=None) -> dict | None:
     }
 
 
-def _user_name(user) -> str | None:
+def user_name(user) -> str | None:
     if user is None:
         return None
     if user.real_name is not None and str(user.real_name).strip() != "":
@@ -65,7 +65,7 @@ def serialize_club_member(m, user=None, is_manager=False) -> dict | None:
         "id": m.id,
         "clubId": m.club_id,
         "userId": m.user_id,
-        "userName": _user_name(user),
+        "userName": user_name(user),
         "isManager": is_manager,
         "status": m.status,
         "applyTime": m.apply_time,

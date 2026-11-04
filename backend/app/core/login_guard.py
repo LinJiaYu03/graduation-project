@@ -11,13 +11,13 @@ FAIL_PREFIX = "auth:login:fail:"
 LOCK_PREFIX = "auth:login:lock:"
 
 
-def _account_key(username: str) -> str:
+def account_key(username: str) -> str:
     return username.strip().lower()
 
 # 检查登录是否被锁定
 def ensure_not_locked(username: str) -> None:
     try:
-        if redis_client.exists(LOCK_PREFIX + _account_key(username)):
+        if redis_client.exists(LOCK_PREFIX + account_key(username)):
             raise BizException(
                 429, f"登录失败次数过多，请 {LOGIN_LOCK_SECONDS // 60} 分钟后再试"
             )
@@ -26,7 +26,7 @@ def ensure_not_locked(username: str) -> None:
 
 # 记录登录失败次数
 def record_login_failure(username: str) -> None:
-    account = _account_key(username)
+    account = account_key(username)
     try:
         with redis_client.pipeline(transaction=True) as pipe:
             pipe.incr(FAIL_PREFIX + account)
@@ -40,7 +40,7 @@ def record_login_failure(username: str) -> None:
 
 # 清除登录失败次数
 def clear_login_failures(username: str) -> None:
-    account = _account_key(username)
+    account = account_key(username)
     try:
         redis_client.delete(FAIL_PREFIX + account, LOCK_PREFIX + account)
     except RedisError:
