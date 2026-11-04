@@ -1,4 +1,3 @@
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import BizException
@@ -21,6 +20,7 @@ from app.core.security import (
 from app.core.token_blacklist import blacklist_refresh, consume_refresh_jti
 from app.models.rbac import Role, UserRole
 from app.models.user import User
+from app.repositories.user_repository import UserRepository
 from app.schemas.user import (
     ProfileUpdateRequest,
     PasswordUpdateRequest,
@@ -52,16 +52,10 @@ def token_response(user: User, message: str = "登录成功") -> dict:
 def register(db: Session, username, password) -> dict:
     if not has_text(username) or not has_text(password):
         raise ValueError("账号和密码不能为空")
-    exists = db.query(User).filter(User.username == username).first()
-    if exists is not None:
+    repo = UserRepository(db)
+    if repo.username_exists(username):
         raise ValueError("账号已存在")
-    user = User(
-        username=username,
-        password=hash_password(password),
-        avatar_url=DEFAULT_AVATAR,
-    )
-    db.add(user)
-    db.flush()
+    user = repo.create_user(username, hash_password(password), DEFAULT_AVATAR)
 
     role = (
         db.query(Role)
@@ -81,7 +75,7 @@ def login(db: Session, username, password) -> dict:
     if not has_text(username) or not has_text(password):
         raise ValueError("账号和密码不能为空")
     ensure_not_locked(username)
-    user = db.query(User).filter(User.username == username).first()
+    user = UserRepository(db).get_by_username(username)
     if user is None or not verify_password(password, user.password):
         record_login_failure(username)
         raise ValueError("账号或密码错误")
@@ -100,7 +94,7 @@ def refresh(db: Session, refresh_token) -> dict:
     except (ValueError, KeyError, TypeError):
         raise BizException(401, "刷新凭证无效，请重新登录")
 
-    user = db.query(User).filter(User.id == user_id).first()
+    user = UserRepository(db).get(user_id)
     if user is None or (payload.get("ver") or 0) != (user.token_version or 0):
         raise BizException(401, "登录状态已失效，请重新登录")
 
@@ -126,11 +120,13 @@ def logout(refresh_token) -> dict:
 def complete_profile(
     db: Session, request: ProfileUpdateRequest, current_user: User
 ) -> dict:
+    values = {}
     for attr, value in request.model_dump(exclude_none=True).items():
         if isinstance(value, str) and not value.strip():
             continue
-        setattr(current_user, attr, value)
+        values[attr] = value
 
+    UserRepository(db).update(current_user, **values)
     db.commit()
     db.refresh(current_user)
     return success_response(message="信息完善成功")
@@ -154,19 +150,19 @@ def update_password(
     if not verify_password(request.old_password, current_user.password):
         raise ValueError("旧密码错误")
 
-    current_user.password = hash_password(request.password)
-    # 改密后使已签发的令牌全部失效
-    current_user.token_version = (current_user.token_version or 0) + 1
+    UserRepository(db).update(
+        current_user,
+        password=hash_password(request.password),
+        # 改密后使已签发的令牌全部失效
+        token_version=(current_user.token_version or 0) + 1,
+    )
     db.commit()
     db.refresh(current_user)
     return success_response(message="密码修改成功")
 
 
 def get_users_page(db: Session, page: int, page_size: int) -> dict:
-    total = db.query(User).count()
-    records = (
-        db.query(User).offset((page - 1) * page_size).limit(page_size).all()
-    )
+    total, records = UserRepository(db).paginate_users(page, page_size)
     return success_response(
         data={
             "page": page_result(
@@ -178,17 +174,8 @@ def get_users_page(db: Session, page: int, page_size: int) -> dict:
 
 
 def search_users(db: Session, keyword, page: int, page_size: int) -> dict:
-    query = db.query(User)
-    if has_text(keyword):
-        query = query.filter(
-            or_(
-                User.username.like(f"%{keyword}%"),
-                User.real_name.like(f"%{keyword}%"),
-                User.student_no.like(f"%{keyword}%"),
-            )
-        )
-    total = query.count()
-    records = query.offset((page - 1) * page_size).limit(page_size).all()
+    keyword_value = keyword if has_text(keyword) else None
+    total, records = UserRepository(db).search(keyword_value, page, page_size)
     return success_response(
         data={
             "page": page_result(
@@ -200,10 +187,10 @@ def search_users(db: Session, keyword, page: int, page_size: int) -> dict:
 
 
 def delete_user(db: Session, user_id: int) -> dict:
-    query = db.query(User).filter(User.id == user_id)
-    count = query.count()
-    if count > 0:
-        query.delete()
+    repo = UserRepository(db)
+    user = repo.get(user_id)
+    if user is not None:
+        repo.delete(user)
         db.commit()
         return success_response(message="删除成功")
     return error_response(message="用户不存在")
@@ -212,6 +199,6 @@ def delete_user(db: Session, user_id: int) -> dict:
 def delete_users(db: Session, ids: list[int]) -> dict:
     if not ids:
         return error_response(message="请提供要删除的用户ID列表")
-    db.query(User).filter(User.id.in_(ids)).delete(synchronize_session=False)
+    UserRepository(db).delete_by_ids(ids)
     db.commit()
     return success_response(message="批量删除成功")
