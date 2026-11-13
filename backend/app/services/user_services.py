@@ -31,8 +31,8 @@ DEFAULT_AVATAR = "https://env-00jxuc2o76k9.normal.cloudstatic.cn/avatar/admin.jp
 
 
 def has_text(v) -> bool:
-    """对齐 Spring StringUtils.hasText"""
-    return v is not None and str(v).strip() != ""
+    """判断是否有有效文本：None、空串、纯空白都视为空。"""
+    return v is not None and bool(str(v).strip())
 
 
 def token_response(user: User, message: str = "登录成功") -> dict:

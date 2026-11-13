@@ -37,3 +37,10 @@ export const apiGetMyPermissions=()=>request({
 export const apiGetCurrentUser=()=>request({
 	url:'/users/profile'
 })
+
+// 修改密码
+export const apiUpdatePassword=(data)=>request({
+	url:'/users/password',
+	data,
+	method:'PUT'
+})
