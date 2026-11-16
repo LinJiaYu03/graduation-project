@@ -33,8 +33,13 @@ PORT=8080
 PIP_INDEX="https://pypi.tuna.tsinghua.edu.cn/simple"
 # 部署日志文件
 LOG_FILE="/www/wwwlogs/graduation-backend-deploy.log"
-# 自定义重启命令，留空则自动检测 systemd / init.d / supervisor
-# 例如宝塔“Python 项目”若不在上述管理方式内，可填："btpython restart graduation-backend"
+# 应用运行日志（baota 模式重启时使用）
+APP_LOG_FILE="/www/wwwlogs/graduation-backend.log"
+# 重启方式：
+#   baota - 宝塔 Python 项目托管（kill 旧进程 + nohup 启动，适合 WebHook 以 www 用户执行）
+#   auto  - 自动探测 systemd / init.d / supervisor
+RESTART_MODE="baota"
+# 自定义重启命令，留空则按 RESTART_MODE 处理
 RESTART_CMD=""
 # ==================================================================
 
@@ -80,10 +85,27 @@ health_check() {
   return 1
 }
 
+restart_baota() {
+  log "按宝塔托管方式重启（kill + nohup）..."
+  # 方括号写法避免匹配到当前命令自身
+  pkill -f "[u]vicorn app.main:app" >/dev/null 2>&1 || true
+  sleep 1
+  (
+    cd "$BACKEND_DIR" || exit 1
+    nohup "$VENV_DIR/bin/python" -m uvicorn app.main:app \
+      --host 0.0.0.0 --port "$PORT" >>"$APP_LOG_FILE" 2>&1 &
+  )
+  return 0
+}
+
 restart_service() {
   if [ -n "$RESTART_CMD" ]; then
     bash -c "$RESTART_CMD" >>"$LOG_FILE" 2>&1 && return 0
     return 1
+  fi
+  if [ "$RESTART_MODE" = "baota" ]; then
+    restart_baota
+    return 0
   fi
   if systemctl cat "${SERVICE_NAME}.service" >/dev/null 2>&1; then
     systemctl restart "$SERVICE_NAME" >>"$LOG_FILE" 2>&1 && return 0
