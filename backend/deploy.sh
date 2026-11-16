@@ -47,6 +47,9 @@ if ! touch "$LOG_FILE" 2>/dev/null; then
   touch "$LOG_FILE"
 fi
 
+# 把 stderr 合并到 stdout，让 git 等命令的报错也出现在面板日志里
+exec 2>&1
+
 log() {
   printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" | tee -a "$LOG_FILE"
 }
@@ -96,23 +99,29 @@ restart_service() {
 }
 
 log "========== 开始部署后端 =========="
+log "执行用户：$(id -un 2>/dev/null || echo unknown)，HOME=${HOME:-未设置}"
 
 # ---------- 环境检查 ----------
 [ -d "$PROJECT_DIR/.git" ] || fail "未找到 git 仓库：$PROJECT_DIR"
 [ -d "$BACKEND_DIR" ] || fail "未找到后端目录：$BACKEND_DIR"
 command -v git >/dev/null 2>&1 || fail "服务器未安装 git"
 
-# WebHook 常以 root 执行，仓库属主可能是 www，需忽略 ownership 检查
-if ! git config --global --get-all safe.directory 2>/dev/null | grep -qxF "$PROJECT_DIR"; then
-  git config --global --add safe.directory "$PROJECT_DIR"
-fi
+# 通过环境变量告诉 git 本项目是安全目录，避免 WebHook 环境缺少 HOME 或属主不一致导致失败
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0="safe.directory"
+export GIT_CONFIG_VALUE_0="$PROJECT_DIR"
 
 # ---------- 拉取代码 ----------
-OLD_COMMIT="$(git -C "$PROJECT_DIR" rev-parse HEAD)"
+if ! OLD_COMMIT="$(git -C "$PROJECT_DIR" rev-parse HEAD)"; then
+  fail "读取当前提交失败，请确认 $PROJECT_DIR 是有效仓库"
+fi
+log "拉取远程分支 origin/$BRANCH ..."
 if ! git -C "$PROJECT_DIR" fetch --prune origin "$BRANCH" >>"$LOG_FILE" 2>&1; then
   fail "git fetch 失败，请检查服务器能否访问远程仓库"
 fi
-NEW_COMMIT="$(git -C "$PROJECT_DIR" rev-parse "origin/${BRANCH}")"
+if ! NEW_COMMIT="$(git -C "$PROJECT_DIR" rev-parse "origin/${BRANCH}")"; then
+  fail "读取远程分支 origin/$BRANCH 失败"
+fi
 
 REQ_CHANGED=0
 if ! git -C "$PROJECT_DIR" diff --quiet "$OLD_COMMIT" "$NEW_COMMIT" -- backend/requirements.txt; then
