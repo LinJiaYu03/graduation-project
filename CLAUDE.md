@@ -1,4 +1,4 @@
-# CLAUDE.md
+# CLAUDE.md 项目说明
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
