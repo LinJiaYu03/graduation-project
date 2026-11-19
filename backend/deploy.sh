@@ -86,14 +86,14 @@ health_check() {
 }
 
 restart_baota() {
-  log "按宝塔托管方式重启（kill + nohup）..."
-  # 方括号写法避免匹配到当前命令自身
+  log "按宝塔托管方式重启（kill + setsid + nohup）..."
   pkill -f "[u]vicorn app.main:app" >/dev/null 2>&1 || true
   sleep 1
   (
     cd "$BACKEND_DIR" || exit 1
-    nohup "$VENV_DIR/bin/python" -m uvicorn app.main:app \
-      --host 0.0.0.0 --port "$PORT" >>"$APP_LOG_FILE" 2>&1 &
+    # 加入 setsid 和 </dev/null，彻底脱离当前会话，防止脚本假死
+    setsid "$VENV_DIR/bin/python" -m uvicorn app.main:app \
+      --host 0.0.0.0 --port "$PORT" >>"$APP_LOG_FILE" 2>&1 < /dev/null &
   )
   return 0
 }
