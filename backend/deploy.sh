@@ -68,7 +68,7 @@ fail() {
 LOCK_FILE="/tmp/graduation-backend-deploy.lock"
 exec 9>"$LOCK_FILE"
 if command -v flock >/dev/null 2>&1; then
-  flock -n 9 || { log "已有部署任务在执行，跳过本次"; exit 0; }
+  flock -w 300 9 || { log "[WARN] 等待锁超时（300秒），已有部署任务在执行，跳过本次"; exit 0; }
 fi
 
 health_check() {
