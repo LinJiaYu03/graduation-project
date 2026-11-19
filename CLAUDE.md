@@ -1,4 +1,4 @@
-# CLAUDE.md 项目说明
+# CLAUDE.md 项目说明 test
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
