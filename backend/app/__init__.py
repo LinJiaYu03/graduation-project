@@ -1,3 +1,6 @@
+# 初始化日志系统（需在其他模块之前导入）
+from app.log import logger  # noqa: F401
+
 from fastapi import FastAPI
 from fastapi.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware

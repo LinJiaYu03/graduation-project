@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,6 +9,11 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
+
+    app_env: str = "development"
+    debug: bool = True
+    project_name: str = "Campus Activity System"
+    logs_root: str = str(Path(__file__).resolve().parents[2] / "logs")
 
     jwt_secret_key: str = "campus-activity-system-dev-secret"
     jwt_algorithm: str = "HS256"

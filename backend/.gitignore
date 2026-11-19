@@ -11,6 +11,9 @@ env/
 # Env / secrets
 .env
 
+# Logs
+logs/
+
 # IDE
 .idea/
 .vscode/

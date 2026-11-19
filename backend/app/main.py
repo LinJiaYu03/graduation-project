@@ -5,6 +5,7 @@ from app import (
     register_router, 
     register_exception_handler
 )
+from app.log import logger
 
 def create_app()-> FastAPI:
     app = FastAPI(
@@ -18,3 +19,5 @@ def create_app()-> FastAPI:
     return app
 
 app = create_app()
+logger.bind(event="app_startup").info("Campus Activity System API 应用已创建")
+
