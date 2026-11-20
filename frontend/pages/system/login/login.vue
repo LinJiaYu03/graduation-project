@@ -5,33 +5,19 @@
 			<text class="subtitle">登录您的账号</text>
 		</view>
 
-		<view class="login-form">
-			<uni-forms ref="form" :rules="rules" :modelValue="formData" label-position="top">
-				<uni-forms-item label="账号" name="username" required>
-					<input class="input" type="text" v-model="formData.username" placeholder="请输入账号" maxlength="20"
-						@input="onInput('username', $event)" />
-				</uni-forms-item>
-
-				<uni-forms-item label="密码" name="password" required>
-					<input class="input" password  v-model="formData.password" placeholder="请输入密码" maxlength="20"
-						@input="onInput('password', $event)" />
-				</uni-forms-item>
-			</uni-forms>
-
-			<button class="login-btn" @click="handleLogin">登录</button>
-
+		<com-base-form :model="formData" :fields="fields" :rules="rules" submit-text="登录" @submit="handleLogin">
 			<view class="link-section">
 				<text class="link-text" @click="goToRegister">还没有账号？立即注册</text>
 			</view>
-		</view>
+		</com-base-form>
 	</view>
 </template>
 
 <script setup>
 	import {
-		ref,
 		reactive
 	} from 'vue'
+	import comBaseForm from '@/components/com-base-form/com-base-form.vue'
 	import {
 		apiUserLogin
 	} from '@/api/user/index.js'
@@ -39,11 +25,15 @@
 
 	const userStore = useUserStore()
 
-	const form = ref(null)
 	const formData = reactive({
 		username: '',
 		password: ''
 	})
+
+	const fields = [
+		{ name: 'username', label: '账号', placeholder: '请输入账号', maxlength: 20 },
+		{ name: 'password', label: '密码', placeholder: '请输入密码', password: true, maxlength: 20 }
+	]
 
 	const rules = {
 		username: {
@@ -65,24 +55,12 @@
 		}
 	}
 
-	const onInput = (name, e) => {
-		const value = e.detail ? e.detail.value : e.target.value
-		formData[name] = value
-		if (form.value) {
-			form.value.setValue(name, value)
-		}
-	}
-
 	const handleLogin = async () => {
-
-		await form.value.validate()
-
 		let res = await apiUserLogin(formData)
 
 		if (res.code === 200) {
 			await handleLoginSuccess(res.data.accessToken, res.data.refreshToken)
 		}
-
 	}
 
 	const handleLoginSuccess = async (token, refreshToken) => {
@@ -141,53 +119,6 @@
 			display: block;
 			font-size: 26rpx;
 			color: $text-secondary;
-		}
-	}
-
-	.login-form {
-		background: $bg-card;
-		border: 1rpx solid $border-base;
-		border-radius: $radius-md;
-		padding: 56rpx 40rpx;
-		box-shadow: $shadow-card;
-	}
-
-	.input {
-		width: 100%;
-		height: 88rpx;
-		background: $bg-subtle;
-		border-radius: $radius-sm;
-		padding: 0 24rpx;
-		font-size: 28rpx;
-		color: $text-primary;
-		box-sizing: border-box;
-		border: 2rpx solid transparent;
-
-		&::placeholder {
-			color: $text-tertiary;
-		}
-	}
-
-	.login-btn {
-		width: 100%;
-		height: 88rpx;
-		background: $brand-primary;
-		border-radius: $radius-pill;
-		color: $text-on-primary;
-		font-size: 30rpx;
-		font-weight: 500;
-		margin-top: 40rpx;
-		border: none;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-
-		&::after {
-			border: none;
-		}
-
-		&:active {
-			background: $brand-primary-deep;
 		}
 	}
 

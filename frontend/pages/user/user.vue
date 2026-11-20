@@ -153,26 +153,12 @@
 						<uni-icons type="left" size="14" color="#6E675D"></uni-icons>
 						<text class="form-back-text">返回安全设置</text>
 					</view>
-					<view class="password-form">
-						<view class="form-field">
-							<text class="form-label">原密码</text>
-							<input v-model="passwordForm.oldPassword" class="form-input" :password="true"
-								placeholder="请输入原密码" placeholder-style="color:#A39B90" />
-						</view>
-						<view class="form-field">
-							<text class="form-label">新密码</text>
-							<input v-model="passwordForm.newPassword" class="form-input" :password="true"
-								placeholder="至少 6 位字符" placeholder-style="color:#A39B90" />
-						</view>
-						<view class="form-field">
-							<text class="form-label">确认新密码</text>
-							<input v-model="passwordForm.confirmPassword" class="form-input" :password="true"
-								placeholder="请再次输入新密码" placeholder-style="color:#A39B90" />
-						</view>
-						<button class="form-submit" :loading="submittingPassword" :disabled="submittingPassword"
-							@click="submitPasswordChange">确认修改</button>
-						<text class="form-hint">修改成功后当前登录状态将失效，需要使用新密码重新登录。</text>
-					</view>
+					<com-base-form :model="passwordForm" :fields="passwordFields" :rules="passwordRules"
+						submit-text="确认修改" :loading="submittingPassword" @submit="submitPasswordChange">
+						<template #hint>
+							<text class="form-hint">修改成功后当前登录状态将失效，需要使用新密码重新登录。</text>
+						</template>
+					</com-base-form>
 				</template>
 			</scroll-view>
 
@@ -193,6 +179,7 @@ import {
 	computed
 } from 'vue';
 import customTabbar from '@/components/custom-tabbar/custom-tabbar.vue';
+import comBaseForm from '@/components/com-base-form/com-base-form.vue';
 import { storeToRefs } from 'pinia'
 import { apiUserLogout, apiUpdatePassword } from '@/api/user/index.js'
 import { useUserStore } from '@/stores/user.js'
@@ -213,6 +200,53 @@ const passwordForm = ref({
 	newPassword: '',
 	confirmPassword: ''
 })
+const passwordFields = [
+	{ name: 'oldPassword', label: '原密码', placeholder: '请输入原密码', password: true, maxlength: 20 },
+	{ name: 'newPassword', label: '新密码', placeholder: '请输入新密码（至少 6 位）', password: true, maxlength: 20 },
+	{ name: 'confirmPassword', label: '确认新密码', placeholder: '请再次输入新密码', password: true, maxlength: 20 }
+]
+const passwordRules = {
+	oldPassword: {
+		rules: [{
+			required: true,
+			errorMessage: '请输入原密码'
+		}]
+	},
+	newPassword: {
+		rules: [{
+				required: true,
+				errorMessage: '请输入新密码'
+			},
+			{
+				minLength: 6,
+				errorMessage: '新密码至少 6 位'
+			},
+			{
+				validateFunction: (rule, value, data, callback) => {
+					if (value && value === data.oldPassword) {
+						callback('新密码不能与原密码相同')
+					}
+					return true
+				}
+			}
+		]
+	},
+	confirmPassword: {
+		rules: [{
+				required: true,
+				errorMessage: '请再次输入新密码'
+			},
+			{
+				validateFunction: (rule, value, data, callback) => {
+					if (value !== data.newPassword) {
+						callback('两次输入的新密码不一致')
+					}
+					return true
+				}
+			}
+		]
+	}
+}
 const submittingPassword = ref(false)
 
 function openAccountSecurity() {
@@ -244,19 +278,7 @@ function onSecurityPopupChange(e) {
 
 async function submitPasswordChange() {
 	if (submittingPassword.value) return
-	const { oldPassword, newPassword, confirmPassword } = passwordForm.value
-	if (!oldPassword) {
-		return uni.showToast({ title: '请输入原密码', icon: 'none' })
-	}
-	if (!newPassword || newPassword.length < 6) {
-		return uni.showToast({ title: '新密码至少 6 位', icon: 'none' })
-	}
-	if (newPassword === oldPassword) {
-		return uni.showToast({ title: '新密码不能与原密码相同', icon: 'none' })
-	}
-	if (newPassword !== confirmPassword) {
-		return uni.showToast({ title: '两次输入的新密码不一致', icon: 'none' })
-	}
+	const { oldPassword, newPassword } = passwordForm.value
 
 	submittingPassword.value = true
 	try {
@@ -689,71 +711,12 @@ async function confirmLogout() {
 		}
 	}
 
-	.password-form {
-		background: $bg-card;
-		border: 1rpx solid $border-base;
-		border-radius: $radius-md;
-		box-shadow: $shadow-card;
-		padding: 32rpx 24rpx;
-
-		.form-field {
-			margin-bottom: 28rpx;
-
-			&:last-of-type {
-				margin-bottom: 0;
-			}
-
-			.form-label {
-				display: block;
-				font-size: 26rpx;
-				color: $text-secondary;
-				margin-bottom: 12rpx;
-			}
-
-			.form-input {
-				height: 88rpx;
-				padding: 0 24rpx;
-				background: $bg-subtle;
-				border: 1rpx solid $border-base;
-				border-radius: $radius-sm;
-				font-size: 30rpx;
-				color: $text-primary;
-				box-sizing: border-box;
-			}
-		}
-
-		.form-submit {
-			margin-top: 40rpx;
-			height: 88rpx;
-			line-height: 88rpx;
-			background: $brand-primary;
-			border-radius: $radius-pill;
-			color: $text-on-primary;
-			font-size: 30rpx;
-			font-weight: 500;
-			text-align: center;
-
-			&::after {
-				border: none;
-			}
-
-			&:active {
-				background: $brand-primary-deep;
-			}
-
-			&[disabled] {
-				opacity: 0.6;
-				background: $brand-primary;
-			}
-		}
-
-		.form-hint {
-			display: block;
-			margin-top: 20rpx;
-			font-size: 22rpx;
-			color: $text-tertiary;
-			line-height: 1.6;
-		}
+	.form-hint {
+		display: block;
+		margin: 4rpx 8rpx 0;
+		font-size: 22rpx;
+		color: $text-tertiary;
+		line-height: 1.7;
 	}
 }
 </style>
