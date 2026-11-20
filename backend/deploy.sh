@@ -92,8 +92,8 @@ restart_baota() {
   sleep 1
   (
     cd "$BACKEND_DIR" || exit 1
-    nohup "$VENV_DIR/bin/python" -m uvicorn app.main:app \
-      --host 0.0.0.0 --port "$PORT" >>"$APP_LOG_FILE" 2>&1 &
+    setsid "$VENV_DIR/bin/python" -m uvicorn app.main:app \
+  --host 0.0.0.0 --port "$PORT" >>$APP_LOG_FILE 2>&1 < /dev/null 9>&- &
   )
   return 0
 }
