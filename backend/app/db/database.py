@@ -2,8 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-# 数据库连接（对齐 application.yml：库 test，utf8mb4）
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://yuei:zLETGPC5LRSadzfF@8.134.123.232:3306/graduation?charset=utf8mb4"
+from app.core.config import settings
+
+# 数据库连接：优先读取 backend/.env 的 DATABASE_URL，否则使用 config.py 中的本地默认值
+SQLALCHEMY_DATABASE_URL = settings.database_url
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(
     autocommit=False,

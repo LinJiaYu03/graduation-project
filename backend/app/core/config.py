@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
+    # 本地默认数据库，线上通过 backend/.env 的 DATABASE_URL 覆盖
+    database_url: str = (
+        "mysql+pymysql://root:123456@localhost:3306/test?charset=utf8mb4"
+    )
     redis_url: str = "redis://localhost:6379/0"
 
 
