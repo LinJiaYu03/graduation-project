@@ -31,9 +31,6 @@
 			}">
 				活动统计
 			</view>
-			<view class="btn_item" @click="editActivity">
-				活动编辑
-			</view>
 			<view class="btn_item" @click="showQrcode">
 				签到码
 			</view>
@@ -118,12 +115,6 @@
 	function memberReview() {
 		uni.navigateTo({
 			url: `/pages/user/memberReview/memberReview?id=${props.activeInfo.id}`
-		})
-	}
-
-	function editActivity() {
-		uni.navigateTo({
-			url: `/pages/user/publishActivity/publishActivity?id=${props.activeInfo.id}`
 		})
 	}
 

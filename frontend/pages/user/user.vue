@@ -38,24 +38,6 @@
 					</view>
 					<text class="quick-label">账户安全</text>
 				</view>
-				<!-- 发布活动 -->
-				<view v-if="isManager" class="quick-item" @click="() => uni.navigateTo({
-					url: '/pages/user/publishActivity/publishActivity'
-				})">
-					<view class="quick-icon">
-						<uni-icons type="plusempty" size="24" color="#E9A23C"></uni-icons>
-					</view>
-					<text class="quick-label">发布活动</text>
-				</view>
-				<!-- 创建社团 -->
-				<view v-if="isBoss" class="quick-item" @click="()=>uni.navigateTo({
-					url:'/pages/user/createClub/createClub'
-				})">
-					<view class="quick-icon">
-						<uni-icons type="plusempty" size="24" color="#E9A23C"></uni-icons>
-					</view>
-					<text class="quick-label">创建社团</text>
-				</view>
 			</view>
 		</view>
 
@@ -187,7 +169,7 @@ import { useUserStore } from '@/stores/user.js'
 const userStore = useUserStore()
 const token = uni.getStorageSync('token')
 const userInfo = computed(() => userStore.user || {})
-const { isBoss, isManager } = storeToRefs(userStore)
+const { isBoss } = storeToRefs(userStore)
 
 const logoutPopup = ref(null)
 

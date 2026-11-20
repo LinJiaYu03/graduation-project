@@ -104,22 +104,6 @@
 			}
 		},
 		{
-			"path" : "pages/user/publishActivity/publishActivity",
-			"style" : 
-			{
-				"navigationBarTitleText" : "发布活动",
-				"navigationBarBackgroundColor": "#FFFFFF"
-			}
-		},
-		{
-			"path" : "pages/user/createClub/createClub",
-			"style" : 
-			{
-				"navigationBarTitleText" : "新键社团",
-				"navigationBarBackgroundColor": "#FFFFFF"
-			}
-		},
-		{
 			"path" : "pages/user/myActivity/components/com-activity-item-managed/com-activity-item-managed",
 			"style" : 
 			{
